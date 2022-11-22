@@ -1,7 +1,7 @@
-package com.ipmugo.library.repository;
+package com.ipmugo.library.services;
 
-import static org.mockito.Mockito.times;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ipmugo.library.data.Category;
+import com.ipmugo.library.repository.CategoryRepo;
 import com.ipmugo.library.service.CategoryService;
 
 @Extensions({
@@ -37,7 +38,6 @@ public class CategoryTest {
 
         var category = categoryService.findOne(UUID_ID);
 
-        Mockito.verify(categoryRepo, times(1)).findById(UUID_ID);
         Assertions.assertThat(category).isNull();
 
     }
@@ -48,8 +48,27 @@ public class CategoryTest {
                 .thenReturn(Optional.of(new Category(UUID_ID, "Computer")));
 
         var category = categoryService.findOne(UUID_ID);
-        Mockito.verify(categoryRepo, times(1)).findById(UUID_ID);
         Assertions.assertThat(category).isNotNull();
+        Assertions.assertThat(category.getName()).isEqualTo("Computer");
 
+    }
+
+    @Test
+    void testGetAllEmpty() {
+        Mockito.when(categoryRepo.findAll()).thenReturn(Collections.emptyList());
+
+        var category = categoryService.findAll();
+
+        Assertions.assertThat(category).isEmpty();
+    }
+
+    @Test
+    void testGetAll() {
+        Mockito.when(categoryRepo.findAll()).thenReturn(List.of(new Category(UUID_ID, "Computer")));
+
+        var category = categoryService.findAll();
+
+        Assertions.assertThat(category).isNotEmpty();
+        Assertions.assertThat(category.size()).isEqualTo(1);
     }
 }

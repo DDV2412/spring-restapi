@@ -2,13 +2,10 @@ package com.ipmugo.library.data;
 
 import java.util.UUID;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 public class Category {
@@ -17,9 +14,6 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "category_name", unique = true, length = 24)
-    @NotBlank(message = "Category name can not blank")
-    @Size(message = "Category name length max must 24 characters")
     private String name;
 
     public Category() {

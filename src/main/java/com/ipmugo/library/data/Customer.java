@@ -40,9 +40,8 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(UUID id, String first_name, String last_name, String company_name, String email,
+    public Customer(String first_name, String last_name, String company_name, String email,
             Integer phone_number, String country, String message, Date updated_at, Date created_at) {
-        this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
         this.company_name = company_name;

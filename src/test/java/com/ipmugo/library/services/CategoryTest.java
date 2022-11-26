@@ -1,5 +1,7 @@
 package com.ipmugo.library.services;
 
+import static org.mockito.Mockito.times;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +34,7 @@ public class CategoryTest {
     private CategoryService categoryService;
 
     @Test
-    void testGetCategoryFail() {
+    void testFindByIdFail() {
         Mockito.when(categoryRepo.findById(UUID_ID))
                 .thenReturn(Optional.empty());
 
@@ -43,9 +45,9 @@ public class CategoryTest {
     }
 
     @Test
-    void testGetCategorySuccess() {
+    void testFindByIdSuccess() {
         Mockito.when(categoryRepo.findById(UUID_ID))
-                .thenReturn(Optional.of(new Category(UUID_ID, "Computer")));
+                .thenReturn(Optional.of(new Category("Computer")));
 
         var category = categoryService.findOne(UUID_ID);
         Assertions.assertThat(category).isNotNull();
@@ -54,7 +56,28 @@ public class CategoryTest {
     }
 
     @Test
-    void testGetAllEmpty() {
+    void testFindByNameFail() {
+        Mockito.when(categoryRepo.findByName("Computer"))
+                .thenReturn(Optional.empty());
+
+        var category = categoryService.findByName("Computer");
+
+        Assertions.assertThat(category).isNull();
+
+    }
+
+    void testFindByNameSuccess() {
+        Mockito.when(categoryRepo.findByName("Computer"))
+                .thenReturn(Optional.of(new Category("Computer")));
+
+        var category = categoryService.findByName("Computer");
+        Assertions.assertThat(category).isNotNull();
+        Assertions.assertThat(category.getName()).isEqualTo("Computer");
+
+    }
+
+    @Test
+    void testFindAllEmpty() {
         Mockito.when(categoryRepo.findAll()).thenReturn(Collections.emptyList());
 
         var category = categoryService.findAll();
@@ -63,12 +86,33 @@ public class CategoryTest {
     }
 
     @Test
-    void testGetAll() {
-        Mockito.when(categoryRepo.findAll()).thenReturn(List.of(new Category(UUID_ID, "Computer")));
+    void testFindAll() {
+        Mockito.when(categoryRepo.findAll()).thenReturn(List.of(new Category("Computer")));
 
         var category = categoryService.findAll();
 
         Assertions.assertThat(category).isNotEmpty();
         Assertions.assertThat(category.size()).isEqualTo(1);
+    }
+
+    @Test
+    void testDeleteCategory() {
+        Category category = new Category("Computer");
+        categoryService.deleteById(category.getId());
+    }
+
+    @Test
+    void testSaveCategory() {
+        Category category = new Category("Computer");
+
+        Mockito.when(categoryRepo.save(category)).thenReturn(category);
+
+        var cat = categoryService.save(category);
+
+        Assertions.assertThat(cat).isNotNull();
+        Assertions.assertThat(cat.getName()).isEqualTo("Computer");
+
+        Mockito.verify(categoryRepo, times(1)).save(category);
+
     }
 }

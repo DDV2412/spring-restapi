@@ -28,8 +28,7 @@ public class LogSearch {
     public LogSearch() {
     }
 
-    public LogSearch(UUID id, String search, Date updated_at, Date created_at) {
-        this.id = id;
+    public LogSearch(String search, Date updated_at, Date created_at) {
         this.search = search;
         this.updated_at = updated_at;
         this.created_at = created_at;

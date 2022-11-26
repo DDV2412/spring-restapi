@@ -2,15 +2,19 @@ package com.ipmugo.library.data;
 
 import java.time.Year;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -22,10 +26,17 @@ public class Article {
     private UUID id;
 
     @ManyToOne
+    @JoinColumn(name = "journal_id")
     private Journal journal;
 
+    private Integer ojs_id;
+
     @ManyToMany
-    private Subject subject;
+    @JoinTable(name = "subject_article", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
+    @JsonManagedReference
+    private Set<Subject> subjects;
+
+    private String figure;
 
     private String title;
 
@@ -61,22 +72,17 @@ public class Article {
     @Temporal(TemporalType.TIMESTAMP)
     private Date created_at;
 
-    @OneToMany
-    private Author authors;
-
-    @OneToMany
-    private Figure figures;
-
     public Article() {
     }
 
-    public Article(UUID id, Journal journal, Subject subject, String title, String pages, String publisher,
-            Year publish_year, Date publish_date, String issn, String source_type, String languange_publication,
-            String doi, Integer volume, Integer issue, String copyright, String abstract_text, String full_text,
-            Date updated_at, Date created_at, Author authors, Figure figures) {
-        this.id = id;
+    public Article(Journal journal, Integer ojs_id, Set<Subject> subjects, String figure, String title,
+            String pages, String publisher, Year publish_year, Date publish_date, String issn, String source_type,
+            String languange_publication, String doi, Integer volume, Integer issue, String copyright,
+            String abstract_text, String full_text, Date updated_at, Date created_at) {
         this.journal = journal;
-        this.subject = subject;
+        this.ojs_id = ojs_id;
+        this.subjects = subjects;
+        this.figure = figure;
         this.title = title;
         this.pages = pages;
         this.publisher = publisher;
@@ -93,8 +99,6 @@ public class Article {
         this.full_text = full_text;
         this.updated_at = updated_at;
         this.created_at = created_at;
-        this.authors = authors;
-        this.figures = figures;
     }
 
     public UUID getId() {
@@ -113,12 +117,28 @@ public class Article {
         this.journal = journal;
     }
 
-    public Subject getSubject() {
-        return subject;
+    public Integer getOjs_id() {
+        return ojs_id;
     }
 
-    public void setSubject(Subject subject) {
-        this.subject = subject;
+    public void setOjs_id(Integer ojs_id) {
+        this.ojs_id = ojs_id;
+    }
+
+    public Set<Subject> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(Set<Subject> subjects) {
+        this.subjects = subjects;
+    }
+
+    public String getFigure() {
+        return figure;
+    }
+
+    public void setFigure(String figure) {
+        this.figure = figure;
     }
 
     public String getTitle() {
@@ -247,22 +267,6 @@ public class Article {
 
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
-    }
-
-    public Author getAuthors() {
-        return authors;
-    }
-
-    public void setAuthors(Author authors) {
-        this.authors = authors;
-    }
-
-    public Figure getFigures() {
-        return figures;
-    }
-
-    public void setFigures(Figure figures) {
-        this.figures = figures;
     }
 
 }

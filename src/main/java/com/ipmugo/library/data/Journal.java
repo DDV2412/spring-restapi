@@ -1,12 +1,17 @@
 package com.ipmugo.library.data;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -67,17 +72,18 @@ public class Journal {
     private Date created_at;
 
     @ManyToMany
-    private Category category;
+    @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "journal_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JsonManagedReference
+    private Set<Category> category;
 
     public Journal() {
     }
 
-    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumnail,
+    public Journal(String name, String issn, String e_issn, String abbreviation, String thumnail,
             String description, String journal_site, String frequency, String country, String aim_scope_site,
             String introduction_author_site, String host_platform, Integer issue_per_year, String primary_languange,
             String editor_site, String full_text_format, boolean article_doi, String statement, String license,
-            Double apc_fee, String review_police, Date updated_at, Date created_at, Category category) {
-        this.id = id;
+            Double apc_fee, String review_police, Date updated_at, Date created_at, Set<Category> category) {
         this.name = name;
         this.issn = issn;
         this.e_issn = e_issn;
@@ -296,11 +302,11 @@ public class Journal {
         this.created_at = created_at;
     }
 
-    public Category getCategory() {
+    public Set<Category> getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(Set<Category> category) {
         this.category = category;
     }
 

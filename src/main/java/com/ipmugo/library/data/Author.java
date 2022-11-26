@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -30,14 +31,14 @@ public class Author {
     private String affiliation;
 
     @ManyToOne
+    @JoinColumn(name = "article_id")
     private Article article;
 
     public Author() {
     }
 
-    public Author(UUID id, String first_name, String last_name, String email, String orcid, String scopus_id,
+    public Author(String first_name, String last_name, String email, String orcid, String scopus_id,
             String google_scholar, String affiliation, Article article) {
-        this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
         this.email = email;

@@ -1,11 +1,13 @@
 package com.ipmugo.library.data;
 
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class Subject {
@@ -16,11 +18,13 @@ public class Subject {
 
     private String name;
 
+    @ManyToMany(mappedBy = "subjects")
+    private Set<Article> articles;
+
     public Subject() {
     }
 
-    public Subject(UUID id, String name) {
-        this.id = id;
+    public Subject(String name) {
         this.name = name;
     }
 
@@ -38,6 +42,14 @@ public class Subject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Set<Article> getArticles() {
+        return articles;
+    }
+
+    public void setArticles(Set<Article> articles) {
+        this.articles = articles;
     }
 
 }

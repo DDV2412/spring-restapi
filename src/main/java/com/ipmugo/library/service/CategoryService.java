@@ -33,4 +33,18 @@ public class CategoryService {
     public Category save(Category category) {
         return categoryRepo.save(category);
     }
+
+    public void deleteById(UUID id) {
+        categoryRepo.deleteById(id);
+    }
+
+    public Category findByName(String name) {
+        Optional<Category> category = categoryRepo.findByName(name);
+
+        if (!category.isPresent()) {
+            return null;
+        }
+
+        return category.get();
+    }
 }

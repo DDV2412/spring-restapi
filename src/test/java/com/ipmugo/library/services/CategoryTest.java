@@ -47,7 +47,7 @@ public class CategoryTest {
     @Test
     void testFindByIdSuccess() {
         Mockito.when(categoryRepo.findById(UUID_ID))
-                .thenReturn(Optional.of(new Category("Computer")));
+                .thenReturn(Optional.of(new Category(UUID_ID, "Computer")));
 
         var category = categoryService.findOne(UUID_ID);
         Assertions.assertThat(category).isNotNull();
@@ -68,7 +68,7 @@ public class CategoryTest {
 
     void testFindByNameSuccess() {
         Mockito.when(categoryRepo.findByName("Computer"))
-                .thenReturn(Optional.of(new Category("Computer")));
+                .thenReturn(Optional.of(new Category(UUID_ID, "Computer")));
 
         var category = categoryService.findByName("Computer");
         Assertions.assertThat(category).isNotNull();
@@ -87,7 +87,7 @@ public class CategoryTest {
 
     @Test
     void testFindAll() {
-        Mockito.when(categoryRepo.findAll()).thenReturn(List.of(new Category("Computer")));
+        Mockito.when(categoryRepo.findAll()).thenReturn(List.of(new Category(UUID_ID, "Computer")));
 
         var category = categoryService.findAll();
 
@@ -97,13 +97,13 @@ public class CategoryTest {
 
     @Test
     void testDeleteCategory() {
-        Category category = new Category("Computer");
+        Category category = new Category(UUID_ID, "Computer");
         categoryService.deleteById(category.getId());
     }
 
     @Test
-    void testSaveCategory() {
-        Category category = new Category("Computer");
+    void testSaveCategorySuccess() {
+        Category category = new Category(UUID_ID, "Computer");
 
         Mockito.when(categoryRepo.save(category)).thenReturn(category);
 
@@ -111,6 +111,32 @@ public class CategoryTest {
 
         Assertions.assertThat(cat).isNotNull();
         Assertions.assertThat(cat.getName()).isEqualTo("Computer");
+
+        Mockito.verify(categoryRepo, times(1)).save(category);
+
+    }
+
+    @Test
+    void testSaveCategoryFail() {
+        Category category = new Category(UUID_ID, "Computer");
+
+        Mockito.when(categoryRepo.save(category)).thenReturn(null);
+
+        var cat = categoryService.save(category);
+
+        Assertions.assertThat(cat).isNull();
+
+        Mockito.verify(categoryRepo, times(1)).save(category);
+
+    }
+
+    @Test
+    void testSaveCategoryError() {
+        Category category = new Category(UUID_ID, "Computer");
+
+        categoryService.save(category);
+
+        Assertions.assertThatException();
 
         Mockito.verify(categoryRepo, times(1)).save(category);
 

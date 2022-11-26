@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,46 +24,67 @@ public class Journal {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 255, nullable = false)
     private String name;
 
+    @Column(length = 12, nullable = false, unique = true)
     private String issn;
 
+    @Column(length = 12, nullable = false, unique = true)
     private String e_issn;
 
+    @Column(length = 12, nullable = false, unique = true)
     private String abbreviation;
 
+    @Column(length = 255, nullable = false)
     private String thumnail;
 
+    @Column(length = 1000, nullable = false)
     private String description;
 
+    @Column(length = 255, nullable = false, unique = true)
     private String journal_site;
 
+    @Column(length = 100, nullable = false)
     private String frequency;
 
+    @Column(length = 100, nullable = false)
     private String country;
 
+    @Column(length = 255, nullable = false)
     private String aim_scope_site;
 
+    @Column(length = 255, nullable = false)
     private String introduction_author_site;
 
+    @Column(length = 100, nullable = false)
     private String host_platform;
 
+    @Column(nullable = false)
     private Integer issue_per_year;
 
-    private String primary_languange;
+    @Column(length = 3, nullable = false)
+    private String primary_languange = "en";
 
+    @Column(length = 255, nullable = true)
     private String editor_site;
 
+    @Column(length = 48, nullable = false)
     private String full_text_format;
 
+    @Column(nullable = false)
     private boolean article_doi;
 
+    @Column(length = 255, nullable = false)
     private String statement;
 
+    @Column(length = 255, nullable = false)
     private String license;
 
+    @Column(nullable = true)
     private Double apc_fee;
 
+    @Column(length = 255, nullable = false)
     private String review_police;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -79,11 +101,12 @@ public class Journal {
     public Journal() {
     }
 
-    public Journal(String name, String issn, String e_issn, String abbreviation, String thumnail,
+    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumnail,
             String description, String journal_site, String frequency, String country, String aim_scope_site,
             String introduction_author_site, String host_platform, Integer issue_per_year, String primary_languange,
             String editor_site, String full_text_format, boolean article_doi, String statement, String license,
             Double apc_fee, String review_police, Date updated_at, Date created_at, Set<Category> category) {
+        this.id = id;
         this.name = name;
         this.issn = issn;
         this.e_issn = e_issn;

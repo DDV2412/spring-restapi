@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,41 +30,60 @@ public class Article {
     @JoinColumn(name = "journal_id")
     private Journal journal;
 
+    @Column(nullable = true)
     private Integer ojs_id;
+
+    @Column(nullable = false, length = 100)
+    private String set_spec;
 
     @ManyToMany
     @JoinTable(name = "subject_article", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
     @JsonManagedReference
     private Set<Subject> subjects;
 
+    @Column(nullable = true, length = 255)
     private String figure;
 
+    @Column(length = 255, nullable = false)
     private String title;
 
+    @Column(length = 10, nullable = false)
     private String pages;
 
+    @Column(length = 150, nullable = false)
     private String publisher;
 
+    @Column(nullable = false)
     private Year publish_year;
 
+    @Column(nullable = false)
     private Date publish_date;
 
+    @Column(length = 12, nullable = false)
     private String issn;
 
+    @Column(length = 255, nullable = false)
     private String source_type;
 
-    private String languange_publication;
+    @Column(length = 3, nullable = false)
+    private String languange_publication = "en";
 
+    @Column(length = 255, nullable = false, unique = true)
     private String doi;
 
+    @Column(nullable = false)
     private Integer volume;
 
+    @Column(nullable = false)
     private Integer issue;
 
+    @Column(length = 255, nullable = true)
     private String copyright;
 
+    @Column(length = 500, nullable = false)
     private String abstract_text;
 
+    @Column(length = 10000, nullable = true)
     private String full_text;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -75,12 +95,14 @@ public class Article {
     public Article() {
     }
 
-    public Article(Journal journal, Integer ojs_id, Set<Subject> subjects, String figure, String title,
-            String pages, String publisher, Year publish_year, Date publish_date, String issn, String source_type,
-            String languange_publication, String doi, Integer volume, Integer issue, String copyright,
-            String abstract_text, String full_text, Date updated_at, Date created_at) {
+    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, Set<Subject> subjects, String figure,
+            String title, String pages, String publisher, Year publish_year, Date publish_date, String issn,
+            String source_type, String languange_publication, String doi, Integer volume, Integer issue,
+            String copyright, String abstract_text, String full_text, Date updated_at, Date created_at) {
+        this.id = id;
         this.journal = journal;
         this.ojs_id = ojs_id;
+        this.set_spec = set_spec;
         this.subjects = subjects;
         this.figure = figure;
         this.title = title;
@@ -123,6 +145,14 @@ public class Article {
 
     public void setOjs_id(Integer ojs_id) {
         this.ojs_id = ojs_id;
+    }
+
+    public String getSet_spec() {
+        return set_spec;
+    }
+
+    public void setSet_spec(String set_spec) {
+        this.set_spec = set_spec;
     }
 
     public Set<Subject> getSubjects() {

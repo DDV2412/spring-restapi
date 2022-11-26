@@ -3,6 +3,7 @@ package com.ipmugo.library.data;
 import java.util.Date;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,18 +18,25 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 255, nullable = false)
     private String first_name;
 
+    @Column(length = 255, nullable = false)
     private String last_name;
 
+    @Column(length = 255, nullable = false)
     private String company_name;
 
+    @Column(length = 255, nullable = false)
     private String email;
 
+    @Column(length = 255, nullable = false)
     private Integer phone_number;
 
+    @Column(length = 255, nullable = false)
     private String country;
 
+    @Column(length = 1000, nullable = false)
     private String message;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -40,8 +48,9 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String first_name, String last_name, String company_name, String email,
+    public Customer(UUID id, String first_name, String last_name, String company_name, String email,
             Integer phone_number, String country, String message, Date updated_at, Date created_at) {
+        this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
         this.company_name = company_name;

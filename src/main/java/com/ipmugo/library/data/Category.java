@@ -3,6 +3,7 @@ package com.ipmugo.library.data;
 import java.util.Set;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +17,7 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 100, nullable = false, unique = true)
     private String name;
 
     @ManyToMany(mappedBy = "category")
@@ -24,7 +26,8 @@ public class Category {
     public Category() {
     }
 
-    public Category(String name) {
+    public Category(UUID id, String name) {
+        this.id = id;
         this.name = name;
     }
 

@@ -3,6 +3,7 @@ package com.ipmugo.library.data;
 import java.util.Date;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,6 +18,7 @@ public class LogSearch {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 255, nullable = false)
     private String search;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -28,7 +30,8 @@ public class LogSearch {
     public LogSearch() {
     }
 
-    public LogSearch(String search, Date updated_at, Date created_at) {
+    public LogSearch(UUID id, String search, Date updated_at, Date created_at) {
+        this.id = id;
         this.search = search;
         this.updated_at = updated_at;
         this.created_at = created_at;

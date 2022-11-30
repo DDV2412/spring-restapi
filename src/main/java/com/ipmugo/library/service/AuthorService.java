@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.Author;
 import com.ipmugo.library.repository.AuthorRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class AuthorService {
 
     @Autowired

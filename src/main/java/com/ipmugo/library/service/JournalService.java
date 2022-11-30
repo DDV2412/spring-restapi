@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.repository.JournalRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class JournalService {
 
     @Autowired

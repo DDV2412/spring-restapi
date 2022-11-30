@@ -3,6 +3,8 @@ package com.ipmugo.library.data;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,10 +19,11 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(length = 100, nullable = false, unique = true)
+    @Column(unique = true, length = 100, nullable = false)
     private String name;
 
     @ManyToMany(mappedBy = "category")
+    @JsonBackReference
     private Set<Journal> journals;
 
     public Category() {

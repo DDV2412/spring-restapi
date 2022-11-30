@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.Customer;
 import com.ipmugo.library.repository.CustomerRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class CustomerService {
 
     @Autowired

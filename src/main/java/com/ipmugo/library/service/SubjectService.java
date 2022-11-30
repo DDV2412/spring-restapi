@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.Subject;
 import com.ipmugo.library.repository.SubjectRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class SubjectService {
 
     @Autowired

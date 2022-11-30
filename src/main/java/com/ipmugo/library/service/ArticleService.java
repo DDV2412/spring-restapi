@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.Article;
 import com.ipmugo.library.repository.ArticleRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class ArticleService {
     @Autowired
     private ArticleRepo articleRepo;

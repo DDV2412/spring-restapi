@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.data.LogSearch;
 import com.ipmugo.library.repository.LogSearchRepo;
 
+import jakarta.transaction.TransactionScoped;
+
 @Service
+@TransactionScoped
 public class LogSearchService {
 
     @Autowired

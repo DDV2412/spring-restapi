@@ -1,5 +1,6 @@
 package com.ipmugo.library.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.repository.JournalRepo;
 
@@ -60,4 +62,23 @@ public class JournalService {
     public void deleteById(UUID id) {
         journalRepo.deleteById(id);
     }
+
+    public Journal setCategory(UUID id, Category category) {
+        Journal journal = findOne(id);
+
+        journal.getCategories().add(category);
+        save(journal);
+
+        return journal;
+    }
+
+    public Journal setCategories(UUID id, Collection<Category> categories) {
+        Journal journal = findOne(id);
+
+        journal.getCategories().addAll(categories);
+        save(journal);
+
+        return journal;
+    }
+
 }

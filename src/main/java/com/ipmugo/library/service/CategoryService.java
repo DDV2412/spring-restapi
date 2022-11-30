@@ -50,4 +50,8 @@ public class CategoryService {
 
         return category.get();
     }
+
+    public List<Category> findList(List<UUID> list) {
+        return categoryRepo.findAllById(list);
+    }
 }

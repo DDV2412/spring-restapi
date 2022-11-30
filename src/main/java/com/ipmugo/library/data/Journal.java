@@ -5,9 +5,11 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ipmugo.library.utils.Frequency;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,16 +39,20 @@ public class Journal {
     private String abbreviation;
 
     @Column(length = 255, nullable = false)
-    private String thumnail;
+    private String thumbnail;
 
     @Column(length = 1000, nullable = false)
     private String description;
+
+    @Column(length = 255, nullable = false)
+    private String publisher;
 
     @Column(length = 255, nullable = false, unique = true)
     private String journal_site;
 
     @Column(length = 100, nullable = false)
-    private String frequency;
+    @Enumerated
+    private Frequency frequency;
 
     @Column(length = 100, nullable = false)
     private String country;
@@ -58,7 +64,7 @@ public class Journal {
     private String introduction_author_site;
 
     @Column(length = 100, nullable = false)
-    private String host_platform;
+    private String host_platform = "ojs";
 
     @Column(nullable = false)
     private Integer issue_per_year;
@@ -70,21 +76,21 @@ public class Journal {
     private String editor_site;
 
     @Column(length = 48, nullable = false)
-    private String full_text_format;
+    private String full_text_format = "application/pdf";
 
     @Column(nullable = false)
-    private boolean article_doi;
+    private boolean article_doi = true;
 
     @Column(length = 255, nullable = false)
     private String statement;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = true)
     private String license;
 
     @Column(nullable = true)
     private Double apc_fee;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = true)
     private String review_police;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -96,23 +102,25 @@ public class Journal {
     @ManyToMany
     @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "journal_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonManagedReference
-    private Set<Category> category;
+    private Set<Category> categories;
 
     public Journal() {
     }
 
-    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumnail,
-            String description, String journal_site, String frequency, String country, String aim_scope_site,
-            String introduction_author_site, String host_platform, Integer issue_per_year, String primary_languange,
-            String editor_site, String full_text_format, boolean article_doi, String statement, String license,
-            Double apc_fee, String review_police, Date updated_at, Date created_at, Set<Category> category) {
+    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumbnail,
+            String description, String publisher, String journal_site, Frequency frequency, String country,
+            String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
+            String primary_languange, String editor_site, String full_text_format, boolean article_doi,
+            String statement, String license, Double apc_fee, String review_police, Date updated_at, Date created_at,
+            Set<Category> categories) {
         this.id = id;
         this.name = name;
         this.issn = issn;
         this.e_issn = e_issn;
         this.abbreviation = abbreviation;
-        this.thumnail = thumnail;
+        this.thumbnail = thumbnail;
         this.description = description;
+        this.publisher = publisher;
         this.journal_site = journal_site;
         this.frequency = frequency;
         this.country = country;
@@ -130,7 +138,7 @@ public class Journal {
         this.review_police = review_police;
         this.updated_at = updated_at;
         this.created_at = created_at;
-        this.category = category;
+        this.categories = categories;
     }
 
     public UUID getId() {
@@ -173,12 +181,12 @@ public class Journal {
         this.abbreviation = abbreviation;
     }
 
-    public String getThumnail() {
-        return thumnail;
+    public String getThumbnail() {
+        return thumbnail;
     }
 
-    public void setThumnail(String thumnail) {
-        this.thumnail = thumnail;
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public String getDescription() {
@@ -189,6 +197,14 @@ public class Journal {
         this.description = description;
     }
 
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
     public String getJournal_site() {
         return journal_site;
     }
@@ -197,11 +213,11 @@ public class Journal {
         this.journal_site = journal_site;
     }
 
-    public String getFrequency() {
+    public Frequency getFrequency() {
         return frequency;
     }
 
-    public void setFrequency(String frequency) {
+    public void setFrequency(Frequency frequency) {
         this.frequency = frequency;
     }
 
@@ -325,12 +341,12 @@ public class Journal {
         this.created_at = created_at;
     }
 
-    public Set<Category> getCategory() {
-        return category;
+    public Set<Category> getCategories() {
+        return categories;
     }
 
-    public void setCategory(Set<Category> category) {
-        this.category = category;
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
     }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,7 +86,37 @@ public class CategoryController {
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
-            responseData.getMessages().add(e.getMessage());
+            responseData.getMessages().add("Categoty name " + categoryData.getName() + " not available");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseData<Category>> update(@PathVariable("id") UUID id,
+            @Valid @RequestBody CategoryData categoryData, Errors errors) {
+        ResponseData<Category> responseData = new ResponseData<>();
+
+        if (errors.hasErrors()) {
+            for (ObjectError error : errors.getAllErrors()) {
+                responseData.getMessages().add(error.getDefaultMessage());
+            }
+            responseData.setStatus(false);
+            responseData.setPayload(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+        }
+        try {
+            Category category = categoryService.findOne(id);
+
+            if (category != null) {
+                category.setName(categoryData.getName());
+            }
+
+            responseData.setStatus(true);
+            responseData.setPayload(categoryService.save(category));
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Categoty name " + categoryData.getName() + " not available");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
     }
@@ -103,7 +134,7 @@ public class CategoryController {
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
-            responseData.getMessages().add(e.getMessage());
+            responseData.getMessages().add("Category by ID " + id + " not exist");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
 

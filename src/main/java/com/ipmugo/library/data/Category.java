@@ -19,7 +19,7 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, length = 100, nullable = false)
+    @Column(unique = true, length = 100, nullable = false, name = "name")
     private String name;
 
     @ManyToMany(mappedBy = "category")

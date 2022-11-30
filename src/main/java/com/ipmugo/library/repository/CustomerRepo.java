@@ -9,7 +9,5 @@ import com.ipmugo.library.data.Customer;
 
 public interface CustomerRepo extends JpaRepository<Customer, UUID> {
 
-    Optional<Customer> findByFirstName(String firstName);
-
     Optional<Customer> findByEmail(String email);
 }

@@ -1,4 +1,4 @@
-package com.ipmugo.library.controller;
+package com.ipmugo.library.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

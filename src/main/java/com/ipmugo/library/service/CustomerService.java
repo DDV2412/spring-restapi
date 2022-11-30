@@ -30,16 +30,6 @@ public class CustomerService {
         return customer.get();
     }
 
-    public Customer findByFirstName(String firstName) {
-        Optional<Customer> customer = customerRepo.findByFirstName(firstName);
-
-        if (!customer.isPresent()) {
-            return null;
-        }
-
-        return customer.get();
-    }
-
     public Customer findByEmail(String email) {
         Optional<Customer> customer = customerRepo.findByEmail(email);
 

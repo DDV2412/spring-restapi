@@ -1,4 +1,4 @@
-package com.ipmugo.library.controller;
+package com.ipmugo.library.controllers;
 
 import java.util.UUID;
 
@@ -21,8 +21,15 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public Iterable<Category> findAll() {
-        return categoryService.findAll();
+    public ResponseEntity<ResponseData<Iterable<Category>>> findAll() {
+        ResponseData<Iterable<Category>> responseData = new ResponseData<>();
+
+        Iterable<Category> category = categoryService.findAll();
+
+        responseData.setStatus(true);
+        responseData.setPayload(category);
+        return ResponseEntity.ok(responseData);
+
     }
 
     @GetMapping("/{id}")

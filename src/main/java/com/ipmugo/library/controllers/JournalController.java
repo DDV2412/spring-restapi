@@ -1,5 +1,7 @@
 package com.ipmugo.library.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -143,4 +145,30 @@ public class JournalController {
         }
     }
 
+    @PostMapping("/collections/{id}")
+    public ResponseEntity<ResponseData<Journal>> setCategories(@Valid @RequestBody ArrayList<UUID> categoryData,
+            @PathVariable("id") UUID id) {
+        ResponseData<Journal> responseData = new ResponseData<>();
+
+        try {
+            List<Category> category = categoryService.findList(categoryData);
+
+            if (category.size() == 0) {
+                responseData.setStatus(false);
+                responseData.getMessages().add("Category not found");
+
+                return ResponseEntity.badRequest().body(responseData);
+            }
+
+            responseData.setPayload(journalService.setCategories(id, category));
+            responseData.setStatus(true);
+            responseData.getMessages().add("Successfully set journal category by ID " + id);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
+    }
 }

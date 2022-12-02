@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.annotation.processing.Generated;
 
+import org.aspectj.bridge.Message;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,24 +16,38 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "serial-metadata-response"
+        "status",
+        "message"
 })
 @Generated("jsonschema2pojo")
-public class Example {
+public class ExampleCitationCrossRef {
 
-    @JsonProperty("serial-metadata-response")
-    private SerialMetadataResponse serialMetadataResponse;
+    @JsonProperty("status")
+    private String status;
+
+    @JsonProperty("message")
+    private Message message;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("serial-metadata-response")
-    public SerialMetadataResponse getSerialMetadataResponse() {
-        return serialMetadataResponse;
+    @JsonProperty("status")
+    public String getStatus() {
+        return status;
     }
 
-    @JsonProperty("serial-metadata-response")
-    public void setSerialMetadataResponse(SerialMetadataResponse serialMetadataResponse) {
-        this.serialMetadataResponse = serialMetadataResponse;
+    @JsonProperty("status")
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @JsonProperty("message")
+    public Message getMessage() {
+        return message;
+    }
+
+    @JsonProperty("message")
+    public void setMessage(Message message) {
+        this.message = message;
     }
 
     @JsonAnyGetter

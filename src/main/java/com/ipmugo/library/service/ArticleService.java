@@ -5,7 +5,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.ipmugo.library.data.Article;
 import com.ipmugo.library.repository.ArticleRepo;
@@ -15,8 +20,11 @@ import jakarta.transaction.TransactionScoped;
 @Service
 @TransactionScoped
 public class ArticleService {
+
     @Autowired
     private ArticleRepo articleRepo;
+
+    private RestTemplate restTemplate = new RestTemplate();
 
     public List<Article> findAll() {
         return articleRepo.findAll();
@@ -60,4 +68,36 @@ public class ArticleService {
         return article.get();
     }
 
+    public <T> Object citationScopus(UUID id) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+
+            HttpEntity<T> request = new HttpEntity<>(headers);
+
+            ResponseEntity<Object> result = restTemplate.exchange(
+                    "https://api.elsevier.com/content/search/scopus?query=DOI(10.11591/ijece.v12i1.pp1-11)",
+                    HttpMethod.GET,
+                    request,
+                    Object.class);
+
+            return result;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public <T> Object citationCrossReff(UUID id) {
+        try {
+            Object result = restTemplate.getForObject(
+                    "https://api.crossref.org/works/10.11591/ijece.v12i1.pp1-11",
+                    Object.class);
+
+            return result;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

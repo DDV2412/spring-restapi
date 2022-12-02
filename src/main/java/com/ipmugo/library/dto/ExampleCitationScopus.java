@@ -14,50 +14,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "@_fa",
-        "@ref",
-        "@href"
+        "search-results"
 })
 @Generated("jsonschema2pojo")
-public class Link__1 {
+public class ExampleCitationScopus {
 
-    @JsonProperty("@_fa")
-    private String fa;
-    @JsonProperty("@ref")
-    private String ref;
-    @JsonProperty("@href")
-    private String href;
+    @JsonProperty("search-results")
+    private SearchResults searchResults;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("@_fa")
-    public String getFa() {
-        return fa;
+    @JsonProperty("search-results")
+    public SearchResults getSearchResults() {
+        return searchResults;
     }
 
-    @JsonProperty("@_fa")
-    public void setFa(String fa) {
-        this.fa = fa;
-    }
-
-    @JsonProperty("@ref")
-    public String getRef() {
-        return ref;
-    }
-
-    @JsonProperty("@ref")
-    public void setRef(String ref) {
-        this.ref = ref;
-    }
-
-    @JsonProperty("@href")
-    public String getHref() {
-        return href;
-    }
-
-    @JsonProperty("@href")
-    public void setHref(String href) {
-        this.href = href;
+    @JsonProperty("search-results")
+    public void setSearchResults(SearchResults searchResults) {
+        this.searchResults = searchResults;
     }
 
     @JsonAnyGetter

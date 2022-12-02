@@ -24,7 +24,6 @@ import com.ipmugo.library.dto.CategoryData;
 import com.ipmugo.library.dto.JournalData;
 import com.ipmugo.library.dto.ResponseData;
 import com.ipmugo.library.service.CategoryService;
-import com.ipmugo.library.service.JournalCitationService;
 import com.ipmugo.library.service.JournalService;
 
 import jakarta.validation.Valid;
@@ -35,9 +34,6 @@ public class JournalController {
 
     @Autowired
     private JournalService journalService;
-
-    @Autowired
-    private JournalCitationService journalCitationService;
 
     @Autowired
     private CategoryService categoryService;
@@ -172,7 +168,7 @@ public class JournalController {
         ResponseData<JournalCitation> responseData = new ResponseData<>();
 
         try {
-            JournalCitation journalCitation = journalCitationService.citation(id);
+            JournalCitation journalCitation = journalService.citation(id);
             responseData.setPayload(journalCitation);
             responseData.setStatus(true);
             responseData.getMessages().add("Successfully set journal citation by ID " + id);

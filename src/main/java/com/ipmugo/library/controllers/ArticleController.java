@@ -109,4 +109,14 @@ public class ArticleController {
         }
 
     }
+
+    @GetMapping("/citation-scopus/{id}")
+    public Object setCitationScopus(@PathVariable("id") UUID id) {
+        return articleService.citationScopus(id);
+    }
+
+    @GetMapping("/citation-crossref/{id}")
+    public Object setCitationCrossRef(@PathVariable("id") UUID id) {
+        return articleService.citationCrossReff(id);
+    }
 }

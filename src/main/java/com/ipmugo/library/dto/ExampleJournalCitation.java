@@ -1,7 +1,6 @@
 package com.ipmugo.library.dto;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.processing.Generated;
@@ -15,24 +14,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "entry"
+        "serial-metadata-response"
 })
 @Generated("jsonschema2pojo")
-public class SerialMetadataResponse {
+public class ExampleJournalCitation {
 
-    @JsonProperty("entry")
-    private List<EntryJournalCitation> entry = null;
+    @JsonProperty("serial-metadata-response")
+    private SerialMetadataResponse serialMetadataResponse;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("entry")
-    public List<EntryJournalCitation> getEntry() {
-        return entry;
+    @JsonProperty("serial-metadata-response")
+    public SerialMetadataResponse getSerialMetadataResponse() {
+        return serialMetadataResponse;
     }
 
-    @JsonProperty("entry")
-    public void setEntry(List<EntryJournalCitation> entry) {
-        this.entry = entry;
+    @JsonProperty("serial-metadata-response")
+    public void setSerialMetadataResponse(SerialMetadataResponse serialMetadataResponse) {
+        this.serialMetadataResponse = serialMetadataResponse;
     }
 
     @JsonAnyGetter
@@ -44,4 +43,5 @@ public class SerialMetadataResponse {
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
+
 }

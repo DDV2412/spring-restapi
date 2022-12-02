@@ -1,7 +1,6 @@
 package com.ipmugo.library.controllers;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -20,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.Journal;
+import com.ipmugo.library.data.JournalCitation;
 import com.ipmugo.library.dto.CategoryData;
 import com.ipmugo.library.dto.JournalData;
 import com.ipmugo.library.dto.ResponseData;
 import com.ipmugo.library.service.CategoryService;
+import com.ipmugo.library.service.JournalCitationService;
 import com.ipmugo.library.service.JournalService;
 
 import jakarta.validation.Valid;
@@ -34,6 +35,9 @@ public class JournalController {
 
     @Autowired
     private JournalService journalService;
+
+    @Autowired
+    private JournalCitationService journalCitationService;
 
     @Autowired
     private CategoryService categoryService;
@@ -146,23 +150,32 @@ public class JournalController {
     }
 
     @PostMapping("/collections/{id}")
-    public ResponseEntity<ResponseData<Journal>> setCategories(@Valid @RequestBody ArrayList<UUID> categoryData,
+    public ResponseEntity<ResponseData<Journal>> setCategories(@Valid @RequestBody ArrayList<Category> categoryData,
             @PathVariable("id") UUID id) {
         ResponseData<Journal> responseData = new ResponseData<>();
 
         try {
-            List<Category> category = categoryService.findList(categoryData);
-
-            if (category.size() == 0) {
-                responseData.setStatus(false);
-                responseData.getMessages().add("Category not found");
-
-                return ResponseEntity.badRequest().body(responseData);
-            }
-
-            responseData.setPayload(journalService.setCategories(id, category));
+            responseData.setPayload(journalService.setCategories(id, categoryData));
             responseData.setStatus(true);
             responseData.getMessages().add("Successfully set journal category by ID " + id);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
+    }
+
+    @GetMapping("/citation/{id}")
+    public ResponseEntity<ResponseData<JournalCitation>> setCitation(@PathVariable("id") UUID id) {
+        ResponseData<JournalCitation> responseData = new ResponseData<>();
+
+        try {
+            JournalCitation journalCitation = journalCitationService.citation(id);
+            responseData.setPayload(journalCitation);
+            responseData.setStatus(true);
+            responseData.getMessages().add("Successfully set journal citation by ID " + id);
 
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {

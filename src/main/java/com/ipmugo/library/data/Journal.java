@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ipmugo.library.utils.Frequency;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -16,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -104,6 +106,10 @@ public class Journal {
     @JsonManagedReference
     private Set<Category> categories;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "journal_citation_id")
+    private JournalCitation journalCitation;
+
     public Journal() {
     }
 
@@ -112,7 +118,7 @@ public class Journal {
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,
             String statement, String license, Double apc_fee, String review_police, Date updated_at, Date created_at,
-            Set<Category> categories) {
+            Set<Category> categories, JournalCitation journalCitation) {
         this.id = id;
         this.name = name;
         this.issn = issn;
@@ -139,6 +145,7 @@ public class Journal {
         this.updated_at = updated_at;
         this.created_at = created_at;
         this.categories = categories;
+        this.journalCitation = journalCitation;
     }
 
     public UUID getId() {
@@ -347,6 +354,14 @@ public class Journal {
 
     public void setCategories(Set<Category> categories) {
         this.categories = categories;
+    }
+
+    public JournalCitation getJournalCitation() {
+        return journalCitation;
+    }
+
+    public void setJournalCitation(JournalCitation journalCitation) {
+        this.journalCitation = journalCitation;
     }
 
 }

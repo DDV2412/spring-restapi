@@ -16,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Temporal;
@@ -40,7 +41,8 @@ public class Journal {
     @Column(length = 12, nullable = false, unique = true)
     private String abbreviation;
 
-    @Column(length = 255, nullable = false)
+    @Lob
+    @Column(length = 1000, nullable = false)
     private String thumbnail;
 
     @Column(length = 1000, nullable = false)
@@ -113,7 +115,8 @@ public class Journal {
     public Journal() {
     }
 
-    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumbnail,
+    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation,
+            String thumbnail,
             String description, String publisher, String journal_site, Frequency frequency, String country,
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,

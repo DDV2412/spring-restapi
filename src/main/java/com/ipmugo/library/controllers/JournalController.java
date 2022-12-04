@@ -169,6 +169,13 @@ public class JournalController {
 
         try {
             JournalCitation journalCitation = journalService.citation(id);
+
+            if (journalCitation == null) {
+                responseData.setStatus(false);
+                responseData.getMessages().add("Journal not found");
+
+                return ResponseEntity.badRequest().body(responseData);
+            }
             responseData.setPayload(journalCitation);
             responseData.setStatus(true);
             responseData.getMessages().add("Successfully set journal citation by ID " + id);

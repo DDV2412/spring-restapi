@@ -1,6 +1,5 @@
 package com.ipmugo.library.data;
 
-import java.time.Year;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
@@ -54,10 +53,13 @@ public class Article {
     private String publisher;
 
     @Column(nullable = false)
-    private Year publish_year;
+    private String publish_year;
 
     @Column(nullable = false)
-    private Date publish_date;
+    private String last_modifier;
+
+    @Column(nullable = false)
+    private String publish_date;
 
     @Column(length = 12, nullable = false)
     private String issn;
@@ -72,10 +74,10 @@ public class Article {
     private String doi;
 
     @Column(nullable = false)
-    private Integer volume;
+    private String volume;
 
     @Column(nullable = false)
-    private Integer issue;
+    private String issue;
 
     @Column(length = 255, nullable = true)
     private String copyright;
@@ -85,6 +87,12 @@ public class Article {
 
     @Column(length = 10000, nullable = true)
     private String full_text;
+
+    @Column(length = 255, nullable = true)
+    private String article_pdf;
+
+    @Column(length = 255, nullable = true)
+    private String keyword;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updated_at;
@@ -96,9 +104,11 @@ public class Article {
     }
 
     public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, Set<Subject> subjects, String figure,
-            String title, String pages, String publisher, Year publish_year, Date publish_date, String issn,
-            String source_type, String languange_publication, String doi, Integer volume, Integer issue,
-            String copyright, String abstract_text, String full_text, Date updated_at, Date created_at) {
+            String title, String pages, String publisher, String publish_year, String last_modifier,
+            String publish_date, String issn, String source_type, String languange_publication, String doi,
+            String volume,
+            String issue, String copyright, String abstract_text, String full_text, String article_pdf,
+            String keyword, Date updated_at, Date created_at) {
         this.id = id;
         this.journal = journal;
         this.ojs_id = ojs_id;
@@ -109,6 +119,7 @@ public class Article {
         this.pages = pages;
         this.publisher = publisher;
         this.publish_year = publish_year;
+        this.last_modifier = last_modifier;
         this.publish_date = publish_date;
         this.issn = issn;
         this.source_type = source_type;
@@ -119,6 +130,8 @@ public class Article {
         this.copyright = copyright;
         this.abstract_text = abstract_text;
         this.full_text = full_text;
+        this.article_pdf = article_pdf;
+        this.keyword = keyword;
         this.updated_at = updated_at;
         this.created_at = created_at;
     }
@@ -195,19 +208,27 @@ public class Article {
         this.publisher = publisher;
     }
 
-    public Year getPublish_year() {
+    public String getPublish_year() {
         return publish_year;
     }
 
-    public void setPublish_year(Year publish_year) {
+    public void setPublish_year(String publish_year) {
         this.publish_year = publish_year;
     }
 
-    public Date getPublish_date() {
+    public String getLast_modifier() {
+        return last_modifier;
+    }
+
+    public void setLast_modifier(String last_modifier) {
+        this.last_modifier = last_modifier;
+    }
+
+    public String getPublish_date() {
         return publish_date;
     }
 
-    public void setPublish_date(Date publish_date) {
+    public void setPublish_date(String publish_date) {
         this.publish_date = publish_date;
     }
 
@@ -243,19 +264,19 @@ public class Article {
         this.doi = doi;
     }
 
-    public Integer getVolume() {
+    public String getVolume() {
         return volume;
     }
 
-    public void setVolume(Integer volume) {
+    public void setVolume(String volume) {
         this.volume = volume;
     }
 
-    public Integer getIssue() {
+    public String getIssue() {
         return issue;
     }
 
-    public void setIssue(Integer issue) {
+    public void setIssue(String issue) {
         this.issue = issue;
     }
 
@@ -281,6 +302,22 @@ public class Article {
 
     public void setFull_text(String full_text) {
         this.full_text = full_text;
+    }
+
+    public String getArticle_pdf() {
+        return article_pdf;
+    }
+
+    public void setArticle_pdf(String article_pdf) {
+        this.article_pdf = article_pdf;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
     }
 
     public Date getUpdated_at() {

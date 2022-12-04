@@ -1,8 +1,5 @@
 package com.ipmugo.library.dto;
 
-import java.time.Year;
-import java.util.Date;
-
 public class ArticleData {
 
     private Integer ojs_id;
@@ -17,9 +14,11 @@ public class ArticleData {
 
     private String publisher;
 
-    private Year publish_year;
+    private String publish_year;
 
-    private Date publish_date;
+    private String last_modifier;
+
+    private String publish_date;
 
     private String issn;
 
@@ -29,9 +28,9 @@ public class ArticleData {
 
     private String doi;
 
-    private Integer volume;
+    private String volume;
 
-    private Integer issue;
+    private String issue;
 
     private String copyright;
 
@@ -87,19 +86,27 @@ public class ArticleData {
         this.publisher = publisher;
     }
 
-    public Year getPublish_year() {
+    public String getPublish_year() {
         return publish_year;
     }
 
-    public void setPublish_year(Year publish_year) {
+    public void setPublish_year(String publish_year) {
         this.publish_year = publish_year;
     }
 
-    public Date getPublish_date() {
+    public String getLast_modifier() {
+        return last_modifier;
+    }
+
+    public void setLast_modifier(String last_modifier) {
+        this.last_modifier = last_modifier;
+    }
+
+    public String getPublish_date() {
         return publish_date;
     }
 
-    public void setPublish_date(Date publish_date) {
+    public void setPublish_date(String publish_date) {
         this.publish_date = publish_date;
     }
 
@@ -135,19 +142,19 @@ public class ArticleData {
         this.doi = doi;
     }
 
-    public Integer getVolume() {
+    public String getVolume() {
         return volume;
     }
 
-    public void setVolume(Integer volume) {
+    public void setVolume(String volume) {
         this.volume = volume;
     }
 
-    public Integer getIssue() {
+    public String getIssue() {
         return issue;
     }
 
-    public void setIssue(Integer issue) {
+    public void setIssue(String issue) {
         this.issue = issue;
     }
 

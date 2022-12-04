@@ -70,13 +70,18 @@ public class ArticleService {
 
     public <T> Object citationScopus(UUID id) {
         try {
+            Article article = findOne(id);
+
+            if (article == null) {
+                return null;
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
 
             HttpEntity<T> request = new HttpEntity<>(headers);
 
             ResponseEntity<Object> result = restTemplate.exchange(
-                    "https://api.elsevier.com/content/search/scopus?query=DOI(10.11591/ijece.v12i1.pp1-11)",
+                    "https://api.elsevier.com/content/search/scopus?query=DOI(" + article.getDoi() + ")",
                     HttpMethod.GET,
                     request,
                     Object.class);
@@ -90,8 +95,13 @@ public class ArticleService {
 
     public <T> Object citationCrossReff(UUID id) {
         try {
+            Article article = findOne(id);
+
+            if (article == null) {
+                return null;
+            }
             Object result = restTemplate.getForObject(
-                    "https://api.crossref.org/works/10.11591/ijece.v12i1.pp1-11",
+                    "https://api.crossref.org/works/" + article.getDoi(),
                     Object.class);
 
             return result;
@@ -100,4 +110,5 @@ public class ArticleService {
             return null;
         }
     }
+
 }

@@ -29,8 +29,8 @@ public class UploadFileController {
 
     @PostMapping("/image")
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ResponseData<File>> uploadImage(@RequestParam("image") MultipartFile file) {
-        ResponseData<File> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<String>> uploadImage(@RequestParam("image") MultipartFile file) {
+        ResponseData<String> responseData = new ResponseData<>();
         try {
             File fileUpload = new File();
 
@@ -44,16 +44,20 @@ public class UploadFileController {
             byte[] checkFile = fileService.findFileName(file.getOriginalFilename());
 
             if (checkFile == null) {
+                fileService.save(fileUpload);
+
                 responseData.setStatus(true);
-                responseData.setPayload(fileService.save(fileUpload));
+                responseData.setPayload(uriComponents.getPath());
                 responseData.getMessages().add("Successfully uploaded filename " + file.getOriginalFilename());
+
+                return ResponseEntity.ok(responseData);
             }
 
             responseData.setStatus(false);
             responseData.setPayload(null);
             responseData.getMessages().add("Uploaded file with " + file.getOriginalFilename() + "is ready");
 
-            return ResponseEntity.ok(responseData);
+            return ResponseEntity.badRequest().body(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
             responseData.getMessages().add(e.getMessage());
@@ -77,8 +81,8 @@ public class UploadFileController {
 
     @PostMapping("/document")
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ResponseData<File>> uploadDoc(@RequestParam("document") MultipartFile file) {
-        ResponseData<File> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<String>> uploadDoc(@RequestParam("document") MultipartFile file) {
+        ResponseData<String> responseData = new ResponseData<>();
         try {
             File fileUpload = new File();
 
@@ -92,17 +96,19 @@ public class UploadFileController {
             byte[] checkFile = fileService.findFileName(file.getOriginalFilename());
 
             if (checkFile == null) {
+                fileService.save(fileUpload);
+
                 responseData.setStatus(true);
-                responseData.setPayload(fileService.save(fileUpload));
+                responseData.setPayload(uriComponents.getPath());
                 responseData.getMessages().add("Successfully uploaded filename " + file.getOriginalFilename());
+                return ResponseEntity.ok(responseData);
             }
 
             responseData.setStatus(false);
             responseData.setPayload(null);
             responseData.getMessages().add("Uploaded file with " + file.getOriginalFilename() + "is ready");
 
-            return ResponseEntity.ok(responseData);
-
+            return ResponseEntity.badRequest().body(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
             responseData.getMessages().add(e.getMessage());

@@ -111,12 +111,39 @@ public class ArticleController {
     }
 
     @GetMapping("/citation-scopus/{id}")
-    public Object setCitationScopus(@PathVariable("id") UUID id) {
-        return articleService.citationScopus(id);
+    public ResponseEntity<ResponseData<Object>> setCitationScopus(@PathVariable("id") UUID id) {
+        ResponseData<Object> responseData = new ResponseData<>();
+
+        try {
+            articleService.deleteById(id);
+
+            responseData.setStatus(true);
+            responseData.getMessages().add("Successfully set scopus citation by ID" + id);
+            responseData.setPayload(articleService.citationScopus(id));
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Article by ID " + id + " not exist");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
     }
 
     @GetMapping("/citation-crossref/{id}")
-    public Object setCitationCrossRef(@PathVariable("id") UUID id) {
-        return articleService.citationCrossReff(id);
+    public ResponseEntity<ResponseData<Object>> setCitationCrossRef(@PathVariable("id") UUID id) {
+        ResponseData<Object> responseData = new ResponseData<>();
+
+        try {
+            responseData.setStatus(true);
+            responseData.getMessages().add("Successfully set crossref citation by ID" + id);
+            responseData.setPayload(articleService.citationCrossReff(id));
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Article by ID " + id + " not exist");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
     }
+
 }

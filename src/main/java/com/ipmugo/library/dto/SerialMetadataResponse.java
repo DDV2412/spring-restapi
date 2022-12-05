@@ -22,6 +22,10 @@ public class SerialMetadataResponse {
 
     @JsonProperty("entry")
     private List<EntryJournalCitation> entry = null;
+
+    @JsonProperty("error")
+    private String error;
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -35,6 +39,16 @@ public class SerialMetadataResponse {
         this.entry = entry;
     }
 
+    @JsonProperty("error")
+    public String getError() {
+        return error;
+    }
+
+    @JsonProperty("error")
+    public void setError(String error) {
+        this.error = error;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -44,4 +58,5 @@ public class SerialMetadataResponse {
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
+
 }

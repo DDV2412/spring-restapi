@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.Journal;
-import com.ipmugo.library.data.JournalCitation;
+import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.dto.CategoryData;
 import com.ipmugo.library.dto.JournalData;
 import com.ipmugo.library.dto.ResponseData;
@@ -226,11 +226,20 @@ public class JournalController {
     }
 
     @GetMapping("/citation/{id}")
-    public ResponseEntity<ResponseData<JournalCitation>> setCitation(@PathVariable("id") UUID id) {
-        ResponseData<JournalCitation> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<Metric>> setCitation(@PathVariable("id") UUID id) {
+        ResponseData<Metric> responseData = new ResponseData<>();
 
         try {
-            JournalCitation journalCitation = journalService.citation(id);
+            Journal journal = journalService.findOne(id);
+
+            if (journal == null) {
+                responseData.setStatus(false);
+                responseData.getMessages().add("Journal not found");
+
+                return ResponseEntity.badRequest().body(responseData);
+            }
+
+            Metric journalCitation = journalService.citation(journal);
 
             if (journalCitation == null) {
                 responseData.setStatus(false);

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
         "serial-metadata-response"
 })
 @Generated("jsonschema2pojo")
-public class ExampleJournalCitation {
+public class ExampleJournalMetric {
 
     @JsonProperty("serial-metadata-response")
     private SerialMetadataResponse serialMetadataResponse;

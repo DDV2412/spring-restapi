@@ -1,5 +1,6 @@
 package com.ipmugo.library.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -16,16 +17,17 @@ import org.springframework.web.client.RestTemplate;
 
 import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.Journal;
-import com.ipmugo.library.data.JournalCitation;
+import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.dto.CiteScoreYearInfoList;
 import com.ipmugo.library.dto.EntryJournalCitation;
-import com.ipmugo.library.dto.ExampleJournalCitation;
+import com.ipmugo.library.dto.ExampleJournalMetric;
 import com.ipmugo.library.dto.SJRList;
 import com.ipmugo.library.dto.SNIPList;
 import com.ipmugo.library.dto.SerialMetadataResponse;
 import com.ipmugo.library.dto.Sjr;
 import com.ipmugo.library.dto.Snip;
-import com.ipmugo.library.repository.JournalCitationRepo;
+import com.ipmugo.library.dto.SubjectArea;
+import com.ipmugo.library.repository.CategoryRepo;
 import com.ipmugo.library.repository.JournalRepo;
 
 import jakarta.transaction.TransactionScoped;
@@ -38,7 +40,7 @@ public class JournalService {
     private JournalRepo journalRepo;
 
     @Autowired
-    private JournalCitationRepo journalCitationRepo;
+    private CategoryRepo categoryRepo;
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -102,37 +104,35 @@ public class JournalService {
         return journal;
     }
 
-    public <T> JournalCitation citation(UUID id) {
+    public <T> Metric citation(Journal journal) {
         try {
-            Journal journal = findOne(id);
-
-            if (journal == null) {
-                return null;
-            }
-
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
 
             HttpEntity<T> request = new HttpEntity<>(headers);
 
-            ResponseEntity<ExampleJournalCitation> result = restTemplate.exchange(
+            ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
                     "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
                     HttpMethod.GET,
                     request,
-                    new ParameterizedTypeReference<ExampleJournalCitation>() {
+                    new ParameterizedTypeReference<ExampleJournalMetric>() {
                     });
 
             if (result.getStatusCode().value() != 200) {
                 return null;
             }
 
-            ExampleJournalCitation data = result.getBody();
+            ExampleJournalMetric data = result.getBody();
 
             if (data == null) {
                 return null;
             }
 
             SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
+
+            if (metadataResponse.getError() != null) {
+                return null;
+            }
 
             List<EntryJournalCitation> entry = metadataResponse.getEntry();
             SJRList sjrList = entry.get(0).getSJRList();
@@ -141,6 +141,7 @@ public class JournalService {
 
             List<Sjr> sjr = sjrList.getSjr();
             List<Snip> snips = snipList.getSnip();
+            List<SubjectArea> subjectAreas = entry.get(0).getSubjectArea();
 
             Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
 
@@ -154,18 +155,40 @@ public class JournalService {
 
             String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
 
-            JournalCitation journalCitation = new JournalCitation();
+            List<Category> fixCategories = new ArrayList<>();
+
+            if (subjectAreas.size() > 0) {
+                for (int i = 0; i < subjectAreas.size(); i++) {
+                    Optional<Category> category = categoryRepo.findByName(subjectAreas.get(i).get$());
+
+                    if (!category.isPresent()) {
+                        Category categoryValue = new Category();
+                        categoryValue.setName(subjectAreas.get(i).get$());
+                        fixCategories.add(i, categoryRepo.save(categoryValue));
+                    } else {
+                        fixCategories.add(i, category.get());
+                    }
+
+                }
+            }
+
+            Metric journalCitation = new Metric();
             journalCitation.setSjr(sjrDouble);
             journalCitation.setSnip(snipDouble);
             journalCitation.setCiteScoreCurrent(citeScoreCurrent);
             journalCitation.setCiteScoreTracker(citeScoreTrack);
             journalCitation.setCurrentYear(currentYear);
             journalCitation.setTrackerYear(trackYear);
+            journalCitation.setJournal(journal);
 
-            journal.setJournalCitation(journalCitation);
+            if (fixCategories.size() > 0) {
+                journal.getCategories().addAll(fixCategories);
+            }
+
+            journal.setMetric(journalCitation);
             save(journal);
 
-            return journalCitationRepo.save(journalCitation);
+            return journalCitation;
         } catch (Exception e) {
             return null;
         }

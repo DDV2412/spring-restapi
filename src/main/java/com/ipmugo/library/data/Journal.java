@@ -4,25 +4,29 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.ipmugo.library.utils.Frequency;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 @Entity
+@Table(name = "journal")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Journal {
 
     @Id
@@ -41,11 +45,10 @@ public class Journal {
     @Column(length = 12, nullable = false, unique = true)
     private String abbreviation;
 
-    @Lob
     @Column(length = 1000, nullable = false)
     private String thumbnail;
 
-    @Column(length = 1000, nullable = false)
+    @Column(length = 10000, nullable = false)
     private String description;
 
     @Column(length = 255, nullable = false)
@@ -105,23 +108,20 @@ public class Journal {
 
     @ManyToMany
     @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "journal_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    @JsonManagedReference
     private Set<Category> categories;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "journal_citation_id")
-    private JournalCitation journalCitation;
+    @OneToOne(mappedBy = "journal", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Metric metric;
 
     public Journal() {
     }
 
-    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation,
-            String thumbnail,
+    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumbnail,
             String description, String publisher, String journal_site, Frequency frequency, String country,
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,
             String statement, String license, Double apc_fee, String review_police, Date updated_at, Date created_at,
-            Set<Category> categories, JournalCitation journalCitation) {
+            Set<Category> categories) {
         this.id = id;
         this.name = name;
         this.issn = issn;
@@ -148,7 +148,6 @@ public class Journal {
         this.updated_at = updated_at;
         this.created_at = created_at;
         this.categories = categories;
-        this.journalCitation = journalCitation;
     }
 
     public UUID getId() {
@@ -359,12 +358,12 @@ public class Journal {
         this.categories = categories;
     }
 
-    public JournalCitation getJournalCitation() {
-        return journalCitation;
+    public Metric getMetric() {
+        return metric;
     }
 
-    public void setJournalCitation(JournalCitation journalCitation) {
-        this.journalCitation = journalCitation;
+    public void setMetric(Metric metric) {
+        this.metric = metric;
     }
 
 }

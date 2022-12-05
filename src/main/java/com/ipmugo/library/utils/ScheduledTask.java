@@ -10,16 +10,31 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.ipmugo.library.data.Article;
 import com.ipmugo.library.data.Author;
 import com.ipmugo.library.data.Journal;
+import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.data.Subject;
+import com.ipmugo.library.dto.CiteScoreYearInfoList;
+import com.ipmugo.library.dto.EntryJournalCitation;
+import com.ipmugo.library.dto.ExampleJournalMetric;
+import com.ipmugo.library.dto.SJRList;
+import com.ipmugo.library.dto.SNIPList;
+import com.ipmugo.library.dto.SerialMetadataResponse;
+import com.ipmugo.library.dto.Sjr;
+import com.ipmugo.library.dto.Snip;
 import com.ipmugo.library.service.ArticleService;
 import com.ipmugo.library.service.AuthorService;
 import com.ipmugo.library.service.JournalService;
@@ -404,4 +419,88 @@ public class ScheduledTask {
 
         return articles;
     }
+
+    @Async
+    @Scheduled(cron = "* * * 10 * *")
+    public <T> void journalCitation() {
+        try {
+            List<Journal> journals = journalService.findAll();
+
+            if (journals.size() == 0) {
+                System.out.println("Journal recorded is empty");
+            }
+
+            for (int i = 0; i < journals.size(); i++) {
+                Journal journal = journals.get(i);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+
+                HttpEntity<T> request = new HttpEntity<>(headers);
+
+                RestTemplate restTemplate = new RestTemplate();
+
+                ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
+                        "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
+                        HttpMethod.GET,
+                        request,
+                        new ParameterizedTypeReference<ExampleJournalMetric>() {
+                        });
+
+                if (result.getStatusCode().value() != 200) {
+                    System.out.println(result.getStatusCode().value());
+                    return;
+                }
+
+                ExampleJournalMetric data = result.getBody();
+
+                if (data != null) {
+                    SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
+
+                    if (metadataResponse.getError() != null) {
+                        return;
+                    }
+
+                    List<EntryJournalCitation> entry = metadataResponse.getEntry();
+                    SJRList sjrList = entry.get(0).getSJRList();
+                    SNIPList snipList = entry.get(0).getSNIPList();
+                    CiteScoreYearInfoList citeScoreYearInfoList = entry.get(0).getCiteScoreYearInfoList();
+
+                    List<Sjr> sjr = sjrList.getSjr();
+                    List<Snip> snips = snipList.getSnip();
+
+                    Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
+
+                    Double snipDouble = Double.parseDouble(snips.get(0).get$());
+
+                    Double citeScoreCurrent = Double.parseDouble(citeScoreYearInfoList.getCiteScoreCurrentMetric());
+
+                    Double citeScoreTrack = Double.parseDouble(citeScoreYearInfoList.getCiteScoreTracker());
+
+                    String currentYear = citeScoreYearInfoList.getCiteScoreCurrentMetricYear();
+
+                    String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
+
+                    Metric journalCitation = new Metric();
+                    journalCitation.setSjr(sjrDouble);
+                    journalCitation.setSnip(snipDouble);
+                    journalCitation.setCiteScoreCurrent(citeScoreCurrent);
+                    journalCitation.setCiteScoreTracker(citeScoreTrack);
+                    journalCitation.setCurrentYear(currentYear);
+                    journalCitation.setTrackerYear(trackYear);
+                    journalCitation.setJournal(journal);
+
+                    journal.setMetric(journalCitation);
+                    journalService.save(journal);
+
+                    System.out.println(journalCitation);
+                }
+
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(ScheduledTask.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

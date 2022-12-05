@@ -2,6 +2,8 @@ package com.ipmugo.library.dto;
 
 public class ArticleData {
 
+    private String journal_id;
+
     private Integer ojs_id;
 
     private String set_spec;
@@ -37,6 +39,10 @@ public class ArticleData {
     private String abstract_text;
 
     private String full_text;
+
+    private String article_pdf;
+
+    private String keyword;
 
     public Integer getOjs_id() {
         return ojs_id;
@@ -180,6 +186,30 @@ public class ArticleData {
 
     public void setFull_text(String full_text) {
         this.full_text = full_text;
+    }
+
+    public String getArticle_pdf() {
+        return article_pdf;
+    }
+
+    public void setArticle_pdf(String article_pdf) {
+        this.article_pdf = article_pdf;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public String getJournal_id() {
+        return journal_id;
+    }
+
+    public void setJournal_id(String journal_id) {
+        this.journal_id = journal_id;
     }
 
 }

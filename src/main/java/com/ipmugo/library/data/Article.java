@@ -64,7 +64,7 @@ public class Article {
     @Column(length = 12, nullable = false)
     private String issn;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = true)
     private String source_type;
 
     @Column(length = 3, nullable = false)
@@ -82,7 +82,7 @@ public class Article {
     @Column(length = 255, nullable = true)
     private String copyright;
 
-    @Column(length = 500, nullable = false)
+    @Column(length = 10000, nullable = false)
     private String abstract_text;
 
     @Column(length = 10000, nullable = true)
@@ -106,8 +106,7 @@ public class Article {
     public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, Set<Subject> subjects, String figure,
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
-            String volume,
-            String issue, String copyright, String abstract_text, String full_text, String article_pdf,
+            String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
             String keyword, Date updated_at, Date created_at) {
         this.id = id;
         this.journal = journal;

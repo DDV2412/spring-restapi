@@ -39,7 +39,7 @@ public class Author {
     private String affiliation;
 
     @ManyToOne
-    @JoinColumn(name = "article_id")
+    @JoinColumn(name = "article_id", nullable = false)
     private Article article;
 
     public Author() {

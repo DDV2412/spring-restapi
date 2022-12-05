@@ -15,8 +15,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -41,7 +39,6 @@ import com.ipmugo.library.service.JournalService;
 import com.ipmugo.library.service.SubjectService;
 
 @Component
-@EnableAsync
 public class ScheduledTask {
 
     @Autowired
@@ -56,7 +53,6 @@ public class ScheduledTask {
     @Autowired
     private AuthorService authorService;
 
-    @Async
     @Scheduled(cron = "* * * 6 * *")
     public void getHarvest() {
         try {
@@ -64,39 +60,35 @@ public class ScheduledTask {
 
             List<Journal> journals = journalService.findAll();
 
-            if (journals.size() == 0) {
-                System.out.println("Journal recorded is empty");
-            }
+            if (journals.size() > 0) {
+                for (int i = 0; i < journals.size(); i++) {
+                    Journal journal = journals.get(i);
 
-            for (int i = 0; i < journals.size(); i++) {
-                Journal journal = journals.get(i);
+                    Response response = Jsoup.connect(
+                            journal.getJournal_site() +
+                                    "/oai?verb=ListRecords&metadataPrefix=oai_dc&set=" + journal.getAbbreviation())
+                            .timeout(0)
+                            .execute();
+                    Document document = Jsoup.connect(
+                            journal.getJournal_site() +
+                                    "/oai?verb=ListRecords&metadataPrefix=oai_dc&set=" + journal
+                                            .getAbbreviation())
+                            .timeout(0)
+                            .get();
 
-                Response response = Jsoup.connect(
-                        journal.getJournal_site() +
-                                "/oai?verb=ListRecords&metadataPrefix=oai_dc&set=" + journal.getAbbreviation())
-                        .timeout(0)
-                        .execute();
-                Document document = Jsoup.connect(
-                        journal.getJournal_site() +
-                                "/oai?verb=ListRecords&metadataPrefix=oai_dc&set=" + journal
-                                        .getAbbreviation())
-                        .timeout(0)
-                        .get();
+                    if (response.statusCode() == 200 || document.getElementsByTag("error").isEmpty()) {
+                        articles.addAll(parseData(document));
 
-                if (response.statusCode() != 200 || !document.getElementsByTag("error").isEmpty()) {
-                    Logger.getLogger(
-                            ScheduledTask.class.getName()).log(Level.SEVERE,
-                                    document.getElementsByTag("error").first().text());
+                        if (!document.getElementsByTag("resumptionToken").isEmpty()) {
+                            articles.addAll(
+                                    resumptionToken(journal,
+                                            document.getElementsByTag("resumptionToken").first().text()));
+                        }
+
+                        System.out.println(new Gson().toJson(articles));
+                    }
+
                 }
-
-                articles.addAll(parseData(document));
-
-                if (!document.getElementsByTag("resumptionToken").isEmpty()) {
-                    articles.addAll(
-                            resumptionToken(journal, document.getElementsByTag("resumptionToken").first().text()));
-                }
-
-                System.out.println(new Gson().toJson(articles));
             }
 
         } catch (Exception ex) {
@@ -121,19 +113,18 @@ public class ScheduledTask {
                     .timeout(0)
                     .get();
 
-            if (response.statusCode() != 200 || !document.getElementsByTag("error").isEmpty()) {
-                Logger.getLogger(
-                        ScheduledTask.class.getName()).log(Level.SEVERE,
-                                document.getElementsByTag("error").first().text());
+            if (response.statusCode() == 200 || document.getElementsByTag("error").isEmpty()) {
+                articles.addAll(parseData(document));
+
+                if (!document.getElementsByTag("resumptionToken").isEmpty()) {
+                    articles.addAll(
+                            resumptionToken(journal, document.getElementsByTag("resumptionToken").first().text()));
+                }
+
+                return articles;
+            } else {
+                return null;
             }
-
-            articles.addAll(parseData(document));
-
-            if (!document.getElementsByTag("resumptionToken").isEmpty()) {
-                articles.addAll(resumptionToken(journal, document.getElementsByTag("resumptionToken").first().text()));
-            }
-
-            return articles;
 
         } catch (Exception ex) {
             return null;
@@ -420,82 +411,76 @@ public class ScheduledTask {
         return articles;
     }
 
-    @Async
     @Scheduled(cron = "* * * 10 * *")
     public <T> void journalCitation() {
         try {
             List<Journal> journals = journalService.findAll();
 
-            if (journals.size() == 0) {
-                System.out.println("Journal recorded is empty");
-            }
+            if (journals.size() > 0) {
+                for (int i = 0; i < journals.size(); i++) {
+                    Journal journal = journals.get(i);
 
-            for (int i = 0; i < journals.size(); i++) {
-                Journal journal = journals.get(i);
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+                    HttpEntity<T> request = new HttpEntity<>(headers);
 
-                HttpEntity<T> request = new HttpEntity<>(headers);
+                    RestTemplate restTemplate = new RestTemplate();
 
-                RestTemplate restTemplate = new RestTemplate();
+                    ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
+                            "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
+                            HttpMethod.GET,
+                            request,
+                            new ParameterizedTypeReference<ExampleJournalMetric>() {
+                            });
 
-                ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
-                        "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
-                        HttpMethod.GET,
-                        request,
-                        new ParameterizedTypeReference<ExampleJournalMetric>() {
-                        });
+                    if (result.getStatusCode().value() == 200) {
+                        ExampleJournalMetric data = result.getBody();
 
-                if (result.getStatusCode().value() != 200) {
-                    System.out.println(result.getStatusCode().value());
-                    return;
-                }
+                        if (data != null) {
+                            SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
 
-                ExampleJournalMetric data = result.getBody();
+                            if (metadataResponse.getError() == null) {
+                                List<EntryJournalCitation> entry = metadataResponse.getEntry();
+                                SJRList sjrList = entry.get(0).getSJRList();
+                                SNIPList snipList = entry.get(0).getSNIPList();
+                                CiteScoreYearInfoList citeScoreYearInfoList = entry.get(0).getCiteScoreYearInfoList();
 
-                if (data != null) {
-                    SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
+                                List<Sjr> sjr = sjrList.getSjr();
+                                List<Snip> snips = snipList.getSnip();
 
-                    if (metadataResponse.getError() != null) {
-                        return;
+                                Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
+
+                                Double snipDouble = Double.parseDouble(snips.get(0).get$());
+
+                                Double citeScoreCurrent = Double
+                                        .parseDouble(citeScoreYearInfoList.getCiteScoreCurrentMetric());
+
+                                Double citeScoreTrack = Double.parseDouble(citeScoreYearInfoList.getCiteScoreTracker());
+
+                                String currentYear = citeScoreYearInfoList.getCiteScoreCurrentMetricYear();
+
+                                String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
+
+                                Metric journalCitation = new Metric();
+                                journalCitation.setSjr(sjrDouble);
+                                journalCitation.setSnip(snipDouble);
+                                journalCitation.setCiteScoreCurrent(citeScoreCurrent);
+                                journalCitation.setCiteScoreTracker(citeScoreTrack);
+                                journalCitation.setCurrentYear(currentYear);
+                                journalCitation.setTrackerYear(trackYear);
+                                journalCitation.setJournal(journal);
+
+                                journal.setMetric(journalCitation);
+                                journalService.save(journal);
+
+                                System.out.println(journalCitation);
+                            }
+
+                        }
                     }
 
-                    List<EntryJournalCitation> entry = metadataResponse.getEntry();
-                    SJRList sjrList = entry.get(0).getSJRList();
-                    SNIPList snipList = entry.get(0).getSNIPList();
-                    CiteScoreYearInfoList citeScoreYearInfoList = entry.get(0).getCiteScoreYearInfoList();
-
-                    List<Sjr> sjr = sjrList.getSjr();
-                    List<Snip> snips = snipList.getSnip();
-
-                    Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
-
-                    Double snipDouble = Double.parseDouble(snips.get(0).get$());
-
-                    Double citeScoreCurrent = Double.parseDouble(citeScoreYearInfoList.getCiteScoreCurrentMetric());
-
-                    Double citeScoreTrack = Double.parseDouble(citeScoreYearInfoList.getCiteScoreTracker());
-
-                    String currentYear = citeScoreYearInfoList.getCiteScoreCurrentMetricYear();
-
-                    String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
-
-                    Metric journalCitation = new Metric();
-                    journalCitation.setSjr(sjrDouble);
-                    journalCitation.setSnip(snipDouble);
-                    journalCitation.setCiteScoreCurrent(citeScoreCurrent);
-                    journalCitation.setCiteScoreTracker(citeScoreTrack);
-                    journalCitation.setCurrentYear(currentYear);
-                    journalCitation.setTrackerYear(trackYear);
-                    journalCitation.setJournal(journal);
-
-                    journal.setMetric(journalCitation);
-                    journalService.save(journal);
-
-                    System.out.println(journalCitation);
                 }
-
             }
 
         } catch (Exception ex) {

@@ -188,7 +188,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 35 8 7 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 20 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             List<Journal> journals = journalRepo.findAll();
@@ -395,7 +395,7 @@ public class ScheduledTask {
             if (!dc.first()
                     .getElementsByTag("dc:relation").isEmpty()
                     && dc.first()
-                            .getElementsByTag("dc:relation").size() > 1) {
+                            .getElementsByTag("dc:relation").size() > 0) {
                 articleData.setArticle_pdf(dc.first()
                         .getElementsByTag("dc:relation").first().text().replaceAll("/view/",
                                 "/download/"));
@@ -404,7 +404,7 @@ public class ScheduledTask {
             if (!dc.first()
                     .getElementsByTag("dc:rights").isEmpty()
                     && dc.first()
-                            .getElementsByTag("dc:rights").size() > 1) {
+                            .getElementsByTag("dc:rights").size() > 0) {
                 articleData.setCopyright(dc.first()
                         .getElementsByTag("dc:rights").last().text());
             }
@@ -480,11 +480,11 @@ public class ScheduledTask {
                     article.get().setArticle_pdf(articleData.getArticle_pdf());
                     article.get().setCopyright(articleData.getCopyright());
                     article.get().setIssn(articleData.getIssn());
-                    article.get().setIssue(articleData.getIssn());
+                    article.get().setIssue(articleData.getIssue());
                     article.get().setVolume(articleData.getVolume());
                     article.get().setPages(articleData.getPages());
                     article.get().setKeyword(articleData.getKeyword());
-                    article.get().setJournal(articleData.getJournal());
+                    article.get().setJournal(journal);
                     articleRepo.save(article.get());
 
                     for (int x = 0; x < creator.size(); x++) {

@@ -16,8 +16,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -106,11 +104,10 @@ public class Journal {
     @Temporal(TemporalType.TIMESTAMP)
     private Date created_at;
 
-    @ManyToMany
-    @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "journal_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @ManyToMany(mappedBy = "journals", fetch = FetchType.EAGER)
     private Set<Category> categories;
 
-    @OneToOne(mappedBy = "journal", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Metric metric;
 
     public Journal() {
@@ -121,7 +118,7 @@ public class Journal {
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,
             String statement, String license, Double apc_fee, String review_police, Date updated_at, Date created_at,
-            Set<Category> categories) {
+            Metric metric) {
         this.id = id;
         this.name = name;
         this.issn = issn;
@@ -147,7 +144,7 @@ public class Journal {
         this.review_police = review_police;
         this.updated_at = updated_at;
         this.created_at = created_at;
-        this.categories = categories;
+        this.metric = metric;
     }
 
     public UUID getId() {

@@ -4,23 +4,27 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "article")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Article {
 
     @Id
@@ -37,9 +41,7 @@ public class Article {
     @Column(nullable = false, length = 100)
     private String set_spec;
 
-    @ManyToMany
-    @JoinTable(name = "subject_article", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
-    @JsonManagedReference
+    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
     private Set<Subject> subjects;
 
     @Column(nullable = true, length = 255)
@@ -48,7 +50,7 @@ public class Article {
     @Column(length = 255, nullable = false)
     private String title;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10, nullable = true)
     private String pages;
 
     @Column(length = 150, nullable = false)
@@ -93,7 +95,7 @@ public class Article {
     @Column(length = 255, nullable = true)
     private String article_pdf;
 
-    @Column(length = 255, nullable = true)
+    @Column(length = 10000, nullable = true)
     private String keyword;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -102,10 +104,13 @@ public class Article {
     @Temporal(TemporalType.TIMESTAMP)
     private Date created_at;
 
+    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Author> authors;
+
     public Article() {
     }
 
-    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, Set<Subject> subjects, String figure,
+    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, String figure,
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
@@ -114,7 +119,6 @@ public class Article {
         this.journal = journal;
         this.ojs_id = ojs_id;
         this.set_spec = set_spec;
-        this.subjects = subjects;
         this.figure = figure;
         this.title = title;
         this.pages = pages;
@@ -335,6 +339,14 @@ public class Article {
 
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
+    }
+
+    public Set<Author> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(Set<Author> authors) {
+        this.authors = authors;
     }
 
 }

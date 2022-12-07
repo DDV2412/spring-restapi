@@ -3,7 +3,6 @@ package com.ipmugo.library.data;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Entity;
@@ -36,16 +35,15 @@ public class Metric {
 
     private String trackerYear;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "journal_id", nullable = false)
-    @JsonManagedReference
     private Journal journal;
 
     public Metric() {
     }
 
     public Metric(UUID id, Double sjr, Double snip, Double citeScoreCurrent, Double citeScoreTracker,
-            String currentYear, String trackerYear) {
+            String currentYear, String trackerYear, Journal journal) {
         this.id = id;
         this.sjr = sjr;
         this.snip = snip;
@@ -53,6 +51,7 @@ public class Metric {
         this.citeScoreTracker = citeScoreTracker;
         this.currentYear = currentYear;
         this.trackerYear = trackerYear;
+        this.journal = journal;
     }
 
     public UUID getId() {

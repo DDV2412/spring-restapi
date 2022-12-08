@@ -77,10 +77,10 @@ public class Article {
     @Column(length = 255, nullable = false, unique = true)
     private String doi;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String volume;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String issue;
 
     @Column(length = 255, nullable = true)

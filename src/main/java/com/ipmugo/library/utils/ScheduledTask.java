@@ -1,6 +1,5 @@
 package com.ipmugo.library.utils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -118,8 +117,6 @@ public class ScheduledTask {
 
                                     String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
 
-                                    List<Category> fixCategories = new ArrayList<>();
-
                                     if (subjectAreas.size() > 0) {
                                         for (int x = 0; x < subjectAreas.size(); x++) {
                                             Optional<Category> category = categoryRepo
@@ -128,9 +125,7 @@ public class ScheduledTask {
                                             if (!category.isPresent()) {
                                                 Category categoryValue = new Category();
                                                 categoryValue.setName(subjectAreas.get(x).get$());
-                                                fixCategories.add(x, categoryRepo.save(categoryValue));
-                                            } else {
-                                                fixCategories.add(x, category.get());
+                                                categoryRepo.save(categoryValue);
                                             }
 
                                         }
@@ -150,32 +145,45 @@ public class ScheduledTask {
 
                                         Metric metricResult = metricRepo.save(journalCitation);
 
-                                        if (fixCategories.size() > 0) {
-                                            journals.get(i).getCategories().addAll(fixCategories);
+                                        if (subjectAreas.size() > 0) {
+                                            for (int x = 0; x < subjectAreas.size(); x++) {
+                                                Optional<Category> category = categoryRepo
+                                                        .findByName(subjectAreas.get(x).get$());
+
+                                                if (category.isPresent()) {
+                                                    category.get().getJournals().add(journals.get(i));
+                                                    categoryRepo.save(category.get());
+                                                }
+
+                                            }
                                         }
-                                        journals.get(i).setMetric(metricResult);
-                                        journalRepo.save(journals.get(i));
-
                                         System.out.println(metricResult);
+                                    } else {
+                                        metric.get().setSjr(sjrDouble);
+                                        metric.get().setSnip(snipDouble);
+                                        metric.get().setCiteScoreCurrent(citeScoreCurrent);
+                                        metric.get().setCiteScoreTracker(citeScoreTrack);
+                                        metric.get().setCurrentYear(currentYear);
+                                        metric.get().setTrackerYear(trackYear);
+                                        metric.get().setJournal(journals.get(i));
+                                        metricRepo.save(metric.get());
+
+                                        if (subjectAreas.size() > 0) {
+                                            for (int x = 0; x < subjectAreas.size(); x++) {
+                                                Optional<Category> category = categoryRepo
+                                                        .findByName(subjectAreas.get(x).get$());
+
+                                                if (category.isPresent()) {
+                                                    category.get().getJournals().add(journals.get(i));
+                                                    categoryRepo.save(category.get());
+                                                }
+
+                                            }
+                                        }
+
+                                        System.out.println(metric.get());
                                     }
 
-                                    if (fixCategories.size() > 0) {
-                                        journals.get(i).getCategories().addAll(fixCategories);
-                                    }
-
-                                    metric.get().setSjr(sjrDouble);
-                                    metric.get().setSnip(snipDouble);
-                                    metric.get().setCiteScoreCurrent(citeScoreCurrent);
-                                    metric.get().setCiteScoreTracker(citeScoreTrack);
-                                    metric.get().setCurrentYear(currentYear);
-                                    metric.get().setTrackerYear(trackYear);
-                                    metric.get().setJournal(journals.get(i));
-                                    metricRepo.save(metric.get());
-
-                                    journals.get(i).setMetric(metric.get());
-                                    journalRepo.save(journals.get(i));
-
-                                    System.out.println(metric.get());
                                 }
 
                             }
@@ -465,6 +473,8 @@ public class ScheduledTask {
                             }
                         }
                     }
+
+                    System.out.println(article2);
                 } else {
                     article.get().setOjs_id(articleData.getOjs_id());
                     article.get().setLast_modifier(articleData.getLast_modifier());
@@ -485,7 +495,6 @@ public class ScheduledTask {
                     article.get().setPages(articleData.getPages());
                     article.get().setKeyword(articleData.getKeyword());
                     article.get().setJournal(journal);
-                    articleRepo.save(article.get());
 
                     for (int x = 0; x < creator.size(); x++) {
                         Author author = new Author();
@@ -517,6 +526,8 @@ public class ScheduledTask {
                     }
 
                     articleRepo.save(article.get());
+
+                    System.out.println(article.get());
                 }
             }
 

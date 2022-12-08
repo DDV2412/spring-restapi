@@ -3,6 +3,7 @@ package com.ipmugo.library.data;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
@@ -24,22 +25,22 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String first_name;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String last_name;
 
-    @Column(nullable = true, length = 100)
+    @Column(nullable = true, length = 64)
     private String email;
 
-    @Column(nullable = true, length = 100)
+    @Column(nullable = true, length = 255)
     private String orcid;
 
-    @Column(nullable = true, length = 100)
+    @Column(nullable = true, length = 255)
     private String scopus_id;
 
-    @Column(nullable = true, length = 100)
+    @Column(nullable = true, length = 255)
     private String google_scholar;
 
     @Column(nullable = true, length = 255)
@@ -47,6 +48,7 @@ public class Author {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "article_id", nullable = false)
+    @JsonIdentityReference
     private Article article;
 
     public Author() {

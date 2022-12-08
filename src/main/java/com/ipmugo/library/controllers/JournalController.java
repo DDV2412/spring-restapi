@@ -76,27 +76,6 @@ public class JournalController {
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseData<Journal>> findOne(@PathVariable("id") UUID id) {
-        ResponseData<Journal> responseData = new ResponseData<>();
-
-        Journal journal = journalService.findOne(id);
-
-        if (journal == null) {
-            responseData.setStatus(false);
-            responseData.getMessages().add("Journal not found");
-
-            return ResponseEntity.badRequest().body(responseData);
-        }
-
-        responseData.setPayload(journal);
-        responseData.setStatus(true);
-        responseData.getMessages().add("Successfully get journal by ID " + id);
-
-        return ResponseEntity.ok(responseData);
-
-    }
-
     @PostMapping
     public ResponseEntity<ResponseData<Journal>> create(@Valid @RequestBody JournalData journalData, Errors errors) {
         ResponseData<Journal> responseData = new ResponseData<>();

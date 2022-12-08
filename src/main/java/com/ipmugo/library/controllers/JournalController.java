@@ -55,6 +55,27 @@ public class JournalController {
 
     }
 
+    @GetMapping("/{abbreviation}")
+    public ResponseEntity<ResponseData<Journal>> findByAbbreviation(@PathVariable("abbreviation") String abbreviation) {
+        ResponseData<Journal> responseData = new ResponseData<>();
+
+        Journal journal = journalService.findByAbbreviation(abbreviation);
+
+        if (journal == null) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Journal not found");
+
+            return ResponseEntity.badRequest().body(responseData);
+        }
+
+        responseData.setPayload(journal);
+        responseData.setStatus(true);
+        responseData.getMessages().add("Successfully get journal by abbreviation " + abbreviation);
+
+        return ResponseEntity.ok(responseData);
+
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<Journal>> findOne(@PathVariable("id") UUID id) {
         ResponseData<Journal> responseData = new ResponseData<>();

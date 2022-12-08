@@ -11,5 +11,5 @@ public interface JournalRepo extends JpaRepository<Journal, UUID> {
 
     Optional<Journal> findByIssn(String issn);
 
-    Optional<Journal> findByName(String name);
+    Optional<Journal> findByAbbreviation(String abbreviation);
 }

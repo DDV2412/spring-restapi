@@ -72,8 +72,8 @@ public class JournalService {
         return journal.get();
     }
 
-    public Journal findByName(String name) {
-        Optional<Journal> journal = journalRepo.findByName(name);
+    public Journal findByAbbreviation(String abbreviation) {
+        Optional<Journal> journal = journalRepo.findByAbbreviation(abbreviation);
 
         if (!journal.isPresent()) {
             return null;

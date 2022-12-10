@@ -55,7 +55,28 @@ public class JournalController {
 
     }
 
-    @GetMapping("/{abbreviation}")
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseData<Journal>> findById(@PathVariable("id") UUID id) {
+        ResponseData<Journal> responseData = new ResponseData<>();
+
+        Journal journal = journalService.findOne(id);
+
+        if (journal == null) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Journal with " + id + " not found");
+
+            return ResponseEntity.badRequest().body(responseData);
+        }
+
+        responseData.setPayload(journal);
+        responseData.setStatus(true);
+        responseData.getMessages().add("Successfully get journal by id " + id);
+
+        return ResponseEntity.ok(responseData);
+
+    }
+
+    @GetMapping("/abbreviation/{abbreviation}")
     public ResponseEntity<ResponseData<Journal>> findByAbbreviation(@PathVariable("abbreviation") String abbreviation) {
         ResponseData<Journal> responseData = new ResponseData<>();
 
@@ -63,7 +84,7 @@ public class JournalController {
 
         if (journal == null) {
             responseData.setStatus(false);
-            responseData.getMessages().add("Journal not found");
+            responseData.getMessages().add("Journal with " + abbreviation + " not found");
 
             return ResponseEntity.badRequest().body(responseData);
         }
@@ -234,7 +255,7 @@ public class JournalController {
 
             if (journal == null) {
                 responseData.setStatus(false);
-                responseData.getMessages().add("Journal not found");
+                responseData.getMessages().add("Journal with " + id + " not found");
 
                 return ResponseEntity.badRequest().body(responseData);
             }
@@ -243,7 +264,7 @@ public class JournalController {
 
             if (journalCitation == null) {
                 responseData.setStatus(false);
-                responseData.getMessages().add("Journal not found");
+                responseData.getMessages().add("Journal with " + id + " not found");
 
                 return ResponseEntity.badRequest().body(responseData);
             }

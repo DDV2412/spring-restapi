@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,7 +14,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.ipmugo.library.data.Article;
+import com.ipmugo.library.data.CitationCrossRef;
+import com.ipmugo.library.data.CitationScopus;
+import com.ipmugo.library.dto.EntryCrossRef;
+import com.ipmugo.library.dto.EntryScopus;
+import com.ipmugo.library.dto.ExampleCitationCrossRef;
+import com.ipmugo.library.dto.ExampleCitationScopus;
+import com.ipmugo.library.dto.SearchResults;
 import com.ipmugo.library.repository.ArticleRepo;
+import com.ipmugo.library.repository.CitationCrossRefRepo;
+import com.ipmugo.library.repository.CitationScopusRepo;
 
 import jakarta.transaction.TransactionScoped;
 
@@ -23,6 +33,12 @@ public class ArticleService {
 
     @Autowired
     private ArticleRepo articleRepo;
+
+    @Autowired
+    private CitationScopusRepo citationScopusRepo;
+
+    @Autowired
+    private CitationCrossRefRepo citationCrossRefRepo;
 
     private RestTemplate restTemplate = new RestTemplate();
 
@@ -68,7 +84,7 @@ public class ArticleService {
         return article.get();
     }
 
-    public <T> Object citationScopus(UUID id) {
+    public <T> CitationScopus citationScopus(UUID id) {
         try {
             Article article = findOne(id);
 
@@ -80,32 +96,95 @@ public class ArticleService {
 
             HttpEntity<T> request = new HttpEntity<>(headers);
 
-            ResponseEntity<Object> result = restTemplate.exchange(
+            ResponseEntity<ExampleCitationScopus> result = restTemplate.exchange(
                     "https://api.elsevier.com/content/search/scopus?query=DOI(" + article.getDoi() + ")",
                     HttpMethod.GET,
                     request,
-                    Object.class);
+                    new ParameterizedTypeReference<ExampleCitationScopus>() {
+                    });
 
-            return result;
+            if (result.getStatusCode().value() != 200) {
+                return null;
+            }
+
+            ExampleCitationScopus data = result.getBody();
+
+            if (data == null) {
+                return null;
+            }
+
+            SearchResults searchResults = data.getSearchResults();
+
+            if (searchResults.getEntry().isEmpty() && searchResults.getEntry().get(0).getCitedbyCount() == null) {
+                return null;
+            }
+
+            List<EntryScopus> entryScopus = searchResults.getEntry();
+
+            if (entryScopus.isEmpty()) {
+                return null;
+            }
+
+            Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+            if (!citationScopus.isPresent()) {
+                CitationScopus citationScopus2 = new CitationScopus();
+                citationScopus2.setArticle(article);
+                citationScopus2.setReferences_count(Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+                return citationScopusRepo.save(citationScopus2);
+            }
+
+            citationScopus.get().setArticle(article);
+            citationScopus.get().setReferences_count(Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+            return citationScopusRepo.save(citationScopus.get());
 
         } catch (Exception e) {
             return null;
         }
     }
 
-    public <T> Object citationCrossReff(UUID id) {
+    public CitationCrossRef citationCrossReff(UUID id) {
         try {
             Article article = findOne(id);
 
             if (article == null) {
                 return null;
             }
-            Object result = restTemplate.getForObject(
+
+            ResponseEntity<ExampleCitationCrossRef> result = restTemplate.exchange(
                     "https://api.crossref.org/works/" + article.getDoi(),
-                    Object.class);
+                    HttpMethod.GET,
+                    null,
+                    ExampleCitationCrossRef.class);
 
-            return result;
+            if (result.getStatusCode().value() != 200) {
+                return null;
+            }
 
+            ExampleCitationCrossRef body = result.getBody();
+
+            if (body == null) {
+                return null;
+            }
+
+            EntryCrossRef entryCrossRef = body.getMessage();
+
+            Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo.findByArticleId(article.getId());
+
+            if (!citationCrossRef.isPresent()) {
+                CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                citationCrossRef2.setArticle(article);
+                citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
+
+                return citationCrossRefRepo.save(citationCrossRef2);
+            }
+
+            citationCrossRef.get().setArticle(article);
+            citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
+
+            return citationCrossRefRepo.save(citationCrossRef.get());
         } catch (Exception e) {
             return null;
         }

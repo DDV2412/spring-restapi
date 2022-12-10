@@ -2,11 +2,7 @@ package com.ipmugo.library.dto;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.processing.Generated;
-
-import org.aspectj.bridge.Message;
-
+import jakarta.annotation.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
         "status",
+        "message-type",
+        "message-version",
         "message"
 })
 @Generated("jsonschema2pojo")
@@ -24,9 +22,12 @@ public class ExampleCitationCrossRef {
 
     @JsonProperty("status")
     private String status;
-
+    @JsonProperty("message-type")
+    private String messageType;
+    @JsonProperty("message-version")
+    private String messageVersion;
     @JsonProperty("message")
-    private Message message;
+    private EntryCrossRef message;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -40,13 +41,33 @@ public class ExampleCitationCrossRef {
         this.status = status;
     }
 
+    @JsonProperty("message-type")
+    public String getMessageType() {
+        return messageType;
+    }
+
+    @JsonProperty("message-type")
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
+
+    @JsonProperty("message-version")
+    public String getMessageVersion() {
+        return messageVersion;
+    }
+
+    @JsonProperty("message-version")
+    public void setMessageVersion(String messageVersion) {
+        this.messageVersion = messageVersion;
+    }
+
     @JsonProperty("message")
-    public Message getMessage() {
+    public EntryCrossRef getMessage() {
         return message;
     }
 
     @JsonProperty("message")
-    public void setMessage(Message message) {
+    public void setMessage(EntryCrossRef message) {
         this.message = message;
     }
 

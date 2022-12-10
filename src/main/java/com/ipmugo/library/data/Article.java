@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -31,7 +32,7 @@ public class Article {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "journal_id")
     private Journal journal;
 
@@ -107,7 +108,24 @@ public class Article {
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Author> authors;
 
+    @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private CitationScopus citation_by_scopus;
+
+    @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private CitationCrossRef citation_by_cross_ref;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Figure> figures;
+
     public Article() {
+    }
+
+    public Set<Figure> getFigures() {
+        return figures;
+    }
+
+    public void setFigures(Set<Figure> figures) {
+        this.figures = figures;
     }
 
     public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, String figure,
@@ -347,6 +365,22 @@ public class Article {
 
     public void setAuthors(Set<Author> authors) {
         this.authors = authors;
+    }
+
+    public CitationScopus getCitation_by_scopus() {
+        return citation_by_scopus;
+    }
+
+    public void setCitation_by_scopus(CitationScopus citation_by_scopus) {
+        this.citation_by_scopus = citation_by_scopus;
+    }
+
+    public CitationCrossRef getCitation_by_cross_ref() {
+        return citation_by_cross_ref;
+    }
+
+    public void setCitation_by_cross_ref(CitationCrossRef citation_by_cross_ref) {
+        this.citation_by_cross_ref = citation_by_cross_ref;
     }
 
 }

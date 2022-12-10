@@ -39,7 +39,7 @@ public class UploadFileController {
 
             fileUpload.setName(file.getOriginalFilename());
             fileUpload.setUrl(uriComponents.getPath());
-            fileUpload.setImageData(file.getBytes());
+            fileUpload.setFileByte(file.getBytes());
 
             byte[] checkFile = fileService.findFileName(file.getOriginalFilename());
 
@@ -91,7 +91,7 @@ public class UploadFileController {
 
             fileUpload.setName(file.getOriginalFilename());
             fileUpload.setUrl(uriComponents.getPath());
-            fileUpload.setImageData(file.getBytes());
+            fileUpload.setFileByte(file.getBytes());
 
             byte[] checkFile = fileService.findFileName(file.getOriginalFilename());
 

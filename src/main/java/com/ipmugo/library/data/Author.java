@@ -2,9 +2,7 @@ package com.ipmugo.library.data;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +16,6 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "author")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Author {
 
     @Id
@@ -48,7 +45,7 @@ public class Author {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "article_id", nullable = false)
-    @JsonIdentityReference
+    @JsonBackReference
     private Article article;
 
     public Author() {

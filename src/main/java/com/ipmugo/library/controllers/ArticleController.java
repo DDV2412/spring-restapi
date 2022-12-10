@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.data.Article;
+import com.ipmugo.library.data.CitationCrossRef;
+import com.ipmugo.library.data.CitationScopus;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.dto.ArticleData;
 import com.ipmugo.library.dto.ResponseData;
@@ -67,6 +69,28 @@ public class ArticleController {
         responseData.setPayload(article);
         responseData.setStatus(true);
         responseData.getMessages().add("Successfully get article by ID " + id);
+
+        return ResponseEntity.ok(responseData);
+
+    }
+
+    @GetMapping("/doi/{unique}/{doi}")
+    public ResponseEntity<ResponseData<Article>> findByDoi(@PathVariable("unique") String unique,
+            @PathVariable("doi") String doi) {
+        ResponseData<Article> responseData = new ResponseData<>();
+
+        Article article = articleService.findByDoi(unique + "/" + doi);
+
+        if (article == null) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Article with " + doi + " not found");
+
+            return ResponseEntity.badRequest().body(responseData);
+        }
+
+        responseData.setPayload(article);
+        responseData.setStatus(true);
+        responseData.getMessages().add("Successfully get article by DOI " + doi);
 
         return ResponseEntity.ok(responseData);
 
@@ -203,8 +227,8 @@ public class ArticleController {
     }
 
     @GetMapping("/citation-scopus/{id}")
-    public ResponseEntity<ResponseData<Object>> setCitationScopus(@PathVariable("id") UUID id) {
-        ResponseData<Object> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<CitationScopus>> setCitationScopus(@PathVariable("id") UUID id) {
+        ResponseData<CitationScopus> responseData = new ResponseData<>();
 
         try {
             responseData.setStatus(true);
@@ -220,8 +244,8 @@ public class ArticleController {
     }
 
     @GetMapping("/citation-crossref/{id}")
-    public ResponseEntity<ResponseData<Object>> setCitationCrossRef(@PathVariable("id") UUID id) {
-        ResponseData<Object> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<CitationCrossRef>> setCitationCrossRef(@PathVariable("id") UUID id) {
+        ResponseData<CitationCrossRef> responseData = new ResponseData<>();
 
         try {
             responseData.setStatus(true);

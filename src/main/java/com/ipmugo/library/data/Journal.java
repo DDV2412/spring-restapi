@@ -4,8 +4,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ipmugo.library.utils.Frequency;
 
 import jakarta.persistence.CascadeType;
@@ -17,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -24,7 +24,6 @@ import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "journal")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Journal {
 
     @Id
@@ -109,6 +108,10 @@ public class Journal {
 
     @OneToOne(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Metric metric;
+
+    @OneToMany(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private Set<Article> articles;
 
     public Journal() {
     }
@@ -361,6 +364,14 @@ public class Journal {
 
     public void setMetric(Metric metric) {
         this.metric = metric;
+    }
+
+    public Set<Article> getArticles() {
+        return articles;
+    }
+
+    public void setArticles(Set<Article> articles) {
+        this.articles = articles;
     }
 
 }

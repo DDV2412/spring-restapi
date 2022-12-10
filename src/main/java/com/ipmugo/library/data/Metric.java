@@ -2,6 +2,7 @@ package com.ipmugo.library.data;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
@@ -37,6 +38,7 @@ public class Metric {
 
     @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "journal_id", nullable = false)
+    @JsonBackReference
     private Journal journal;
 
     public Metric() {

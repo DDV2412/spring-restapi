@@ -29,7 +29,7 @@ public class FileService {
             return null;
         }
 
-        return file.get().getImageData();
+        return file.get().getFileByte();
     }
 
     public void deleteById(UUID id) {

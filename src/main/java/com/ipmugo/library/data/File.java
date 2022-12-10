@@ -20,16 +20,16 @@ public class File {
 
     private String url;
 
-    private byte[] imageData;
+    private byte[] fileByte;
 
     public File() {
     }
 
-    public File(UUID id, String name, String url, byte[] imageData) {
+    public File(UUID id, String name, String url, byte[] fileByte) {
         this.id = id;
         this.name = name;
         this.url = url;
-        this.imageData = imageData;
+        this.fileByte = fileByte;
     }
 
     public UUID getId() {
@@ -56,12 +56,12 @@ public class File {
         this.url = String;
     }
 
-    public byte[] getImageData() {
-        return imageData;
+    public byte[] getFileByte() {
+        return fileByte;
     }
 
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setFileByte(byte[] fileByte) {
+        this.fileByte = fileByte;
     }
 
 }

@@ -1,8 +1,11 @@
 package com.ipmugo.library.data;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -20,8 +23,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "article")
@@ -99,11 +100,11 @@ public class Article {
     @Column(length = 10000, nullable = true)
     private String keyword;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updated_at;
+    @CreationTimestamp
+    private Timestamp updated_at;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    @CreationTimestamp
+    private Timestamp created_at;
 
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Author> authors;
@@ -132,7 +133,7 @@ public class Article {
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
-            String keyword, Date updated_at, Date created_at) {
+            String keyword, Timestamp updated_at, Timestamp created_at) {
         this.id = id;
         this.journal = journal;
         this.ojs_id = ojs_id;
@@ -347,7 +348,7 @@ public class Article {
         return updated_at;
     }
 
-    public void setUpdated_at(Date updated_at) {
+    public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
 
@@ -355,7 +356,7 @@ public class Article {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
 

@@ -1,8 +1,11 @@
 package com.ipmugo.library.data;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ipmugo.library.utils.Frequency;
@@ -19,8 +22,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "journal")
@@ -97,11 +98,11 @@ public class Journal {
     @Column(length = 255, nullable = true)
     private String review_police;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updated_at;
+    @CreationTimestamp
+    private Timestamp updated_at;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    @CreationTimestamp
+    private Timestamp created_at;
 
     @ManyToMany(mappedBy = "journals", fetch = FetchType.EAGER)
     private Set<Category> categories;
@@ -120,7 +121,9 @@ public class Journal {
             String description, String publisher, String journal_site, Frequency frequency, String country,
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,
-            String statement, String license, Double apc_fee, String review_police, Date updated_at, Date created_at,
+            String statement, String license, Double apc_fee, String review_police,
+            Timestamp updated_at,
+            Timestamp created_at,
             Metric metric) {
         this.id = id;
         this.name = name;
@@ -338,7 +341,7 @@ public class Journal {
         return updated_at;
     }
 
-    public void setUpdated_at(Date updated_at) {
+    public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
 
@@ -346,7 +349,7 @@ public class Journal {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
 

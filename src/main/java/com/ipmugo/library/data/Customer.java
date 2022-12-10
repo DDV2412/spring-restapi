@@ -1,7 +1,10 @@
 package com.ipmugo.library.data;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -12,8 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "customer")
@@ -45,17 +46,17 @@ public class Customer {
     @Column(length = 1000, nullable = false)
     private String message;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updated_at;
+    @CreationTimestamp
+    private Timestamp updated_at;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    @CreationTimestamp
+    private Timestamp created_at;
 
     public Customer() {
     }
 
     public Customer(UUID id, String first_name, String last_name, String company_name, String email,
-            Integer phone_number, String country, String message, Date updated_at, Date created_at) {
+            Integer phone_number, String country, String message, Timestamp updated_at, Timestamp created_at) {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -136,7 +137,7 @@ public class Customer {
         return updated_at;
     }
 
-    public void setUpdated_at(Date updated_at) {
+    public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
 
@@ -144,7 +145,7 @@ public class Customer {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
 

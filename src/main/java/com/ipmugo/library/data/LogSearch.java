@@ -1,7 +1,10 @@
 package com.ipmugo.library.data;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,8 +12,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name = "log_search")
@@ -23,16 +24,16 @@ public class LogSearch {
     @Column(length = 255, nullable = false)
     private String search;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updated_at;
+    @CreationTimestamp
+    private Timestamp updated_at;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    @CreationTimestamp
+    private Timestamp created_at;
 
     public LogSearch() {
     }
 
-    public LogSearch(UUID id, String search, Date updated_at, Date created_at) {
+    public LogSearch(UUID id, String search, Timestamp updated_at, Timestamp created_at) {
         this.id = id;
         this.search = search;
         this.updated_at = updated_at;
@@ -59,7 +60,7 @@ public class LogSearch {
         return updated_at;
     }
 
-    public void setUpdated_at(Date updated_at) {
+    public void setUpdated_at(Timestamp updated_at) {
         this.updated_at = updated_at;
     }
 
@@ -67,7 +68,7 @@ public class LogSearch {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
 

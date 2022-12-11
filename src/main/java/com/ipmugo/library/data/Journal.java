@@ -43,10 +43,10 @@ public class Journal {
     @Column(length = 12, nullable = false, unique = true)
     private String abbreviation;
 
-    @Column(length = 1000, nullable = false)
+    @Column(length = 255, nullable = false)
     private String thumbnail;
 
-    @Column(length = 10000, nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(length = 255, nullable = false)

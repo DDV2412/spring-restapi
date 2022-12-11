@@ -43,7 +43,7 @@ public class Customer {
     @Column(length = 255, nullable = false)
     private String country;
 
-    @Column(length = 1000, nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @CreationTimestamp

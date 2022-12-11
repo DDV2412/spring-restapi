@@ -85,16 +85,16 @@ public class Article {
     @Column(length = 255, nullable = true)
     private String copyright;
 
-    @Column(length = 10000, nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String abstract_text;
 
-    @Column(length = 100000, nullable = true)
+    @Column(columnDefinition = "TEXT")
     private String full_text;
 
     @Column(length = 255, nullable = true)
     private String article_pdf;
 
-    @Column(length = 10000, nullable = true)
+    @Column(columnDefinition = "TEXT")
     private String keyword;
 
     @CreationTimestamp

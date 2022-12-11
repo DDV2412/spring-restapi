@@ -481,6 +481,46 @@ public class ScheduledTask {
                 }
             }
 
+            if (articleData.getArticle_pdf() != null
+                    && !articleData.getArticle_pdf().contains("downloadSuppFile") && !articleData.getArticle_pdf()
+                            .contains("info")) {
+                try {
+                    URL url = new URL(articleData.getArticle_pdf());
+
+                    InputStream inputStream = url.openStream();
+
+                    PDDocument document = PDDocument.load(inputStream);
+
+                    PDFTextStripper stripper = new PDFTextStripper();
+
+                    String text = stripper.getText(document);
+
+                    document.close();
+
+                    String[] lines = text.split("\n");
+
+                    String startElement = "1. INTRODUCTION";
+                    String endElement = "BIOGRAPHIES OF AUTHORS";
+
+                    boolean foundStart = false;
+                    boolean foundEnd = false;
+
+                    for (String line : lines) {
+                        if (line.contains(startElement)) {
+                            foundStart = true;
+                        } else if (line.contains(endElement)) {
+                            foundEnd = true;
+                            break;
+                        } else if (foundStart && !foundEnd) {
+                            String paragraph = String.join("\n", lines);
+                            articleData.setFull_text(paragraph);
+                        }
+                    }
+
+                } catch (Exception e) {
+                    articleData.setFull_text(null);
+                }
+            }
             if (articleData.getDoi() != null) {
                 Optional<Article> article = articleRepo.findByDoi(articleData.getDoi());
 
@@ -538,6 +578,7 @@ public class ScheduledTask {
                     article.get().setVolume(articleData.getVolume());
                     article.get().setPages(articleData.getPages());
                     article.get().setKeyword(articleData.getKeyword());
+                    article.get().setFull_text(articleData.getFull_text());
                     article.get().setJournal(journal);
 
                     for (int x = 0; x < creator.size(); x++) {
@@ -579,15 +620,15 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
-    private <T> void articleCitation() {
+    @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
+    private <T> void articleCitationScopus() {
         List<Article> articles = articleRepo.findAll();
 
         RestTemplate restTemplate = new RestTemplate();
 
         if (articles.size() > 0) {
             for (Article article : articles) {
-                if (article.getDoi() != null && article.getDoi().split("http://").length != 2) {
+                if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
                     try {
                         HttpHeaders headers = new HttpHeaders();
                         headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
@@ -601,81 +642,108 @@ public class ScheduledTask {
                                 new ParameterizedTypeReference<ExampleCitationScopus>() {
                                 });
 
-                        if (result.getStatusCode().value() == 200) {
-                            ExampleCitationScopus data = result.getBody();
-                            if (data != null) {
-                                SearchResults searchResults = data.getSearchResults();
-
-                                if (!searchResults.getEntry().isEmpty()
-                                        && searchResults.getEntry().get(0).getCitedbyCount() != null) {
-                                    List<EntryScopus> entryScopus = searchResults.getEntry();
-
-                                    if (!entryScopus.isEmpty()) {
-                                        Optional<CitationScopus> citationScopus = citationScopusRepo
-                                                .findByArticleId(article.getId());
-
-                                        if (!citationScopus.isPresent()) {
-                                            CitationScopus citationScopus2 = new CitationScopus();
-                                            citationScopus2.setArticle(article);
-                                            citationScopus2
-                                                    .setReferences_count(
-                                                            Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
-
-                                            System.out.println(citationScopusRepo.save(citationScopus2));
-                                        } else {
-                                            citationScopus.get().setArticle(article);
-                                            citationScopus.get()
-                                                    .setReferences_count(
-                                                            Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
-
-                                            System.out.println(citationScopusRepo.save(citationScopus.get()));
-                                        }
-
-                                    }
-
-                                }
-
-                            }
+                        if (result.getStatusCode().value() != 200) {
+                            continue;
                         }
+
+                        ExampleCitationScopus data = result.getBody();
+
+                        if (data == null) {
+                            continue;
+                        }
+
+                        SearchResults searchResults = data.getSearchResults();
+
+                        if (searchResults.getEntry().isEmpty()
+                                && searchResults.getEntry().get(0).getCitedbyCount() == null) {
+                            continue;
+                        }
+
+                        List<EntryScopus> entryScopus = searchResults.getEntry();
+
+                        if (entryScopus.isEmpty()) {
+                            continue;
+                        }
+
+                        Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+                        if (!citationScopus.isPresent()) {
+                            CitationScopus citationScopus2 = new CitationScopus();
+                            citationScopus2.setArticle(article);
+                            citationScopus2.setReferences_count(Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+                            citationScopusRepo.save(citationScopus2);
+                            System.out.println(citationScopus2);
+                        }
+
+                        citationScopus.get().setArticle(article);
+                        citationScopus.get().setReferences_count(Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+                        citationScopusRepo.save(citationScopus.get());
+
+                        System.out.println(citationScopus.get());
+
                     } catch (Exception e) {
                         continue;
                     }
 
+                }
+
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
+    private <T> void articleCitationCrossRef() {
+        List<Article> articles = articleRepo.findAll();
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        if (articles.size() > 0) {
+            for (Article article : articles) {
+                if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
                     try {
-                        ResponseEntity<ExampleCitationCrossRef> response = restTemplate.exchange(
+
+                        ResponseEntity<ExampleCitationCrossRef> result = restTemplate.exchange(
                                 "https://api.crossref.org/works/" + article.getDoi(),
                                 HttpMethod.GET,
                                 null,
                                 ExampleCitationCrossRef.class);
 
-                        if (response.getStatusCode().value() == 200) {
-                            ExampleCitationCrossRef body = response.getBody();
-
-                            if (body != null) {
-                                EntryCrossRef entryCrossRef = body.getMessage();
-
-                                Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
-                                        .findByArticleId(article.getId());
-
-                                if (!citationCrossRef.isPresent()) {
-                                    CitationCrossRef citationCrossRef2 = new CitationCrossRef();
-                                    citationCrossRef2.setArticle(article);
-                                    citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
-
-                                    System.out.println(citationCrossRefRepo.save(citationCrossRef2));
-                                } else {
-                                    citationCrossRef.get().setArticle(article);
-                                    citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
-
-                                    System.out.println(citationCrossRefRepo.save(citationCrossRef.get()));
-                                }
-
-                            }
-
+                        if (result.getStatusCode().value() != 200) {
+                            continue;
                         }
+
+                        ExampleCitationCrossRef body = result.getBody();
+
+                        if (body == null) {
+                            continue;
+                        }
+
+                        EntryCrossRef entryCrossRef = body.getMessage();
+
+                        Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                                .findByArticleId(article.getId());
+
+                        if (!citationCrossRef.isPresent()) {
+                            CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                            citationCrossRef2.setArticle(article);
+                            citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
+
+                            citationCrossRefRepo.save(citationCrossRef2);
+                            System.out.println(citationCrossRef2);
+                        }
+
+                        citationCrossRef.get().setArticle(article);
+                        citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
+
+                        citationCrossRefRepo.save(citationCrossRef.get());
+                        System.out.println(citationCrossRef.get());
+
                     } catch (Exception e) {
                         continue;
                     }
+
                 }
 
             }
@@ -683,7 +751,7 @@ public class ScheduledTask {
     }
 
     @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
-    public void getFileImagePDF() {
+    public void getFigures() {
         List<Article> articles = articleRepo.findAll();
 
         if (articles.size() > 0) {
@@ -698,33 +766,7 @@ public class ScheduledTask {
 
                         PDDocument document = PDDocument.load(inputStream);
 
-                        PDFTextStripper stripper = new PDFTextStripper();
-
-                        String text = stripper.getText(document);
-
-                        document.close();
-
-                        String[] lines = text.split("\n");
-
-                        String startElement = "1. INTRODUCTION";
-                        String endElement = "BIOGRAPHIES OF AUTHORS";
-
-                        boolean foundStart = false;
-                        boolean foundEnd = false;
-
-                        for (String line : lines) {
-                            if (line.contains(startElement)) {
-                                foundStart = true;
-                            } else if (line.contains(endElement)) {
-                                foundEnd = true;
-                                break;
-                            } else if (foundStart && !foundEnd) {
-                                article.setFull_text(line);
-                                System.out.println(line);
-                            }
-                        }
-
-                        int counter = 1;
+                        int counter = 0;
                         for (PDPage page : document.getPages()) {
                             PDResources resources = page.getResources();
                             for (COSName name : resources.getXObjectNames()) {
@@ -757,6 +799,14 @@ public class ScheduledTask {
 
                                     if (!checkFigure.isPresent()) {
                                         figureRepo.save(figure);
+                                    } else {
+                                        checkFigure.get().setName(article.getDoi() + "/figure/"
+                                                + counter + ".png");
+                                        checkFigure.get().setUrl(uriComponents.getPath());
+                                        checkFigure.get().setArticle(article);
+                                        checkFigure.get().setFigureByte(imageInByteArray);
+
+                                        figureRepo.save(checkFigure.get());
                                     }
 
                                     counter++;
@@ -764,6 +814,30 @@ public class ScheduledTask {
                                 }
                             }
                         }
+
+                        document.close();
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                }
+            }
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 27 * *", zone = "GMT+7")
+    public void getFilePDF() {
+        List<Article> articles = articleRepo.findAll();
+
+        if (articles.size() > 0) {
+            for (Article article : articles) {
+                if (article.getArticle_pdf() != null
+                        && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
+                                .contains("info")) {
+
+                    try {
+                        URL url = new URL(article.getArticle_pdf());
+
                         InputStream in = new BufferedInputStream(url.openStream());
                         ByteArrayOutputStream out = new ByteArrayOutputStream();
                         byte[] buf = new byte[1024];
@@ -784,18 +858,20 @@ public class ScheduledTask {
                         filePDF.setName(article.getDoi());
                         filePDF.setUrl(uriComponents.getPath());
                         filePDF.setFileByte(response);
-
-                        System.out.println(uriComponents.getPath());
-
                         Optional<File> checkFile = fileRepo.findByName(article.getDoi());
-
                         if (!checkFile.isPresent()) {
                             fileRepo.save(filePDF);
-                        }
+                        } else {
 
+                            checkFile.get().setName(article.getDoi());
+                            checkFile.get().setUrl(uriComponents.getPath());
+                            checkFile.get().setFileByte(response);
+                            fileRepo.save(checkFile.get());
+                        }
                         article.setArticle_pdf(uriComponents.getPath());
                         articleRepo.save(article);
 
+                        System.out.println(article);
                     } catch (Exception e) {
                         continue;
                     }

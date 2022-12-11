@@ -88,7 +88,7 @@ public class Article {
     @Column(length = 10000, nullable = false)
     private String abstract_text;
 
-    @Column(length = 10000, nullable = true)
+    @Column(length = 100000, nullable = true)
     private String full_text;
 
     @Column(length = 255, nullable = true)

@@ -33,7 +33,7 @@ public class Article {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "journal_id")
     private Journal journal;
 
@@ -45,9 +45,6 @@ public class Article {
 
     @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
     private Set<Subject> subjects;
-
-    @Column(nullable = true, length = 255)
-    private String figure;
 
     @Column(length = 255, nullable = false)
     private String title;
@@ -73,7 +70,7 @@ public class Article {
     @Column(length = 255, nullable = true)
     private String source_type;
 
-    @Column(length = 3, nullable = false)
+    @Column(length = 255, nullable = false)
     private String languange_publication = "en";
 
     @Column(length = 255, nullable = false, unique = true)
@@ -129,8 +126,8 @@ public class Article {
         this.figures = figures;
     }
 
-    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, String figure,
-            String title, String pages, String publisher, String publish_year, String last_modifier,
+    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, String title, String pages,
+            String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
             String keyword, Timestamp updated_at, Timestamp created_at) {
@@ -138,7 +135,6 @@ public class Article {
         this.journal = journal;
         this.ojs_id = ojs_id;
         this.set_spec = set_spec;
-        this.figure = figure;
         this.title = title;
         this.pages = pages;
         this.publisher = publisher;
@@ -198,14 +194,6 @@ public class Article {
 
     public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
-    }
-
-    public String getFigure() {
-        return figure;
-    }
-
-    public void setFigure(String figure) {
-        this.figure = figure;
     }
 
     public String getTitle() {

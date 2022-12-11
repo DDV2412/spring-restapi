@@ -169,7 +169,6 @@ public class ArticleController {
             article.setJournal(journal);
             article.setOjs_id(articleMapper.getOjs_id());
             article.setSet_spec(articleMapper.getSet_spec());
-            article.setFigure(articleMapper.getFigure());
             article.setTitle(articleMapper.getTitle());
             article.setPages(articleMapper.getPages());
             article.setPublisher(articleMapper.getPublisher());

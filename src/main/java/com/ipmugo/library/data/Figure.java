@@ -21,11 +21,9 @@ public class Figure {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String name;
+    private String filename;
 
     private String url;
-
-    private byte[] figureByte;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "article_id", nullable = false)
@@ -35,11 +33,10 @@ public class Figure {
     public Figure() {
     }
 
-    public Figure(UUID id, String name, String url, byte[] figureByte, Article article) {
+    public Figure(UUID id, String filename, String url, Article article) {
         this.id = id;
-        this.name = name;
+        this.filename = filename;
         this.url = url;
-        this.figureByte = figureByte;
         this.article = article;
     }
 
@@ -51,12 +48,12 @@ public class Figure {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFilename() {
+        return filename;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     public String getUrl() {
@@ -65,14 +62,6 @@ public class Figure {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public byte[] getFigureByte() {
-        return figureByte;
-    }
-
-    public void setFigureByte(byte[] figureByte) {
-        this.figureByte = figureByte;
     }
 
     public Article getArticle() {

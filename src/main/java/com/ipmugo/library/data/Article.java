@@ -37,6 +37,9 @@ public class Article {
     @JoinColumn(name = "journal_id")
     private Journal journal;
 
+    @Column(length = 255, nullable = false)
+    private String thumbnail;
+
     @Column(nullable = true)
     private Integer ojs_id;
 
@@ -126,15 +129,18 @@ public class Article {
         this.figures = figures;
     }
 
-    public Article(UUID id, Journal journal, Integer ojs_id, String set_spec, String title, String pages,
-            String publisher, String publish_year, String last_modifier,
+    public Article(UUID id, Journal journal, String thumbnail, Integer ojs_id, String set_spec, Set<Subject> subjects,
+            String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
-            String keyword, Timestamp updated_at, Timestamp created_at) {
+            String keyword, Timestamp updated_at, Timestamp created_at, Set<Author> authors,
+            CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref, Set<Figure> figures) {
         this.id = id;
         this.journal = journal;
+        this.thumbnail = thumbnail;
         this.ojs_id = ojs_id;
         this.set_spec = set_spec;
+        this.subjects = subjects;
         this.title = title;
         this.pages = pages;
         this.publisher = publisher;
@@ -154,10 +160,22 @@ public class Article {
         this.keyword = keyword;
         this.updated_at = updated_at;
         this.created_at = created_at;
+        this.authors = authors;
+        this.citation_by_scopus = citation_by_scopus;
+        this.citation_by_cross_ref = citation_by_cross_ref;
+        this.figures = figures;
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public void setId(UUID id) {

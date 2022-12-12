@@ -3,6 +3,7 @@ package com.ipmugo.library.utils;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
@@ -42,7 +43,6 @@ import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
 import com.ipmugo.library.data.Figure;
-import com.ipmugo.library.data.File;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.data.Subject;
@@ -66,7 +66,6 @@ import com.ipmugo.library.repository.CategoryRepo;
 import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
 import com.ipmugo.library.repository.FigureRepo;
-import com.ipmugo.library.repository.FileRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
 import com.ipmugo.library.repository.SubjectRepo;
@@ -98,9 +97,6 @@ public class ScheduledTask {
 
     @Autowired
     private SubjectRepo subjectRepo;
-
-    @Autowired
-    private FileRepo fileRepo;
 
     @Autowired
     private FigureRepo figureRepo;
@@ -242,7 +238,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 0 0 20 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 40 23 11 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             List<Journal> journals = journalRepo.findAll();
@@ -512,7 +508,7 @@ public class ScheduledTask {
                             foundEnd = true;
                             break;
                         } else if (foundStart && !foundEnd) {
-                            String paragraph = String.join("\n", lines);
+                            String paragraph = String.join("\n", line);
                             articleData.setFull_text(paragraph);
                         }
                     }
@@ -778,34 +774,47 @@ public class ScheduledTask {
 
                                     byte[] imageInByteArray = dataStream.toByteArray();
 
+                                    FileOutputStream fos = new FileOutputStream(article.getDoi().replaceAll("/", "-")
+                                            + counter + ".png");
+
+                                    try {
+                                        fos.write(imageInByteArray);
+                                        fos.close();
+                                    } catch (Exception e) {
+                                        continue;
+                                    }
+
                                     Figure figure = new Figure();
-                                    UriComponents uriComponents = UriComponentsBuilder.newInstance().scheme("http")
-                                            .host("localhost:8080")
-                                            .path("/api/upload/image/" + article.getDoi() + "/figure/"
+                                    UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                                            .path("/api/upload/figure/" + article.getDoi().replaceAll("/", "-")
                                                     + counter + ".png")
                                             .build();
 
-                                    figure.setName(article.getDoi() + "/figure/"
-                                            + counter + ".png");
                                     figure.setUrl(uriComponents.getPath());
-                                    figure.setArticle(article);
-                                    figure.setFigureByte(imageInByteArray);
-
-                                    Optional<Figure> checkFigure = figureRepo.findByName(article.getDoi() + "/figure/"
+                                    figure.setFilename(article.getDoi().replaceAll("/", "-")
                                             + counter + ".png");
+                                    figure.setArticle(article);
+
+                                    Optional<Figure> checkFigure = figureRepo.findByFilename(
+                                            article.getDoi().replaceAll("/", "-")
+                                                    + counter + ".png");
 
                                     if (!checkFigure.isPresent()) {
                                         figureRepo.save(figure);
                                     } else {
-                                        checkFigure.get().setName(article.getDoi() + "/figure/"
+                                        checkFigure.get().setFilename(article.getDoi().replaceAll("/", "-")
                                                 + counter + ".png");
                                         checkFigure.get().setUrl(uriComponents.getPath());
                                         checkFigure.get().setArticle(article);
-                                        checkFigure.get().setFigureByte(imageInByteArray);
 
                                         figureRepo.save(checkFigure.get());
                                     }
 
+                                    if (counter == 1) {
+                                        article.setThumbnail(uriComponents.getPath());
+
+                                        articleRepo.save(article);
+                                    }
                                     counter++;
                                     System.out.println(figure);
                                 }
@@ -846,28 +855,20 @@ public class ScheduledTask {
                         in.close();
                         byte[] response = out.toByteArray();
 
-                        UriComponents uriComponents = UriComponentsBuilder.newInstance().scheme("http")
-                                .host("localhost:8080")
-                                .path("/api/upload/document/" + article.getDoi()).build();
+                        FileOutputStream fos = new FileOutputStream(article.getDoi().replaceAll("/", "-") + ".pdf");
 
-                        File filePDF = new File();
-
-                        filePDF.setName(article.getDoi());
-                        filePDF.setUrl(uriComponents.getPath());
-                        filePDF.setFileByte(response);
-                        Optional<File> checkFile = fileRepo.findByName(article.getDoi());
-                        if (!checkFile.isPresent()) {
-                            fileRepo.save(filePDF);
-                        } else {
-
-                            checkFile.get().setName(article.getDoi());
-                            checkFile.get().setUrl(uriComponents.getPath());
-                            checkFile.get().setFileByte(response);
-                            fileRepo.save(checkFile.get());
+                        try {
+                            fos.write(response);
+                            fos.close();
+                        } catch (Exception e) {
+                            continue;
                         }
+
+                        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                                .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-")).build();
+
                         article.setArticle_pdf(uriComponents.getPath());
                         articleRepo.save(article);
-
                         System.out.println(article);
                     } catch (Exception e) {
                         continue;

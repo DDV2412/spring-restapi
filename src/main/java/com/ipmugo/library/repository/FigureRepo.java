@@ -9,5 +9,5 @@ import com.ipmugo.library.data.Figure;
 
 public interface FigureRepo extends JpaRepository<Figure, UUID> {
 
-    Optional<Figure> findByName(String setName);
+    Optional<Figure> findByFilename(String filename);
 }

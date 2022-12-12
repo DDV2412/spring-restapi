@@ -115,18 +115,7 @@ public class Article {
     @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private CitationCrossRef citation_by_cross_ref;
 
-    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Figure> figures;
-
     public Article() {
-    }
-
-    public Set<Figure> getFigures() {
-        return figures;
-    }
-
-    public void setFigures(Set<Figure> figures) {
-        this.figures = figures;
     }
 
     public Article(UUID id, Journal journal, String thumbnail, Integer ojs_id, String set_spec, Set<Subject> subjects,
@@ -134,7 +123,7 @@ public class Article {
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
             String keyword, Timestamp updated_at, Timestamp created_at, Set<Author> authors,
-            CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref, Set<Figure> figures) {
+            CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref) {
         this.id = id;
         this.journal = journal;
         this.thumbnail = thumbnail;
@@ -163,7 +152,6 @@ public class Article {
         this.authors = authors;
         this.citation_by_scopus = citation_by_scopus;
         this.citation_by_cross_ref = citation_by_cross_ref;
-        this.figures = figures;
     }
 
     public UUID getId() {

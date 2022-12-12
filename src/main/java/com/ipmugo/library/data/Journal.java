@@ -99,10 +99,10 @@ public class Journal {
     private String review_police;
 
     @CreationTimestamp
-    private Timestamp updated_at;
+    private Timestamp updatedAt;
 
     @CreationTimestamp
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     @ManyToMany(mappedBy = "journals", fetch = FetchType.EAGER)
     private Set<Category> categories;
@@ -122,8 +122,8 @@ public class Journal {
             String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
             String primary_languange, String editor_site, String full_text_format, boolean article_doi,
             String statement, String license, Double apc_fee, String review_police,
-            Timestamp updated_at,
-            Timestamp created_at,
+            Timestamp updatedAt,
+            Timestamp createdAt,
             Metric metric) {
         this.id = id;
         this.name = name;
@@ -148,8 +148,8 @@ public class Journal {
         this.license = license;
         this.apc_fee = apc_fee;
         this.review_police = review_police;
-        this.updated_at = updated_at;
-        this.created_at = created_at;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
         this.metric = metric;
     }
 
@@ -337,20 +337,20 @@ public class Journal {
         this.review_police = review_police;
     }
 
-    public Date getUpdated_at() {
-        return updated_at;
+    public Date getupdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(Timestamp updated_at) {
-        this.updated_at = updated_at;
+    public void setupdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public Date getCreated_at() {
-        return created_at;
+    public Date getcreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
+    public void setcreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Set<Category> getCategories() {

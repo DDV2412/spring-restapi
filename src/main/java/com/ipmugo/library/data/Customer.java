@@ -47,16 +47,16 @@ public class Customer {
     private String message;
 
     @CreationTimestamp
-    private Timestamp updated_at;
+    private Timestamp updatedAt;
 
     @CreationTimestamp
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     public Customer() {
     }
 
     public Customer(UUID id, String first_name, String last_name, String company_name, String email,
-            Integer phone_number, String country, String message, Timestamp updated_at, Timestamp created_at) {
+            Integer phone_number, String country, String message, Timestamp updatedAt, Timestamp createdAt) {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -65,8 +65,8 @@ public class Customer {
         this.phone_number = phone_number;
         this.country = country;
         this.message = message;
-        this.updated_at = updated_at;
-        this.created_at = created_at;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
     }
 
     public UUID getId() {
@@ -133,20 +133,20 @@ public class Customer {
         this.message = message;
     }
 
-    public Date getUpdated_at() {
-        return updated_at;
+    public Date getupdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(Timestamp updated_at) {
-        this.updated_at = updated_at;
+    public void setupdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public Date getCreated_at() {
-        return created_at;
+    public Date getcreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
+    public void setcreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
 }

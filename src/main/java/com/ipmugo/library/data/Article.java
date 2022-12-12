@@ -101,10 +101,10 @@ public class Article {
     private String keyword;
 
     @CreationTimestamp
-    private Timestamp updated_at;
+    private Timestamp updatedAt;
 
     @CreationTimestamp
-    private Timestamp created_at;
+    private Timestamp createdAt;
 
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Author> authors;
@@ -122,7 +122,7 @@ public class Article {
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
-            String keyword, Timestamp updated_at, Timestamp created_at, Set<Author> authors,
+            String keyword, Timestamp updatedAt, Timestamp createdAt, Set<Author> authors,
             CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref) {
         this.id = id;
         this.journal = journal;
@@ -147,8 +147,8 @@ public class Article {
         this.full_text = full_text;
         this.article_pdf = article_pdf;
         this.keyword = keyword;
-        this.updated_at = updated_at;
-        this.created_at = created_at;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
         this.authors = authors;
         this.citation_by_scopus = citation_by_scopus;
         this.citation_by_cross_ref = citation_by_cross_ref;
@@ -338,20 +338,20 @@ public class Article {
         this.keyword = keyword;
     }
 
-    public Date getUpdated_at() {
-        return updated_at;
+    public Date getupdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(Timestamp updated_at) {
-        this.updated_at = updated_at;
+    public void setupdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public Date getCreated_at() {
-        return created_at;
+    public Date getcreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
+    public void setcreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Set<Author> getAuthors() {

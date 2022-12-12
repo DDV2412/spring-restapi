@@ -5,6 +5,10 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.data.Category;
@@ -44,13 +49,41 @@ public class JournalController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponseData<Iterable<Journal>>> findAll() {
+    public ResponseEntity<ResponseData<Iterable<Journal>>> findAll(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size, @RequestParam(required = false) String name,
+            @RequestParam(required = false) String latest, @RequestParam(required = false) String popularity) {
         ResponseData<Iterable<Journal>> responseData = new ResponseData<>();
 
-        Iterable<Journal> journal = journalService.findAll();
+        Pageable paging = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        if (latest != null) {
+            if (latest == "desc") {
+                paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
+            } else {
+                PageRequest.of(page, size, Sort.by("createdAt").ascending());
+            }
+        }
+
+        if (popularity != null) {
+            if (popularity == "desc") {
+                paging = PageRequest.of(page, size, Sort.by("metric.citeScoreCurrent").descending());
+            } else {
+                PageRequest.of(page, size, Sort.by("metric.citeScoreCurrent").ascending());
+            }
+        }
+
+        if (name != null) {
+            if (name == "desc") {
+                paging = PageRequest.of(page, size, Sort.by("name").descending());
+            } else {
+                PageRequest.of(page, size, Sort.by("name").ascending());
+            }
+        }
+
+        Page<Journal> journal = journalService.findAll(paging);
 
         responseData.setStatus(true);
-        responseData.setPayload(journal);
+        responseData.setPayload(journal.getContent());
         return ResponseEntity.ok(responseData);
 
     }

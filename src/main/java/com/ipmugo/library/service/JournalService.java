@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -48,8 +50,8 @@ public class JournalService {
 
     private RestTemplate restTemplate = new RestTemplate();
 
-    public List<Journal> findAll() {
-        return journalRepo.findAll();
+    public Page<Journal> findAll(Pageable pageable) {
+        return journalRepo.findAll(pageable);
     }
 
     public Journal findOne(UUID id) {

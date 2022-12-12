@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,8 +44,8 @@ public class ArticleService {
 
     private RestTemplate restTemplate = new RestTemplate();
 
-    public List<Article> findAll() {
-        return articleRepo.findAll();
+    public Page<Article> findAll(Pageable pageable) {
+        return articleRepo.findAll(pageable);
     }
 
     public Article findOne(UUID id) {

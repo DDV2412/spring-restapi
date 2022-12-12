@@ -263,7 +263,7 @@ public class ScheduledTask {
                         parseData(journal, document);
 
                         if (!document.getElementsByTag("resumptionToken").isEmpty() && document
-                                .getElementsByTag("resumptionToken").attr("expirationDate") == null) {
+                                .getElementsByTag("resumptionToken").attr("expirationDate") != null) {
                             resumptionToken(
                                     journal,
                                     document.getElementsByTag("resumptionToken").first().text());
@@ -297,7 +297,7 @@ public class ScheduledTask {
                 parseData(journal, document);
 
                 if (!document.getElementsByTag("resumptionToken").isEmpty() && document
-                        .getElementsByTag("resumptionToken").attr("expirationDate") == null) {
+                        .getElementsByTag("resumptionToken").attr("expirationDate") != null) {
                     resumptionToken(
                             journal,
                             document.getElementsByTag("resumptionToken").first().text());

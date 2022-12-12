@@ -38,7 +38,7 @@ public class Customer {
     private String email;
 
     @Column(length = 255, nullable = false)
-    private Integer phone_number;
+    private Long phone_number;
 
     @Column(length = 255, nullable = false)
     private String country;
@@ -56,7 +56,7 @@ public class Customer {
     }
 
     public Customer(UUID id, String first_name, String last_name, String company_name, String email,
-            Integer phone_number, String country, String message, Timestamp updatedAt, Timestamp createdAt) {
+            Long phone_number, String country, String message, Timestamp updatedAt, Timestamp createdAt) {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -109,11 +109,11 @@ public class Customer {
         this.email = email;
     }
 
-    public Integer getPhone_number() {
+    public Long getPhone_number() {
         return phone_number;
     }
 
-    public void setPhone_number(Integer phone_number) {
+    public void setPhone_number(Long phone_number) {
         this.phone_number = phone_number;
     }
 

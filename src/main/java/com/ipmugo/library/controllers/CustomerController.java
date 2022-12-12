@@ -24,7 +24,7 @@ import com.ipmugo.library.service.CustomerService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/customer")
 public class CustomerController {
 
     @Autowired

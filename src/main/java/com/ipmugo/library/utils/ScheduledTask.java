@@ -238,7 +238,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 40 23 11 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             List<Journal> journals = journalRepo.findAll();
@@ -493,25 +493,7 @@ public class ScheduledTask {
 
                     document.close();
 
-                    String[] lines = text.split("\n");
-
-                    String startElement = "1. INTRODUCTION";
-                    String endElement = "BIOGRAPHIES OF AUTHORS";
-
-                    boolean foundStart = false;
-                    boolean foundEnd = false;
-
-                    for (String line : lines) {
-                        if (line.contains(startElement)) {
-                            foundStart = true;
-                        } else if (line.contains(endElement)) {
-                            foundEnd = true;
-                            break;
-                        } else if (foundStart && !foundEnd) {
-                            String paragraph = String.join("\n", line);
-                            articleData.setFull_text(paragraph);
-                        }
-                    }
+                    articleData.setFull_text(text);
 
                 } catch (Exception e) {
                     articleData.setFull_text(null);
@@ -616,7 +598,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         List<Article> articles = articleRepo.findAll();
 
@@ -689,7 +671,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 22 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         List<Article> articles = articleRepo.findAll();
 
@@ -743,7 +725,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
     public void getFigures() {
         List<Article> articles = articleRepo.findAll();
 
@@ -774,7 +756,8 @@ public class ScheduledTask {
 
                                     byte[] imageInByteArray = dataStream.toByteArray();
 
-                                    FileOutputStream fos = new FileOutputStream(article.getDoi().replaceAll("/", "-")
+                                    FileOutputStream fos = new FileOutputStream("upload/figure/" + article.getDoi()
+                                            .replaceAll("/", "-")
                                             + counter + ".png");
 
                                     try {
@@ -831,7 +814,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 0 0 27 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
     public void getFilePDF() {
         List<Article> articles = articleRepo.findAll();
 
@@ -855,7 +838,9 @@ public class ScheduledTask {
                         in.close();
                         byte[] response = out.toByteArray();
 
-                        FileOutputStream fos = new FileOutputStream(article.getDoi().replaceAll("/", "-") + ".pdf");
+                        FileOutputStream fos = new FileOutputStream(
+                                "upload/document/" + article.getDoi().replaceAll("/",
+                                        "-") + ".pdf");
 
                         try {
                             fos.write(response);
@@ -865,7 +850,7 @@ public class ScheduledTask {
                         }
 
                         UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-")).build();
+                                .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-") + ".pdf").build();
 
                         article.setArticle_pdf(uriComponents.getPath());
                         articleRepo.save(article);

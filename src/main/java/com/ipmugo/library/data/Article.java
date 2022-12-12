@@ -37,7 +37,7 @@ public class Article {
     @JoinColumn(name = "journal_id")
     private Journal journal;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = true)
     private String thumbnail;
 
     @Column(nullable = true)

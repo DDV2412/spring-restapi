@@ -756,8 +756,8 @@ public class ScheduledTask {
 
                                     byte[] imageInByteArray = dataStream.toByteArray();
 
-                                    FileOutputStream fos = new FileOutputStream("upload/figure/" + article.getDoi()
-                                            .replaceAll("/", "-")
+                                    FileOutputStream fos = new FileOutputStream("upload/figure/" + article.getTitle()
+                                            .replaceAll(" ", "-")
                                             + counter + ".png");
 
                                     try {
@@ -839,7 +839,7 @@ public class ScheduledTask {
                         byte[] response = out.toByteArray();
 
                         FileOutputStream fos = new FileOutputStream(
-                                "upload/document/" + article.getDoi().replaceAll("/",
+                                "upload/document/" + article.getTitle().replaceAll(" ",
                                         "-") + ".pdf");
 
                         try {

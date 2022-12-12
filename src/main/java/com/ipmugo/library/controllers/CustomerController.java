@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.data.Customer;
@@ -34,13 +38,16 @@ public class CustomerController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponseData<Iterable<Customer>>> findAll() {
+    public ResponseEntity<ResponseData<Iterable<Customer>>> findAll(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
         ResponseData<Iterable<Customer>> responseData = new ResponseData<>();
 
-        Iterable<Customer> customer = customerService.findAll();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Customer> customer = customerService.findAll(pageable);
 
         responseData.setStatus(true);
-        responseData.setPayload(customer);
+        responseData.setPayload(customer.getContent());
         return ResponseEntity.ok(responseData);
 
     }

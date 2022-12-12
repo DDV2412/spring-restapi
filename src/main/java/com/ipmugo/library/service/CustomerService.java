@@ -1,10 +1,11 @@
 package com.ipmugo.library.service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ipmugo.library.data.Customer;
@@ -19,8 +20,8 @@ public class CustomerService {
     @Autowired
     private CustomerRepo customerRepo;
 
-    public List<Customer> findAll() {
-        return customerRepo.findAll();
+    public Page<Customer> findAll(Pageable pageable) {
+        return customerRepo.findAll(pageable);
     }
 
     public Customer findOne(UUID id) {

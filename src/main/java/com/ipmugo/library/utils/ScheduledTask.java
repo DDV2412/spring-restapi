@@ -26,6 +26,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -60,6 +63,8 @@ import com.ipmugo.library.dto.SerialMetadataResponse;
 import com.ipmugo.library.dto.Sjr;
 import com.ipmugo.library.dto.Snip;
 import com.ipmugo.library.dto.SubjectArea;
+import com.ipmugo.library.elastic.data.ArticleElastic;
+import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 import com.ipmugo.library.repository.ArticleRepo;
 import com.ipmugo.library.repository.AuthorRepo;
 import com.ipmugo.library.repository.CategoryRepo;
@@ -101,138 +106,145 @@ public class ScheduledTask {
     @Autowired
     private FigureRepo figureRepo;
 
+    @Autowired
+    private ArticleElasticRepo elasticRepo;
+
     @Scheduled(cron = "0 0 0 10 * *", zone = "GMT+7")
     public <T> void journalMetric() {
-        List<Journal> journals = journalRepo.findAll();
+        Pageable pageable = PageRequest.of(0, 15);
+
+        Page<Journal> journals = journalRepo.findAll(pageable);
 
         RestTemplate restTemplate = new RestTemplate();
 
-        if (journals.size() > 0) {
-            for (Journal journal : journals) {
-                try {
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+        for (; journals.hasNext();) {
+            if (journals.getContent().size() > 0) {
+                for (Journal journal : journals.getContent()) {
+                    try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
 
-                    HttpEntity<T> request = new HttpEntity<>(headers);
+                        HttpEntity<T> request = new HttpEntity<>(headers);
 
-                    ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
-                            "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
-                            HttpMethod.GET,
-                            request,
-                            new ParameterizedTypeReference<ExampleJournalMetric>() {
-                            });
+                        ResponseEntity<ExampleJournalMetric> result = restTemplate.exchange(
+                                "https://api.elsevier.com/content/serial/title?issn=" + journal.getIssn(),
+                                HttpMethod.GET,
+                                request,
+                                new ParameterizedTypeReference<ExampleJournalMetric>() {
+                                });
 
-                    if (result.getStatusCode().value() == 200) {
-                        ExampleJournalMetric data = result.getBody();
+                        if (result.getStatusCode().value() == 200) {
+                            ExampleJournalMetric data = result.getBody();
 
-                        if (data != null) {
-                            SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
+                            if (data != null) {
+                                SerialMetadataResponse metadataResponse = data.getSerialMetadataResponse();
 
-                            if (metadataResponse.getError() == null) {
-                                List<EntryJournalCitation> entry = metadataResponse.getEntry();
+                                if (metadataResponse.getError() == null) {
+                                    List<EntryJournalCitation> entry = metadataResponse.getEntry();
 
-                                if (entry.size() > 0) {
-                                    SJRList sjrList = entry.get(0).getSJRList();
-                                    SNIPList snipList = entry.get(0).getSNIPList();
-                                    CiteScoreYearInfoList citeScoreYearInfoList = entry.get(0)
-                                            .getCiteScoreYearInfoList();
+                                    if (entry.size() > 0) {
+                                        SJRList sjrList = entry.get(0).getSJRList();
+                                        SNIPList snipList = entry.get(0).getSNIPList();
+                                        CiteScoreYearInfoList citeScoreYearInfoList = entry.get(0)
+                                                .getCiteScoreYearInfoList();
 
-                                    if (sjrList != null && snipList != null && citeScoreYearInfoList != null) {
-                                        List<Sjr> sjr = sjrList.getSjr();
-                                        List<Snip> snips = snipList.getSnip();
-                                        List<SubjectArea> subjectAreas = entry.get(0).getSubjectArea();
+                                        if (sjrList != null && snipList != null && citeScoreYearInfoList != null) {
+                                            List<Sjr> sjr = sjrList.getSjr();
+                                            List<Snip> snips = snipList.getSnip();
+                                            List<SubjectArea> subjectAreas = entry.get(0).getSubjectArea();
 
-                                        Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
+                                            Double sjrDouble = Double.parseDouble(sjr.get(0).get$());
 
-                                        Double snipDouble = Double.parseDouble(snips.get(0).get$());
+                                            Double snipDouble = Double.parseDouble(snips.get(0).get$());
 
-                                        Double citeScoreCurrent = Double
-                                                .parseDouble(citeScoreYearInfoList.getCiteScoreCurrentMetric());
+                                            Double citeScoreCurrent = Double
+                                                    .parseDouble(citeScoreYearInfoList.getCiteScoreCurrentMetric());
 
-                                        Double citeScoreTrack = Double
-                                                .parseDouble(citeScoreYearInfoList.getCiteScoreTracker());
+                                            Double citeScoreTrack = Double
+                                                    .parseDouble(citeScoreYearInfoList.getCiteScoreTracker());
 
-                                        String currentYear = citeScoreYearInfoList.getCiteScoreCurrentMetricYear();
+                                            String currentYear = citeScoreYearInfoList.getCiteScoreCurrentMetricYear();
 
-                                        String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
-
-                                        if (subjectAreas.size() > 0) {
-                                            for (int x = 0; x < subjectAreas.size(); x++) {
-                                                Optional<Category> category = categoryRepo
-                                                        .findByName(subjectAreas.get(x).get$());
-
-                                                if (!category.isPresent()) {
-                                                    Category categoryValue = new Category();
-                                                    categoryValue.setName(subjectAreas.get(x).get$());
-                                                    categoryRepo.save(categoryValue);
-                                                }
-
-                                            }
-                                        }
-
-                                        Optional<Metric> metric = metricRepo.findByJournalId(journal.getId());
-
-                                        if (!metric.isPresent()) {
-                                            Metric journalCitation = new Metric();
-                                            journalCitation.setSjr(sjrDouble);
-                                            journalCitation.setSnip(snipDouble);
-                                            journalCitation.setCiteScoreCurrent(citeScoreCurrent);
-                                            journalCitation.setCiteScoreTracker(citeScoreTrack);
-                                            journalCitation.setCurrentYear(currentYear);
-                                            journalCitation.setTrackerYear(trackYear);
-                                            journalCitation.setJournal(journal);
-
-                                            Metric metricResult = metricRepo.save(journalCitation);
+                                            String trackYear = citeScoreYearInfoList.getCiteScoreTrackerYear();
 
                                             if (subjectAreas.size() > 0) {
                                                 for (int x = 0; x < subjectAreas.size(); x++) {
                                                     Optional<Category> category = categoryRepo
                                                             .findByName(subjectAreas.get(x).get$());
 
-                                                    if (category.isPresent()) {
-                                                        category.get().getJournals().add(journal);
-                                                        categoryRepo.save(category.get());
-                                                    }
-
-                                                }
-                                            }
-                                            System.out.println(metricResult);
-                                        } else {
-                                            metric.get().setSjr(sjrDouble);
-                                            metric.get().setSnip(snipDouble);
-                                            metric.get().setCiteScoreCurrent(citeScoreCurrent);
-                                            metric.get().setCiteScoreTracker(citeScoreTrack);
-                                            metric.get().setCurrentYear(currentYear);
-                                            metric.get().setTrackerYear(trackYear);
-                                            metric.get().setJournal(journal);
-                                            metricRepo.save(metric.get());
-
-                                            if (subjectAreas.size() > 0) {
-                                                for (int x = 0; x < subjectAreas.size(); x++) {
-                                                    Optional<Category> category = categoryRepo
-                                                            .findByName(subjectAreas.get(x).get$());
-
-                                                    if (category.isPresent()) {
-                                                        category.get().getJournals().add(journal);
-                                                        categoryRepo.save(category.get());
+                                                    if (!category.isPresent()) {
+                                                        Category categoryValue = new Category();
+                                                        categoryValue.setName(subjectAreas.get(x).get$());
+                                                        categoryRepo.save(categoryValue);
                                                     }
 
                                                 }
                                             }
 
-                                            System.out.println(metric.get());
+                                            Optional<Metric> metric = metricRepo.findByJournalId(journal.getId());
+
+                                            if (!metric.isPresent()) {
+                                                Metric journalCitation = new Metric();
+                                                journalCitation.setSjr(sjrDouble);
+                                                journalCitation.setSnip(snipDouble);
+                                                journalCitation.setCiteScoreCurrent(citeScoreCurrent);
+                                                journalCitation.setCiteScoreTracker(citeScoreTrack);
+                                                journalCitation.setCurrentYear(currentYear);
+                                                journalCitation.setTrackerYear(trackYear);
+                                                journalCitation.setJournal(journal);
+
+                                                Metric metricResult = metricRepo.save(journalCitation);
+
+                                                if (subjectAreas.size() > 0) {
+                                                    for (int x = 0; x < subjectAreas.size(); x++) {
+                                                        Optional<Category> category = categoryRepo
+                                                                .findByName(subjectAreas.get(x).get$());
+
+                                                        if (category.isPresent()) {
+                                                            category.get().getJournals().add(journal);
+                                                            categoryRepo.save(category.get());
+                                                        }
+
+                                                    }
+                                                }
+                                                System.out.println(metricResult);
+                                            } else {
+                                                metric.get().setSjr(sjrDouble);
+                                                metric.get().setSnip(snipDouble);
+                                                metric.get().setCiteScoreCurrent(citeScoreCurrent);
+                                                metric.get().setCiteScoreTracker(citeScoreTrack);
+                                                metric.get().setCurrentYear(currentYear);
+                                                metric.get().setTrackerYear(trackYear);
+                                                metric.get().setJournal(journal);
+                                                metricRepo.save(metric.get());
+
+                                                if (subjectAreas.size() > 0) {
+                                                    for (int x = 0; x < subjectAreas.size(); x++) {
+                                                        Optional<Category> category = categoryRepo
+                                                                .findByName(subjectAreas.get(x).get$());
+
+                                                        if (category.isPresent()) {
+                                                            category.get().getJournals().add(journal);
+                                                            categoryRepo.save(category.get());
+                                                        }
+
+                                                    }
+                                                }
+
+                                                System.out.println(metric.get());
+                                            }
+
                                         }
 
                                     }
-
                                 }
+
                             }
 
                         }
-
+                    } catch (Exception e) {
+                        continue;
                     }
-                } catch (Exception e) {
-                    continue;
                 }
             }
         }
@@ -241,35 +253,39 @@ public class ScheduledTask {
     @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
-            List<Journal> journals = journalRepo.findAll();
+            Pageable pageable = PageRequest.of(0, 15);
 
-            if (journals.size() > 0) {
-                for (Journal journal : journals) {
-                    Response response = Jsoup.connect(
-                            journal.getJournal_site() +
-                                    "/oai?verb=ListRecords&metadataPrefix=oai_dc&set="
-                                    + journal.getAbbreviation())
-                            .timeout(0)
-                            .execute();
-                    Document document = Jsoup.connect(
-                            journal.getJournal_site() +
-                                    "/oai?verb=ListRecords&metadataPrefix=oai_dc&set="
-                                    + journal
-                                            .getAbbreviation())
-                            .timeout(0)
-                            .get();
+            Page<Journal> journals = journalRepo.findAll(pageable);
 
-                    if (response.statusCode() == 200 && document.getElementsByTag("error").isEmpty()) {
-                        parseData(journal, document);
+            for (; journals.hasNext();) {
+                if (journals.getContent().size() > 0) {
+                    for (Journal journal : journals.getContent()) {
+                        Response response = Jsoup.connect(
+                                journal.getJournal_site() +
+                                        "/oai?verb=ListRecords&metadataPrefix=oai_dc&set="
+                                        + journal.getAbbreviation())
+                                .timeout(0)
+                                .execute();
+                        Document document = Jsoup.connect(
+                                journal.getJournal_site() +
+                                        "/oai?verb=ListRecords&metadataPrefix=oai_dc&set="
+                                        + journal
+                                                .getAbbreviation())
+                                .timeout(0)
+                                .get();
 
-                        if (!document.getElementsByTag("resumptionToken").isEmpty() && document
-                                .getElementsByTag("resumptionToken").attr("expirationDate") != null) {
-                            resumptionToken(
-                                    journal,
-                                    document.getElementsByTag("resumptionToken").first().text());
+                        if (response.statusCode() == 200 && document.getElementsByTag("error").isEmpty()) {
+                            parseData(journal, document);
+
+                            if (!document.getElementsByTag("resumptionToken").isEmpty() && document
+                                    .getElementsByTag("resumptionToken").attr("expirationDate") != null) {
+                                resumptionToken(
+                                        journal,
+                                        document.getElementsByTag("resumptionToken").text());
+                            }
                         }
-                    }
 
+                    }
                 }
             }
 
@@ -300,7 +316,7 @@ public class ScheduledTask {
                         .getElementsByTag("resumptionToken").attr("expirationDate") != null) {
                     resumptionToken(
                             journal,
-                            document.getElementsByTag("resumptionToken").first().text());
+                            document.getElementsByTag("resumptionToken").text());
                 }
             }
 
@@ -324,7 +340,7 @@ public class ScheduledTask {
 
             Elements metadata = recordData.get(i).getElementsByTag("metadata");
 
-            if (metadata.first().getElementsByTag("oai_dc:dc").isEmpty()) {
+            if (metadata.get(0).getElementsByTag("oai_dc:dc").isEmpty()) {
                 continue;
             }
 
@@ -332,37 +348,37 @@ public class ScheduledTask {
 
             Elements header = recordData.get(i).getElementsByTag("header");
 
-            if (!header.first().getElementsByTag("identifier").isEmpty()
-                    && header.first().getElementsByTag("identifier").first().text() != null) {
+            if (!header.get(0).getElementsByTag("identifier").isEmpty()
+                    && header.get(0).getElementsByTag("identifier").text() != null) {
                 articleData.setOjs_id(
-                        Integer.parseInt(header.first().getElementsByTag("identifier").first().text().split("/")[1]));
+                        Integer.parseInt(header.get(0).getElementsByTag("identifier").get(0).text().split("/")[1]));
             }
 
-            if (!header.first().getElementsByTag("datestamp").isEmpty()
-                    && header.first().getElementsByTag("datestamp").first().text() != null) {
-                articleData.setLast_modifier(header.first().getElementsByTag("datestamp").first().text());
+            if (!header.get(0).getElementsByTag("datestamp").isEmpty()
+                    && header.get(0).getElementsByTag("datestamp").get(0).text() != null) {
+                articleData.setLast_modifier(header.get(0).getElementsByTag("datestamp").get(0).text());
             }
 
-            if (!header.first().getElementsByTag("setSpec").isEmpty()
-                    && header.first().getElementsByTag("setSpec").first().text() != null) {
-                articleData.setSet_spec(header.first().getElementsByTag("setSpec").first().text().split(":")[1]);
+            if (!header.get(0).getElementsByTag("setSpec").isEmpty()
+                    && header.get(0).getElementsByTag("setSpec").get(0).text() != null) {
+                articleData.setSet_spec(header.get(0).getElementsByTag("setSpec").get(0).text().split(":")[1]);
             }
 
-            Elements dc = recordData.get(i).getElementsByTag("metadata").first().getElementsByTag("oai_dc:dc");
+            Elements dc = recordData.get(i).getElementsByTag("metadata").get(0).getElementsByTag("oai_dc:dc");
 
-            if (!dc.first().getElementsByTag("dc:title").isEmpty()
-                    && dc.first().getElementsByTag("dc:title").first().text() != null) {
-                articleData.setTitle(dc.first().getElementsByTag("dc:title").first().text());
+            if (!dc.get(0).getElementsByTag("dc:title").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:title").get(0).text() != null) {
+                articleData.setTitle(dc.get(0).getElementsByTag("dc:title").get(0).text());
             }
 
-            if (!dc.first().getElementsByTag("dc:publisher").isEmpty()
-                    && dc.first().getElementsByTag("dc:publisher").first().text() != null) {
-                articleData.setPublisher(dc.first().getElementsByTag("dc:publisher").first().text());
+            if (!dc.get(0).getElementsByTag("dc:publisher").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:publisher").get(0).text() != null) {
+                articleData.setPublisher(dc.get(0).getElementsByTag("dc:publisher").get(0).text());
             }
 
-            if (!dc.first().getElementsByTag("dc:date").isEmpty()
-                    && dc.first().getElementsByTag("dc:date").first().text() != null) {
-                articleData.setPublish_date(dc.first().getElementsByTag("dc:date").first().text());
+            if (!dc.get(0).getElementsByTag("dc:date").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:date").get(0).text() != null) {
+                articleData.setPublish_date(dc.get(0).getElementsByTag("dc:date").get(0).text());
 
             }
 
@@ -370,39 +386,39 @@ public class ScheduledTask {
                 articleData.setPublish_year(articleData.getPublish_date().split("-")[0]);
             }
 
-            if (!dc.first().getElementsByTag("dc:type").isEmpty()
-                    && dc.first().getElementsByTag("dc:type").first().text() != null) {
-                articleData.setSource_type(dc.first().getElementsByTag("dc:type").first().text());
+            if (!dc.get(0).getElementsByTag("dc:type").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:type").get(0).text() != null) {
+                articleData.setSource_type(dc.get(0).getElementsByTag("dc:type").get(0).text());
 
             }
 
-            if (!dc.first().getElementsByTag("dc:language").isEmpty()
-                    && dc.first().getElementsByTag("dc:language").first().text() != null) {
-                articleData.setLanguange_publication(dc.first().getElementsByTag("dc:language").first().text());
+            if (!dc.get(0).getElementsByTag("dc:language").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:language").get(0).text() != null) {
+                articleData.setLanguange_publication(dc.get(0).getElementsByTag("dc:language").get(0).text());
 
             }
 
-            Elements sources = dc.first().getElementsByTag("dc:source");
+            Elements sources = dc.get(0).getElementsByTag("dc:source");
 
             if (!sources.isEmpty()) {
                 articleData.setIssn(sources.get(2).text());
 
-                if (sources.first().text().split(";").length == 3) {
-                    articleData.setVolume(sources.first().text().split(";")[1].split(",")[0].split("Vol ")[1]);
+                if (sources.get(0).text().split(";").length == 3) {
+                    articleData.setVolume(sources.get(0).text().split(";")[1].split(",")[0].split("Vol ")[1]);
                     articleData
-                            .setIssue(sources.first().text().split(";")[1].split(",")[1].split(":")[0].split("No ")[1]);
-                    articleData.setPages(sources.first().text().split(";")[2]);
+                            .setIssue(sources.get(0).text().split(";")[1].split(",")[1].split(":")[0].split("No ")[1]);
+                    articleData.setPages(sources.get(0).text().split(";")[2]);
                 }
             }
 
-            if (!dc.first().getElementsByTag("dc:description").isEmpty()
-                    && dc.first().getElementsByTag("dc:description").first().text() != null) {
-                articleData.setAbstract_text(dc.first().getElementsByTag("dc:description").first().text());
+            if (!dc.get(0).getElementsByTag("dc:description").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:description").get(0).text() != null) {
+                articleData.setAbstract_text(dc.get(0).getElementsByTag("dc:description").get(0).text());
             }
 
-            if (!dc.first().getElementsByTag("dc:identifier").isEmpty()
-                    && dc.first().getElementsByTag("dc:identifier").last().text() != null) {
-                articleData.setDoi(dc.first().getElementsByTag("dc:identifier").last().text());
+            if (!dc.get(0).getElementsByTag("dc:identifier").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:identifier").get(1).text() != null) {
+                articleData.setDoi(dc.get(0).getElementsByTag("dc:identifier").get(1).text());
             }
 
             if (articleData.getAbstract_text() != null && articleData.getAbstract_text().split("DOI:").length > 2) {
@@ -422,7 +438,7 @@ public class ScheduledTask {
 
             String subjectsData = null;
 
-            Elements subject = dc.first().getElementsByTag("dc:subject");
+            Elements subject = dc.get(0).getElementsByTag("dc:subject");
 
             if (!subject.isEmpty() && subject.size() > 1) {
                 if (!subject.isEmpty()) {
@@ -432,7 +448,7 @@ public class ScheduledTask {
                 }
             } else {
                 if (!subject.isEmpty()) {
-                    keyword = subject.first().text();
+                    keyword = subject.get(0).text();
                 }
             }
 
@@ -440,24 +456,24 @@ public class ScheduledTask {
                 articleData.setKeyword(keyword);
             }
 
-            if (!dc.first()
+            if (!dc.get(0)
                     .getElementsByTag("dc:relation").isEmpty()
-                    && dc.first()
+                    && dc.get(0)
                             .getElementsByTag("dc:relation").size() > 0) {
-                articleData.setArticle_pdf(dc.first()
-                        .getElementsByTag("dc:relation").first().text().replaceAll("/view/",
+                articleData.setArticle_pdf(dc.get(0)
+                        .getElementsByTag("dc:relation").get(0).text().replaceAll("/view/",
                                 "/download/"));
             }
 
-            if (!dc.first()
+            if (!dc.get(0)
                     .getElementsByTag("dc:rights").isEmpty()
-                    && dc.first()
-                            .getElementsByTag("dc:rights").size() > 0) {
-                articleData.setCopyright(dc.first()
-                        .getElementsByTag("dc:rights").last().text());
+                    && dc.get(0)
+                            .getElementsByTag("dc:rights").size() > 1) {
+                articleData.setCopyright(dc.get(0)
+                        .getElementsByTag("dc:rights").get(1).text());
             }
 
-            Elements creator = dc.first().getElementsByTag("dc:creator");
+            Elements creator = dc.get(0).getElementsByTag("dc:creator");
 
             if (subjectsData != null) {
                 subjectsData = subjectsData.replaceAll("; ", ";");
@@ -600,268 +616,357 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
-        List<Article> articles = articleRepo.findAll();
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
 
         RestTemplate restTemplate = new RestTemplate();
 
-        if (articles.size() > 0) {
-            for (Article article : articles) {
-                if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
-                    try {
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+        for (; articles.hasNext();) {
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
+                        try {
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
 
-                        HttpEntity<T> request = new HttpEntity<>(headers);
+                            HttpEntity<T> request = new HttpEntity<>(headers);
 
-                        ResponseEntity<ExampleCitationScopus> result = restTemplate.exchange(
-                                "https://api.elsevier.com/content/search/scopus?query=DOI(" + article.getDoi() + ")",
-                                HttpMethod.GET,
-                                request,
-                                new ParameterizedTypeReference<ExampleCitationScopus>() {
-                                });
+                            ResponseEntity<ExampleCitationScopus> result = restTemplate.exchange(
+                                    "https://api.elsevier.com/content/search/scopus?query=DOI(" + article.getDoi()
+                                            + ")",
+                                    HttpMethod.GET,
+                                    request,
+                                    new ParameterizedTypeReference<ExampleCitationScopus>() {
+                                    });
 
-                        if (result.getStatusCode().value() == 200) {
-                            ExampleCitationScopus data = result.getBody();
+                            if (result.getStatusCode().value() == 200) {
+                                ExampleCitationScopus data = result.getBody();
 
-                            if (data != null) {
-                                SearchResults searchResults = data.getSearchResults();
+                                if (data != null) {
+                                    SearchResults searchResults = data.getSearchResults();
 
-                                if (!searchResults.getEntry().isEmpty()
-                                        && searchResults.getEntry().get(0).getCitedbyCount() != null) {
-                                    List<EntryScopus> entryScopus = searchResults.getEntry();
+                                    if (!searchResults.getEntry().isEmpty()
+                                            && searchResults.getEntry().get(0).getCitedbyCount() != null) {
+                                        List<EntryScopus> entryScopus = searchResults.getEntry();
 
-                                    if (!entryScopus.isEmpty()) {
-                                        Optional<CitationScopus> citationScopus = citationScopusRepo
-                                                .findByArticleId(article.getId());
+                                        if (!entryScopus.isEmpty()) {
+                                            Optional<CitationScopus> citationScopus = citationScopusRepo
+                                                    .findByArticleId(article.getId());
 
-                                        if (!citationScopus.isPresent()) {
-                                            CitationScopus citationScopus2 = new CitationScopus();
-                                            citationScopus2.setArticle(article);
-                                            citationScopus2
+                                            if (!citationScopus.isPresent()) {
+                                                CitationScopus citationScopus2 = new CitationScopus();
+                                                citationScopus2.setArticle(article);
+                                                citationScopus2
+                                                        .setReferences_count(
+                                                                Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+                                                citationScopusRepo.save(citationScopus2);
+                                                System.out.println(citationScopus2);
+                                            }
+
+                                            citationScopus.get().setArticle(article);
+                                            citationScopus.get()
                                                     .setReferences_count(
                                                             Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
 
-                                            citationScopusRepo.save(citationScopus2);
-                                            System.out.println(citationScopus2);
+                                            citationScopusRepo.save(citationScopus.get());
+
+                                            System.out.println(citationScopus.get());
                                         }
 
-                                        citationScopus.get().setArticle(article);
-                                        citationScopus.get()
-                                                .setReferences_count(
-                                                        Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
-
-                                        citationScopusRepo.save(citationScopus.get());
-
-                                        System.out.println(citationScopus.get());
                                     }
 
                                 }
 
                             }
 
-                        }
-
-                    } catch (Exception e) {
-                        continue;
-                    }
-
-                }
-
-            }
-        }
-    }
-
-    @Scheduled(cron = "0 0 0 22 * *", zone = "GMT+7")
-    private <T> void articleCitationCrossRef() {
-        List<Article> articles = articleRepo.findAll();
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        if (articles.size() > 0) {
-            for (Article article : articles) {
-                if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
-                    try {
-
-                        ResponseEntity<ExampleCitationCrossRef> result = restTemplate.exchange(
-                                "https://api.crossref.org/works/" + article.getDoi(),
-                                HttpMethod.GET,
-                                null,
-                                ExampleCitationCrossRef.class);
-
-                        if (result.getStatusCode().value() == 200) {
-                            ExampleCitationCrossRef body = result.getBody();
-
-                            if (body != null) {
-                                EntryCrossRef entryCrossRef = body.getMessage();
-
-                                Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
-                                        .findByArticleId(article.getId());
-
-                                if (!citationCrossRef.isPresent()) {
-                                    CitationCrossRef citationCrossRef2 = new CitationCrossRef();
-                                    citationCrossRef2.setArticle(article);
-                                    citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
-
-                                    citationCrossRefRepo.save(citationCrossRef2);
-                                    System.out.println(citationCrossRef2);
-                                }
-
-                                citationCrossRef.get().setArticle(article);
-                                citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
-
-                                citationCrossRefRepo.save(citationCrossRef.get());
-                                System.out.println(citationCrossRef.get());
-                            }
-
-                        }
-
-                    } catch (Exception e) {
-                        continue;
-                    }
-
-                }
-
-            }
-        }
-    }
-
-    @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
-    public void getFigures() {
-        List<Article> articles = articleRepo.findAll();
-
-        if (articles.size() > 0) {
-            for (Article article : articles) {
-                if (article.getArticle_pdf() != null
-                        && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                .contains("info")) {
-
-                    try {
-                        URL url = new URL(article.getArticle_pdf());
-                        InputStream inputStream = url.openStream();
-
-                        PDDocument document = PDDocument.load(inputStream);
-
-                        int counter = 0;
-                        for (PDPage page : document.getPages()) {
-                            PDResources resources = page.getResources();
-                            for (COSName name : resources.getXObjectNames()) {
-                                PDXObject xobject = resources.getXObject(name);
-                                if (xobject instanceof PDImageXObject) {
-                                    PDImageXObject image = (PDImageXObject) xobject;
-                                    BufferedImage bImage = image.getImage();
-
-                                    ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-                                    ImageIO.write(bImage, "png", dataStream);
-                                    dataStream.flush();
-
-                                    byte[] imageInByteArray = dataStream.toByteArray();
-
-                                    FileOutputStream fos = new FileOutputStream("upload/figure/" + article.getTitle()
-                                            .replaceAll(" ", "-")
-                                            + counter + ".png");
-
-                                    try {
-                                        fos.write(imageInByteArray);
-                                        fos.close();
-                                    } catch (Exception e) {
-                                        continue;
-                                    }
-
-                                    Figure figure = new Figure();
-                                    UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                            .path("/api/upload/figure/" + article.getDoi().replaceAll("/", "-")
-                                                    + counter + ".png")
-                                            .build();
-
-                                    figure.setUrl(uriComponents.getPath());
-                                    figure.setFilename(article.getDoi().replaceAll("/", "-")
-                                            + counter + ".png");
-                                    figure.setArticle(article);
-
-                                    Optional<Figure> checkFigure = figureRepo.findByFilename(
-                                            article.getDoi().replaceAll("/", "-")
-                                                    + counter + ".png");
-
-                                    if (!checkFigure.isPresent()) {
-                                        figureRepo.save(figure);
-                                    } else {
-                                        checkFigure.get().setFilename(article.getDoi().replaceAll("/", "-")
-                                                + counter + ".png");
-                                        checkFigure.get().setUrl(uriComponents.getPath());
-                                        checkFigure.get().setArticle(article);
-
-                                        figureRepo.save(checkFigure.get());
-                                    }
-
-                                    if (counter == 1) {
-                                        article.setThumbnail(uriComponents.getPath());
-
-                                        articleRepo.save(article);
-                                    }
-                                    counter++;
-                                    System.out.println(figure);
-                                }
-                            }
-                        }
-
-                        document.close();
-                    } catch (Exception e) {
-                        continue;
-                    }
-
-                }
-            }
-        }
-    }
-
-    @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
-    public void getFilePDF() {
-        List<Article> articles = articleRepo.findAll();
-
-        if (articles.size() > 0) {
-            for (Article article : articles) {
-                if (article.getArticle_pdf() != null
-                        && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                .contains("info")) {
-
-                    try {
-                        URL url = new URL(article.getArticle_pdf());
-
-                        InputStream in = new BufferedInputStream(url.openStream());
-                        ByteArrayOutputStream out = new ByteArrayOutputStream();
-                        byte[] buf = new byte[1024];
-                        int n = 0;
-                        while (-1 != (n = in.read(buf))) {
-                            out.write(buf, 0, n);
-                        }
-                        out.close();
-                        in.close();
-                        byte[] response = out.toByteArray();
-
-                        FileOutputStream fos = new FileOutputStream(
-                                "upload/document/" + article.getTitle().replaceAll(" ",
-                                        "-") + ".pdf");
-
-                        try {
-                            fos.write(response);
-                            fos.close();
                         } catch (Exception e) {
                             continue;
                         }
 
-                        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-") + ".pdf").build();
-
-                        article.setArticle_pdf(uriComponents.getPath());
-                        articleRepo.save(article);
-                        System.out.println(article);
-                    } catch (Exception e) {
-                        continue;
                     }
 
                 }
             }
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
         }
+
+    }
+
+    @Scheduled(cron = "0 0 0 22 * *", zone = "GMT+7")
+    private <T> void articleCitationCrossRef() {
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        for (; articles.hasNext();) {
+
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
+                        try {
+
+                            ResponseEntity<ExampleCitationCrossRef> result = restTemplate.exchange(
+                                    "https://api.crossref.org/works/" + article.getDoi(),
+                                    HttpMethod.GET,
+                                    null,
+                                    ExampleCitationCrossRef.class);
+
+                            if (result.getStatusCode().value() == 200) {
+                                ExampleCitationCrossRef body = result.getBody();
+
+                                if (body != null) {
+                                    EntryCrossRef entryCrossRef = body.getMessage();
+
+                                    Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                                            .findByArticleId(article.getId());
+
+                                    if (!citationCrossRef.isPresent()) {
+                                        CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                                        citationCrossRef2.setArticle(article);
+                                        citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
+
+                                        citationCrossRefRepo.save(citationCrossRef2);
+                                        System.out.println(citationCrossRef2);
+                                    }
+
+                                    citationCrossRef.get().setArticle(article);
+                                    citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
+
+                                    citationCrossRefRepo.save(citationCrossRef.get());
+                                    System.out.println(citationCrossRef.get());
+                                }
+
+                            }
+
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                    }
+
+                }
+            }
+
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
+        }
+
+    }
+
+    @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
+    public void getFigures() {
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
+
+        for (; articles.hasNext();) {
+
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    if (article.getArticle_pdf() != null
+                            && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
+                                    .contains("info")) {
+
+                        try {
+                            URL url = new URL(article.getArticle_pdf());
+                            InputStream inputStream = url.openStream();
+
+                            PDDocument document = PDDocument.load(inputStream);
+
+                            int counter = 0;
+                            for (PDPage page : document.getPages()) {
+                                PDResources resources = page.getResources();
+                                for (COSName name : resources.getXObjectNames()) {
+                                    PDXObject xobject = resources.getXObject(name);
+                                    if (xobject instanceof PDImageXObject) {
+                                        PDImageXObject image = (PDImageXObject) xobject;
+                                        BufferedImage bImage = image.getImage();
+
+                                        ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
+                                        ImageIO.write(bImage, "png", dataStream);
+                                        dataStream.flush();
+
+                                        byte[] imageInByteArray = dataStream.toByteArray();
+
+                                        FileOutputStream fos = new FileOutputStream("upload/figure/"
+                                                + article.getTitle()
+                                                        .replaceAll(" ", "-")
+                                                + counter + ".png");
+
+                                        try {
+                                            fos.write(imageInByteArray);
+                                            fos.close();
+                                        } catch (Exception e) {
+                                            continue;
+                                        }
+
+                                        Figure figure = new Figure();
+                                        UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                                                .path("/api/upload/figure/" + article.getDoi().replaceAll("/", "-")
+                                                        + counter + ".png")
+                                                .build();
+
+                                        figure.setUrl(uriComponents.getPath());
+                                        figure.setFilename(article.getDoi().replaceAll("/", "-")
+                                                + counter + ".png");
+                                        figure.setArticle(article);
+
+                                        Optional<Figure> checkFigure = figureRepo.findByFilename(
+                                                article.getDoi().replaceAll("/", "-")
+                                                        + counter + ".png");
+
+                                        if (!checkFigure.isPresent()) {
+                                            figureRepo.save(figure);
+                                        } else {
+                                            checkFigure.get().setFilename(article.getDoi().replaceAll("/", "-")
+                                                    + counter + ".png");
+                                            checkFigure.get().setUrl(uriComponents.getPath());
+                                            checkFigure.get().setArticle(article);
+
+                                            figureRepo.save(checkFigure.get());
+                                        }
+
+                                        if (counter == 1) {
+                                            article.setThumbnail(uriComponents.getPath());
+
+                                            articleRepo.save(article);
+                                        }
+                                        counter++;
+                                        System.out.println(figure);
+                                    }
+                                }
+                            }
+
+                            document.close();
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                    }
+                }
+            }
+
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
+        }
+
+    }
+
+    @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
+    public void getFilePDF() {
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
+
+        for (; articles.hasNext();) {
+
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    if (article.getArticle_pdf() != null
+                            && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
+                                    .contains("info")) {
+
+                        try {
+                            URL url = new URL(article.getArticle_pdf());
+
+                            InputStream in = new BufferedInputStream(url.openStream());
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            byte[] buf = new byte[1024];
+                            int n = 0;
+                            while (-1 != (n = in.read(buf))) {
+                                out.write(buf, 0, n);
+                            }
+                            out.close();
+                            in.close();
+                            byte[] response = out.toByteArray();
+
+                            FileOutputStream fos = new FileOutputStream(
+                                    "upload/document/" + article.getTitle().replaceAll(" ",
+                                            "-") + ".pdf");
+
+                            try {
+                                fos.write(response);
+                                fos.close();
+                            } catch (Exception e) {
+                                continue;
+                            }
+
+                            UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                                    .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-") + ".pdf")
+                                    .build();
+
+                            article.setArticle_pdf(uriComponents.getPath());
+                            articleRepo.save(article);
+                            System.out.println(article);
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                    }
+                }
+            }
+
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
+        }
+
+    }
+
+    @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
+    public void pushData() {
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
+
+        for (; articles.hasNext();) {
+
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    ArticleElastic articleElastic = new ArticleElastic();
+
+                    articleElastic.setId(article.getId().toString());
+                    articleElastic.setJournal(article.getJournal());
+                    articleElastic.setThumbnail(article.getThumbnail());
+                    articleElastic.setOjs_id(article.getOjs_id());
+                    articleElastic.setSet_spec(article.getSet_spec());
+                    articleElastic.setSubjects(article.getSubjects());
+                    articleElastic.setTitle(article.getTitle());
+                    articleElastic.setPages(article.getPages());
+                    articleElastic.setPublisher(article.getPublisher());
+                    articleElastic.setPublish_date(article.getPublish_date());
+                    articleElastic.setPublish_year(article.getPublish_year());
+                    articleElastic.setLast_modifier(article.getLast_modifier());
+                    articleElastic.setIssn(article.getIssn());
+                    articleElastic.setSource_type(article.getSource_type());
+                    articleElastic.setLanguange_publication(article.getLanguange_publication());
+                    articleElastic.setDoi(article.getDoi());
+                    articleElastic.setVolume(article.getVolume());
+                    articleElastic.setIssue(article.getIssue());
+                    articleElastic.setCopyright(article.getCopyright());
+                    articleElastic.setAbstract_text(article.getAbstract_text());
+                    articleElastic.setFull_text(article.getFull_text());
+                    articleElastic.setArticle_pdf(article.getArticle_pdf());
+                    articleElastic.setKeyword(article.getKeyword());
+                    articleElastic.setUpdatedAt(article.getupdatedAt());
+                    articleElastic.setCreatedAt(article.getcreatedAt());
+                    articleElastic.setCitation_by_scopus(article.getCitation_by_scopus());
+                    articleElastic.setCitation_by_cross_ref(article.getCitation_by_cross_ref());
+
+                    ArticleElastic _articleElastic = elasticRepo.save(articleElastic);
+
+                    System.out.println(_articleElastic);
+                }
+            }
+
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
+        }
+
     }
 
 }

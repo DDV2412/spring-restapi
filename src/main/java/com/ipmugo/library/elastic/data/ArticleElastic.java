@@ -1,174 +1,114 @@
-package com.ipmugo.library.data;
+package com.ipmugo.library.elastic.data;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.MultiField;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ipmugo.library.data.Author;
+import com.ipmugo.library.data.CitationCrossRef;
+import com.ipmugo.library.data.CitationScopus;
+import com.ipmugo.library.data.Journal;
+import com.ipmugo.library.data.Subject;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "article")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Article {
+@Document(indexName = "articles")
+public class ArticleElastic {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Field(type = FieldType.Keyword)
+    private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "journal_id")
+    @Field(type = FieldType.Object, includeInParent = true)
     private Journal journal;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String thumbnail;
 
-    @Column(nullable = true)
+    @Field(type = FieldType.Keyword)
     private Integer ojs_id;
 
-    @Column(nullable = false, length = 100)
+    @Field(type = FieldType.Keyword)
     private String set_spec;
 
-    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Subject> subjects;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Text)
     private String title;
 
-    @Column(length = 10, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String pages;
 
-    @Column(length = 150, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String publisher;
 
-    @Column(nullable = false)
+    @Field(type = FieldType.Keyword)
     private String publish_year;
 
-    @Column(nullable = false)
+    @Field(type = FieldType.Keyword)
     private String last_modifier;
 
-    @Column(nullable = false)
+    @Field(type = FieldType.Keyword)
     private String publish_date;
 
-    @Column(length = 12, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String issn;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String source_type;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String languange_publication = "en";
 
-    @Column(length = 255, nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private String doi;
 
-    @Column(nullable = true)
+    @Field(type = FieldType.Keyword)
     private String volume;
 
-    @Column(nullable = true)
+    @Field(type = FieldType.Keyword)
     private String issue;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String copyright;
 
-    @Column(columnDefinition = "TEXT")
+    @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String abstract_text;
 
-    @Column(columnDefinition = "TEXT")
+    @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String full_text;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String article_pdf;
 
-    @Column(columnDefinition = "TEXT")
+    @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String keyword;
 
-    @CreationTimestamp
-    private Timestamp updatedAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    private Date updatedAt;
 
-    @CreationTimestamp
-    private Timestamp createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    private Date createdAt;
 
-    @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Author> authors;
 
-    @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Field(type = FieldType.Object, includeInParent = true)
     private CitationScopus citation_by_scopus;
 
-    @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Field(type = FieldType.Object, includeInParent = true)
     private CitationCrossRef citation_by_cross_ref;
 
-    public Article() {
-    }
-
-    public Article(UUID id, Journal journal, String thumbnail, Integer ojs_id, String set_spec,
-            List<Subject> subjects,
-            String title, String pages, String publisher, String publish_year, String last_modifier,
-            String publish_date, String issn, String source_type, String languange_publication, String doi,
-            String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
-            String keyword, Timestamp updatedAt, Timestamp createdAt,
-            List<Author> authors,
-            CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref) {
-        this.id = id;
-        this.journal = journal;
-        this.thumbnail = thumbnail;
-        this.ojs_id = ojs_id;
-        this.set_spec = set_spec;
-        this.subjects = subjects;
-        this.title = title;
-        this.pages = pages;
-        this.publisher = publisher;
-        this.publish_year = publish_year;
-        this.last_modifier = last_modifier;
-        this.publish_date = publish_date;
-        this.issn = issn;
-        this.source_type = source_type;
-        this.languange_publication = languange_publication;
-        this.doi = doi;
-        this.volume = volume;
-        this.issue = issue;
-        this.copyright = copyright;
-        this.abstract_text = abstract_text;
-        this.full_text = full_text;
-        this.article_pdf = article_pdf;
-        this.keyword = keyword;
-        this.updatedAt = updatedAt;
-        this.createdAt = createdAt;
-        this.authors = authors;
-        this.citation_by_scopus = citation_by_scopus;
-        this.citation_by_cross_ref = citation_by_cross_ref;
-    }
-
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public String getThumbnail() {
-        return thumbnail;
-    }
-
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
-
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -178,6 +118,14 @@ public class Article {
 
     public void setJournal(Journal journal) {
         this.journal = journal;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public Integer getOjs_id() {
@@ -340,19 +288,19 @@ public class Article {
         this.keyword = keyword;
     }
 
-    public Date getupdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setupdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public Date getcreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setcreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 

@@ -811,23 +811,27 @@ public class ScheduledTask {
 
                                         Figure figure = new Figure();
                                         UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                                .path("/api/upload/figure/" + article.getDoi().replaceAll("/", "-")
+                                                .path("/api/upload/figure/" + article.getTitle()
+                                                        .replaceAll(" ", "-")
                                                         + counter + ".png")
                                                 .build();
 
                                         figure.setUrl(uriComponents.getPath());
-                                        figure.setFilename(article.getDoi().replaceAll("/", "-")
+                                        figure.setFilename(article.getTitle()
+                                                .replaceAll(" ", "-")
                                                 + counter + ".png");
                                         figure.setArticle(article);
 
                                         Optional<Figure> checkFigure = figureRepo.findByFilename(
-                                                article.getDoi().replaceAll("/", "-")
+                                                article.getTitle()
+                                                        .replaceAll(" ", "-")
                                                         + counter + ".png");
 
                                         if (!checkFigure.isPresent()) {
                                             figureRepo.save(figure);
                                         } else {
-                                            checkFigure.get().setFilename(article.getDoi().replaceAll("/", "-")
+                                            checkFigure.get().setFilename(article.getTitle()
+                                                    .replaceAll(" ", "-")
                                                     + counter + ".png");
                                             checkFigure.get().setUrl(uriComponents.getPath());
                                             checkFigure.get().setArticle(article);

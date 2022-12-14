@@ -9,11 +9,9 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ipmugo.library.data.Author;
 import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
-import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Subject;
 
 @Document(indexName = "articles")
@@ -24,7 +22,7 @@ public class ArticleElastic {
     private String id;
 
     @Field(type = FieldType.Object, includeInParent = true)
-    private Journal journal;
+    private JournalElastic journal;
 
     @Field(type = FieldType.Keyword)
     private String thumbnail;
@@ -89,10 +87,10 @@ public class ArticleElastic {
     @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String keyword;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    @Field(type = FieldType.Date)
     private Date updatedAt;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+    @Field(type = FieldType.Date)
     private Date createdAt;
 
     @Field(type = FieldType.Nested, includeInParent = true)
@@ -112,11 +110,11 @@ public class ArticleElastic {
         this.id = id;
     }
 
-    public Journal getJournal() {
+    public JournalElastic getJournal() {
         return journal;
     }
 
-    public void setJournal(Journal journal) {
+    public void setJournal(JournalElastic journal) {
         this.journal = journal;
     }
 

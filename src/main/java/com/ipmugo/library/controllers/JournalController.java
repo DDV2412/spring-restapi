@@ -84,9 +84,6 @@ public class JournalController {
 
         responseData.setStatus(true);
         responseData.setPayload(journal.getContent());
-        responseData.setTotalElements(journal.getTotalElements());
-        responseData.setTotalPage(journal.getTotalPages());
-        responseData.setCurrentPage(journal.getNumber());
         return ResponseEntity.ok(responseData);
 
     }

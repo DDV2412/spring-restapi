@@ -1,159 +1,107 @@
-package com.ipmugo.library.data;
+package com.ipmugo.library.elastic.data;
 
-import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
+import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.MultiField;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.ipmugo.library.data.Category;
+import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.utils.Frequency;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "journal")
-public class Journal {
+public class JournalElastic {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Field(type = FieldType.Keyword)
+    private String id;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String name;
 
-    @Column(length = 12, nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private String issn;
 
-    @Column(length = 12, nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private String e_issn;
 
-    @Column(length = 12, nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private String abbreviation;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String thumbnail;
 
-    @Column(columnDefinition = "TEXT")
+    @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String description;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String publisher;
 
-    @Column(length = 255, nullable = false, unique = true)
+    @Field(type = FieldType.Keyword)
     private String journal_site;
 
-    @Column(length = 100, nullable = false)
-    @Enumerated
+    @Field(type = FieldType.Keyword)
     private Frequency frequency;
 
-    @Column(length = 100, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String country;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String aim_scope_site;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String introduction_author_site;
 
-    @Column(length = 100, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String host_platform = "ojs";
 
-    @Column(nullable = false)
+    @Field(type = FieldType.Keyword)
     private Integer issue_per_year;
 
-    @Column(length = 3, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String primary_languange = "en";
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String editor_site;
 
-    @Column(length = 48, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String full_text_format = "application/pdf";
 
-    @Column(nullable = false)
+    @Field(type = FieldType.Keyword)
     private boolean article_doi = true;
 
-    @Column(length = 255, nullable = false)
+    @Field(type = FieldType.Keyword)
     private String statement;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String license;
 
-    @Column(nullable = true)
+    @Field(type = FieldType.Keyword)
     private Double apc_fee;
 
-    @Column(length = 255, nullable = true)
+    @Field(type = FieldType.Keyword)
     private String review_police;
 
-    @CreationTimestamp
-    private Timestamp updatedAt;
+    @Field(type = FieldType.Nested, includeInParent = true)
+    private List<Category> categories;
 
-    @CreationTimestamp
-    private Timestamp createdAt;
-
-    @ManyToMany(mappedBy = "journals", fetch = FetchType.EAGER)
-    private Set<Category> categories;
-
-    @OneToOne(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @Field(type = FieldType.Object, includeInParent = true)
     private Metric metric;
 
-    @OneToMany(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JsonBackReference
-    private Set<Article> articles;
+    @Field(type = FieldType.Date)
+    private Date updatedAt;
 
-    public Journal() {
-    }
+    @Field(type = FieldType.Date)
+    private Date createdAt;
 
-    public Journal(UUID id, String name, String issn, String e_issn, String abbreviation, String thumbnail,
-            String description, String publisher, String journal_site, Frequency frequency, String country,
-            String aim_scope_site, String introduction_author_site, String host_platform, Integer issue_per_year,
-            String primary_languange, String editor_site, String full_text_format, boolean article_doi,
-            String statement, String license, Double apc_fee, String review_police,
-            Metric metric) {
-        this.id = id;
-        this.name = name;
-        this.issn = issn;
-        this.e_issn = e_issn;
-        this.abbreviation = abbreviation;
-        this.thumbnail = thumbnail;
-        this.description = description;
-        this.publisher = publisher;
-        this.journal_site = journal_site;
-        this.frequency = frequency;
-        this.country = country;
-        this.aim_scope_site = aim_scope_site;
-        this.introduction_author_site = introduction_author_site;
-        this.host_platform = host_platform;
-        this.issue_per_year = issue_per_year;
-        this.primary_languange = primary_languange;
-        this.editor_site = editor_site;
-        this.full_text_format = full_text_format;
-        this.article_doi = article_doi;
-        this.statement = statement;
-        this.license = license;
-        this.apc_fee = apc_fee;
-        this.review_police = review_police;
-        this.metric = metric;
-    }
-
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -333,27 +281,11 @@ public class Journal {
         this.review_police = review_police;
     }
 
-    public Date getupdatedAt() {
-        return updatedAt;
-    }
-
-    public void setupdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Date getcreatedAt() {
-        return createdAt;
-    }
-
-    public void setcreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Set<Category> getCategories() {
+    public List<Category> getCategories() {
         return categories;
     }
 
-    public void setCategories(Set<Category> categories) {
+    public void setCategories(List<Category> categories) {
         this.categories = categories;
     }
 
@@ -365,12 +297,20 @@ public class Journal {
         this.metric = metric;
     }
 
-    public Set<Article> getArticles() {
-        return articles;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setArticles(Set<Article> articles) {
-        this.articles = articles;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
 }

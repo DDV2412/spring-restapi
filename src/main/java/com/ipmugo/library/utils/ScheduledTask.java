@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -64,6 +65,7 @@ import com.ipmugo.library.dto.Sjr;
 import com.ipmugo.library.dto.Snip;
 import com.ipmugo.library.dto.SubjectArea;
 import com.ipmugo.library.elastic.data.ArticleElastic;
+import com.ipmugo.library.elastic.data.JournalElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 import com.ipmugo.library.repository.ArticleRepo;
 import com.ipmugo.library.repository.AuthorRepo;
@@ -74,6 +76,8 @@ import com.ipmugo.library.repository.FigureRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
 import com.ipmugo.library.repository.SubjectRepo;
+
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 
 @Component
 @Async
@@ -929,8 +933,35 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     ArticleElastic articleElastic = new ArticleElastic();
 
+                    JournalElastic journalElastic = new JournalElastic();
+                    journalElastic.setId(article.getJournal().getId().toString());
+                    journalElastic.setName(article.getJournal().getName());
+                    journalElastic.setIssn(article.getJournal().getIssn());
+                    journalElastic.setAbbreviation(article.getJournal().getAbbreviation());
+                    journalElastic.setThumbnail(article.getJournal().getThumbnail());
+                    journalElastic.setDescription(article.getJournal().getDescription());
+                    journalElastic.setPublisher(article.getJournal().getPublisher());
+                    journalElastic.setJournal_site(article.getJournal().getJournal_site());
+                    journalElastic.setFrequency(article.getJournal().getFrequency());
+                    journalElastic.setCountry(article.getJournal().getCountry());
+                    journalElastic.setAim_scope_site(article.getJournal().getAim_scope_site());
+                    journalElastic.setIntroduction_author_site(article.getJournal().getIntroduction_author_site());
+                    journalElastic.setHost_platform(article.getJournal().getHost_platform());
+                    journalElastic.setIssue_per_year(article.getJournal().getIssue_per_year());
+                    journalElastic.setPrimary_languange(article.getJournal().getPrimary_languange());
+                    journalElastic.setEditor_site(article.getJournal().getEditor_site());
+                    journalElastic.setFull_text_format(article.getJournal().getFull_text_format());
+                    journalElastic.setArticle_doi(article.getJournal().isArticle_doi());
+                    journalElastic.setStatement(article.getJournal().getStatement());
+                    journalElastic.setLicense(article.getJournal().getLicense());
+                    journalElastic.setApc_fee(article.getJournal().getApc_fee());
+                    journalElastic.setReview_police(article.getJournal().getReview_police());
+                    journalElastic.setMetric(article.getJournal().getMetric());
+                    journalElastic.setUpdatedAt(new Date(article.getupdatedAt().getTime()));
+                    journalElastic.setCreatedAt(new Date(article.getcreatedAt().getTime()));
+
                     articleElastic.setId(article.getId().toString());
-                    articleElastic.setJournal(article.getJournal());
+                    articleElastic.setJournal(journalElastic);
                     articleElastic.setThumbnail(article.getThumbnail());
                     articleElastic.setOjs_id(article.getOjs_id());
                     articleElastic.setSet_spec(article.getSet_spec());
@@ -952,14 +983,14 @@ public class ScheduledTask {
                     articleElastic.setFull_text(article.getFull_text());
                     articleElastic.setArticle_pdf(article.getArticle_pdf());
                     articleElastic.setKeyword(article.getKeyword());
-                    articleElastic.setUpdatedAt(article.getupdatedAt());
-                    articleElastic.setCreatedAt(article.getcreatedAt());
+                    articleElastic.setUpdatedAt(
+                            new Date(article.getupdatedAt().getTime()));
+                    articleElastic.setCreatedAt(new Date(article.getcreatedAt().getTime()));
                     articleElastic.setCitation_by_scopus(article.getCitation_by_scopus());
                     articleElastic.setCitation_by_cross_ref(article.getCitation_by_cross_ref());
 
-                    ArticleElastic _articleElastic = elasticRepo.save(articleElastic);
-
-                    System.out.println(_articleElastic);
+                    IndexResponse articleElastic2 = elasticRepo.save(articleElastic);
+                    System.out.println(articleElastic2);
                 }
             }
 

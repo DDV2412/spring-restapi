@@ -8,21 +8,20 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+
 @Service
 public class ElasticSearchService {
 
     @Autowired
     private ArticleElasticRepo articleElasticRepo;
 
-    public void createProductIndexBulk(final List<ArticleElastic> articles) {
-        articleElasticRepo.saveAll(articles);
+    public IndexResponse save(ArticleElastic article) {
+        return articleElasticRepo.save(article);
     }
 
-    public void createProductIndex(final ArticleElastic article) {
-        articleElasticRepo.save(article);
+    public List<ArticleElastic> findAll(int size) {
+        return articleElasticRepo.findAll(size);
     }
 
-    public Iterable<ArticleElastic> findAll() {
-        return articleElasticRepo.findAll();
-    }
 }

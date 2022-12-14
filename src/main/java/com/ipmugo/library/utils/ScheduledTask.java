@@ -513,7 +513,29 @@ public class ScheduledTask {
 
                     document.close();
 
-                    articleData.setFull_text(text);
+                    String[] lines = text.split("\n");
+
+                    String paragraph = "";
+
+                    String startElement = "1. INTRODUCTION";
+                    String endElement = "BIOGRAPHIES OF AUTHORS";
+
+                    boolean foundStart = false;
+                    boolean foundEnd = false;
+
+                    for (String line : lines) {
+                        if (line.contains(startElement)) {
+                            foundStart = true;
+                        } else if (line.contains(endElement)) {
+                            foundEnd = true;
+                            break;
+                        } else if (foundStart && !foundEnd) {
+                            paragraph += line + "\n";
+
+                        }
+                    }
+
+                    articleData.setFull_text(paragraph);
 
                 } catch (Exception e) {
                     articleData.setFull_text(null);

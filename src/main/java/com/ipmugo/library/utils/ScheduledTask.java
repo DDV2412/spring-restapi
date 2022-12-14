@@ -421,7 +421,8 @@ public class ScheduledTask {
             }
 
             if (!dc.get(0).getElementsByTag("dc:identifier").isEmpty()
-                    && dc.get(0).getElementsByTag("dc:identifier").get(1).text() != null) {
+                    && dc.get(0).getElementsByTag("dc:identifier").size() == 2 && dc.get(0)
+                            .getElementsByTag("dc:identifier").get(1).text() != null) {
                 articleData.setDoi(dc.get(0).getElementsByTag("dc:identifier").get(1).text());
             }
 
@@ -444,7 +445,7 @@ public class ScheduledTask {
 
             Elements subject = dc.get(0).getElementsByTag("dc:subject");
 
-            if (!subject.isEmpty() && subject.size() > 1) {
+            if (!subject.isEmpty() && subject.size() == 2) {
                 if (!subject.isEmpty()) {
                     subjectsData = subject.get(0).text();
 
@@ -472,7 +473,7 @@ public class ScheduledTask {
             if (!dc.get(0)
                     .getElementsByTag("dc:rights").isEmpty()
                     && dc.get(0)
-                            .getElementsByTag("dc:rights").size() > 1) {
+                            .getElementsByTag("dc:rights").size() == 2) {
                 articleData.setCopyright(dc.get(0)
                         .getElementsByTag("dc:rights").get(1).text());
             }

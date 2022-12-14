@@ -121,7 +121,7 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (; journals.hasNext();) {
+        for (int i = 0; i < journals.getTotalPages(); i++) {
             if (journals.getContent().size() > 0) {
                 for (Journal journal : journals.getContent()) {
                     try {
@@ -261,7 +261,7 @@ public class ScheduledTask {
 
             Page<Journal> journals = journalRepo.findAll(pageable);
 
-            for (; journals.hasNext();) {
+            for (int i = 0; i <= journals.getTotalPages(); i++) {
                 if (journals.getContent().size() > 0) {
                     for (Journal journal : journals.getContent()) {
                         Response response = Jsoup.connect(
@@ -648,7 +648,7 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (; articles.hasNext();) {
+        for (int i = 0; i <= articles.getTotalPages(); i++) {
             if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {
                     if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
@@ -729,7 +729,7 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (; articles.hasNext();) {
+        for (int i = 0; i <= articles.getTotalPages(); i++) {
 
             if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {
@@ -790,7 +790,7 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (; articles.hasNext();) {
+        for (int i = 0; i <= articles.getTotalPages(); i++) {
 
             if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {
@@ -893,7 +893,7 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (; articles.hasNext();) {
+        for (int i = 0; i <= articles.getTotalPages(); i++) {
 
             if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {
@@ -953,7 +953,7 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (; articles.hasNext();) {
+        for (int i = 0; i <= articles.getTotalPages(); i++) {
 
             if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {

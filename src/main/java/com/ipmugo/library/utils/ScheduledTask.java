@@ -722,7 +722,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 22 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 50);
 
@@ -928,7 +928,9 @@ public class ScheduledTask {
                             }
 
                             UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                    .path("/api/upload/document/" + article.getDoi().replaceAll("/", "-") + ".pdf")
+                                    .path("/api/upload/document/" + article.getTitle().replaceAll(" ",
+                                            "-")
+                                            + ".pdf")
                                     .build();
 
                             article.setArticle_pdf(uriComponents.getPath());

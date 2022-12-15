@@ -43,9 +43,30 @@ public class ArticleElasticRepo {
 
             List<ArticleElastic> articles = new ArrayList<>();
             for (Hit<ArticleElastic> object : hits) {
-
                 articles.add((ArticleElastic) object.source());
+            }
 
+            return articles;
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), null);
+        }
+    }
+
+    public List<ArticleElastic> findByDoi(String doi) {
+        try {
+            SearchResponse<ArticleElastic> response = client.search(s -> s
+                    .index(indexName)
+                    .query(q -> q
+                            .match(t -> t
+                                    .field("doi")
+                                    .query(doi))),
+                    ArticleElastic.class);
+
+            List<ArticleElastic> articles = new ArrayList<>();
+
+            List<Hit<ArticleElastic>> hits = response.hits().hits();
+            for (Hit<ArticleElastic> hit : hits) {
+                articles.add((ArticleElastic) hit.source());
             }
 
             return articles;

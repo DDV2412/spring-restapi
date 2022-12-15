@@ -24,4 +24,7 @@ public class ElasticSearchService {
         return articleElasticRepo.findAll(size);
     }
 
+    public List<ArticleElastic> findByDoi(String doi) {
+        return articleElasticRepo.findByDoi(doi);
+    }
 }

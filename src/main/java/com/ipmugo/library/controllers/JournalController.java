@@ -29,6 +29,7 @@ import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.dto.CategoryData;
 import com.ipmugo.library.dto.JournalData;
 import com.ipmugo.library.dto.ResponseData;
+import com.ipmugo.library.dto.ResponseDataWithCount;
 import com.ipmugo.library.service.CategoryService;
 import com.ipmugo.library.service.JournalService;
 import com.ipmugo.library.utils.Frequency;
@@ -49,10 +50,10 @@ public class JournalController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponseData<Iterable<Journal>>> findAll(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<ResponseDataWithCount<Iterable<Journal>>> findAll(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size, @RequestParam(required = false) String name,
             @RequestParam(required = false) String latest, @RequestParam(required = false) String popularity) {
-        ResponseData<Iterable<Journal>> responseData = new ResponseData<>();
+        ResponseDataWithCount<Iterable<Journal>> responseData = new ResponseDataWithCount<>();
 
         Pageable paging = PageRequest.of(page, size, Sort.by("name").ascending());
 
@@ -84,6 +85,9 @@ public class JournalController {
 
         responseData.setStatus(true);
         responseData.setPayload(journal.getContent());
+        responseData.setTotalElements(journal.getTotalElements());
+        responseData.setTotalPage(journal.getTotalPages());
+        responseData.setCurrentPage(journal.getNumber());
         return ResponseEntity.ok(responseData);
 
     }

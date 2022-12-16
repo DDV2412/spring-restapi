@@ -46,7 +46,7 @@ public class Article {
     @Column(nullable = false, length = 100)
     private String set_spec;
 
-    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Subject> subjects;
 
     @Column(length = 255, nullable = false)

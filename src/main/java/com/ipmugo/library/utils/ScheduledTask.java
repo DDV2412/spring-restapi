@@ -20,6 +20,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -47,6 +48,7 @@ import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Metric;
+import com.ipmugo.library.data.Subject;
 import com.ipmugo.library.dto.CiteScoreYearInfoList;
 import com.ipmugo.library.dto.EntryCrossRef;
 import com.ipmugo.library.dto.EntryJournalCitation;
@@ -71,6 +73,7 @@ import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
+import com.ipmugo.library.repository.SubjectRepo;
 
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 
@@ -91,9 +94,6 @@ public class ScheduledTask {
     private ArticleRepo articleRepo;
 
     @Autowired
-    private AuthorRepo authorRepo;
-
-    @Autowired
     private CitationScopusRepo citationScopusRepo;
 
     @Autowired
@@ -101,6 +101,12 @@ public class ScheduledTask {
 
     @Autowired
     private ArticleElasticRepo elasticRepo;
+
+    @Autowired
+    private SubjectRepo subjectRepo;
+
+    @Autowired
+    private AuthorRepo authorRepo;
 
     @Scheduled(cron = "0 0 0 10 * *", zone = "GMT+7")
     public <T> void journalMetric() {
@@ -339,25 +345,29 @@ public class ScheduledTask {
 
             Article articleData = new Article();
 
-            Elements header = recordData.get(i).getElementsByTag("header");
+            Elements dc = metadata.get(0).getElementsByTag("oai_dc:dc");
 
-            if (!header.get(0).getElementsByTag("identifier").isEmpty()
-                    && header.get(0).getElementsByTag("identifier").text() != null) {
+            if (!recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("identifier").isEmpty()
+                    && recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("identifier")
+                            .text() != null) {
                 articleData.setOjs_id(
-                        Integer.parseInt(header.get(0).getElementsByTag("identifier").get(0).text().split("/")[1]));
+                        Integer.parseInt(recordData.get(i).getElementsByTag("header").get(0)
+                                .getElementsByTag("identifier").get(0).text().split("/")[1]));
             }
 
-            if (!header.get(0).getElementsByTag("datestamp").isEmpty()
-                    && header.get(0).getElementsByTag("datestamp").get(0).text() != null) {
-                articleData.setLast_modifier(header.get(0).getElementsByTag("datestamp").get(0).text());
+            if (!recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("datestamp").isEmpty()
+                    && recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("datestamp").get(0)
+                            .text() != null) {
+                articleData.setLast_modifier(recordData.get(i).getElementsByTag("header").get(0)
+                        .getElementsByTag("datestamp").get(0).text());
             }
 
-            if (!header.get(0).getElementsByTag("setSpec").isEmpty()
-                    && header.get(0).getElementsByTag("setSpec").get(0).text() != null) {
-                articleData.setSet_spec(header.get(0).getElementsByTag("setSpec").get(0).text().split(":")[1]);
+            if (!recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("setSpec").isEmpty()
+                    && recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("setSpec").get(0)
+                            .text() != null) {
+                articleData.setSet_spec(recordData.get(i).getElementsByTag("header").get(0).getElementsByTag("setSpec")
+                        .get(0).text().split(":")[1]);
             }
-
-            Elements dc = recordData.get(i).getElementsByTag("metadata").get(0).getElementsByTag("oai_dc:dc");
 
             if (!dc.get(0).getElementsByTag("dc:title").isEmpty()
                     && dc.get(0).getElementsByTag("dc:title").get(0).text() != null) {
@@ -437,13 +447,26 @@ public class ScheduledTask {
 
             if (!subject.isEmpty() && subject.size() == 2) {
                 if (!subject.isEmpty()) {
+
                     subjectsData = subject.get(0).text();
 
+                    subjectsData = subjectsData.replaceAll("; ", ";");
+                    subjectsData = subjectsData.replaceAll(", ", ";");
+                    subjectsData = subjectsData.replaceAll(",", ";");
+
                     keyword = subject.get(1).text();
+
+                    keyword = keyword.replaceAll("; ", ";");
+                    keyword = keyword.replaceAll(", ", ";");
+                    keyword = keyword.replaceAll(",", ";");
                 }
             } else {
                 if (!subject.isEmpty()) {
                     keyword = subject.get(0).text();
+
+                    keyword = keyword.replaceAll("; ", ";");
+                    keyword = keyword.replaceAll(", ", ";");
+                    keyword = keyword.replaceAll(",", ";");
                 }
             }
 
@@ -468,60 +491,164 @@ public class ScheduledTask {
                         .getElementsByTag("dc:rights").get(1).text());
             }
 
-            Elements creator = dc.get(0).getElementsByTag("dc:creator");
-
-            if (articleData.getDoi() != null) {
+            if (articleData.getArticle_pdf() != null && articleData.getDoi() != null) {
                 Optional<Article> article = articleRepo.findByDoi(articleData.getDoi());
 
                 if (!article.isPresent()) {
+
+                    if (articleData.getArticle_pdf() != null
+                            && !articleData.getArticle_pdf().contains("downloadSuppFile")
+                            && !articleData.getArticle_pdf()
+                                    .contains("info")) {
+                        try {
+                            URL url = new URL(articleData.getArticle_pdf());
+                            InputStream inputStream = url.openStream();
+                            PDDocument document = PDDocument.load(inputStream);
+                            if (document.isEncrypted()) {
+                                document.setAllSecurityToBeRemoved(false);
+                            }
+                            PDFTextStripper stripper = new PDFTextStripper();
+                            String text = stripper.getText(document);
+                            document.close();
+
+                            String[] lines = text.split("\n");
+                            String paragraph = "";
+                            String startElement = "1. INTRODUCTION";
+                            String endElement = "BIOGRAPHIES OF AUTHORS";
+                            boolean foundStart = false;
+                            boolean foundEnd = false;
+                            for (String line : lines) {
+                                if (line.contains(startElement)) {
+                                    foundStart = true;
+                                } else if (line.contains(endElement)) {
+                                    foundEnd = true;
+                                    break;
+                                } else if (foundStart && !foundEnd) {
+                                    paragraph += line + "\n";
+                                }
+                            }
+                            articleData.setFull_text(paragraph);
+                        } catch (Exception e) {
+                            continue;
+                        }
+                    }
+
                     articleData.setJournal(journal);
 
                     Article article2 = articleRepo.save(articleData);
 
-                    for (int x = 0; x < creator.size(); x++) {
-                        Author author = new Author();
-                        author.setFirst_name(creator.get(x).text().split(", ")[1]);
-                        author.setLast_name(creator.get(x).text().split(", ")[0]);
-                        author.setArticle(article2);
-                        authorRepo.save(author);
-                    }
+                    Elements creator = dc.get(0).getElementsByTag("dc:creator");
 
-                    System.out.println(article2);
+                    if (!creator.isEmpty()) {
+                        for (int x = 0; x < creator.size(); x++) {
+                            Author author = new Author();
+                            author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                            author.setLast_name(creator.get(x).text().split(", ")[0]);
+                            author.setArticle(article2);
+
+                            authorRepo.save(author);
+                        }
+
+                        if (subjectsData != null) {
+                            for (int t = 0; t < subjectsData.split(";").length; t++) {
+                                if (subjectsData.split(";")[t].trim() != null
+                                        && !subjectsData.split(";")[t].trim().isEmpty()) {
+                                    Subject subjectRes = new Subject();
+                                    subjectRes.setName(subjectsData.split(";")[t].trim());
+
+                                    Optional<Subject> subjectOptional = subjectRepo.findByName(subjectRes.getName());
+
+                                    if (subjectOptional.isPresent()) {
+                                        subjectOptional.get().getArticles().add(article2);
+                                        subjectRepo.save(subjectOptional.get());
+                                    }
+                                }
+                            }
+                        }
+
+                        System.out.println(article2);
+                    }
                 } else {
-                    article.get().setOjs_id(articleData.getOjs_id());
-                    article.get().setLast_modifier(articleData.getLast_modifier());
-                    article.get().setSet_spec(articleData.getSet_spec());
-                    article.get().setTitle(articleData.getTitle());
-                    article.get().setAbstract_text(articleData.getAbstract_text());
-                    article.get().setPublisher(articleData.getPublisher());
-                    article.get().setPublish_date(articleData.getPublish_date());
-                    article.get().setPublish_year(articleData.getPublish_year());
-                    article.get().setSource_type(articleData.getSource_type());
-                    article.get().setDoi(articleData.getDoi());
-                    article.get().setLanguange_publication(articleData.getLanguange_publication());
-                    article.get().setArticle_pdf(articleData.getArticle_pdf());
-                    article.get().setCopyright(articleData.getCopyright());
-                    article.get().setIssn(articleData.getIssn());
-                    article.get().setIssue(articleData.getIssue());
-                    article.get().setVolume(articleData.getVolume());
-                    article.get().setPages(articleData.getPages());
-                    article.get().setKeyword(articleData.getKeyword());
-                    article.get().setJournal(journal);
+                    if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
+                        articleRepo.delete(article.get());
 
-                    for (int x = 0; x < creator.size(); x++) {
-                        Author author = new Author();
-                        author.setFirst_name(creator.get(x).text().split(", ")[1]);
-                        author.setLast_name(creator.get(x).text().split(", ")[0]);
-                        author.setArticle(article.get());
-                        authorRepo.save(author);
+                        if (articleData.getArticle_pdf() != null
+                                && !articleData.getArticle_pdf().contains("downloadSuppFile")
+                                && !articleData.getArticle_pdf()
+                                        .contains("info")) {
+                            try {
+                                URL url = new URL(articleData.getArticle_pdf());
+                                InputStream inputStream = url.openStream();
+                                PDDocument document = PDDocument.load(inputStream);
+                                if (document.isEncrypted()) {
+                                    document.setAllSecurityToBeRemoved(false);
+                                }
+                                PDFTextStripper stripper = new PDFTextStripper();
+                                String text = stripper.getText(document);
+                                document.close();
+
+                                String[] lines = text.split("\n");
+                                String paragraph = "";
+                                String startElement = "1. INTRODUCTION";
+                                String endElement = "BIOGRAPHIES OF AUTHORS";
+                                boolean foundStart = false;
+                                boolean foundEnd = false;
+                                for (String line : lines) {
+                                    if (line.contains(startElement)) {
+                                        foundStart = true;
+                                    } else if (line.contains(endElement)) {
+                                        foundEnd = true;
+                                        break;
+                                    } else if (foundStart && !foundEnd) {
+                                        paragraph += line + "\n";
+                                    }
+                                }
+                                articleData.setFull_text(paragraph);
+                            } catch (Exception e) {
+                                continue;
+                            }
+                        }
+
+                        articleData.setJournal(journal);
+
+                        Article article2 = articleRepo.save(articleData);
+
+                        Elements creator = dc.get(0).getElementsByTag("dc:creator");
+
+                        if (!creator.isEmpty()) {
+                            for (int x = 0; x < creator.size(); x++) {
+                                Author author = new Author();
+                                author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                author.setLast_name(creator.get(x).text().split(", ")[0]);
+                                author.setArticle(article2);
+
+                                authorRepo.save(author);
+                            }
+
+                            if (subjectsData != null) {
+                                for (int t = 0; t < subjectsData.split(";").length; t++) {
+                                    if (subjectsData.split(";")[t].trim() != null
+                                            && !subjectsData.split(";")[t].trim().isEmpty()) {
+                                        Subject subjectRes = new Subject();
+                                        subjectRes.setName(subjectsData.split(";")[t].trim());
+
+                                        Optional<Subject> subjectOptional = subjectRepo
+                                                .findByName(subjectRes.getName());
+
+                                        if (subjectOptional.isPresent()) {
+                                            subjectOptional.get().getArticles().add(article2);
+                                            subjectRepo.save(subjectOptional.get());
+                                        }
+                                    }
+                                }
+                            }
+
+                            System.out.println(article2);
+                        }
+
                     }
-
-                    articleRepo.save(article.get());
-
-                    System.out.println(article.get());
                 }
             }
-
         }
 
     }

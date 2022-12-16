@@ -46,7 +46,6 @@ import com.ipmugo.library.data.Author;
 import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
-import com.ipmugo.library.data.Figure;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Metric;
 import com.ipmugo.library.data.Subject;
@@ -72,7 +71,6 @@ import com.ipmugo.library.repository.AuthorRepo;
 import com.ipmugo.library.repository.CategoryRepo;
 import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
-import com.ipmugo.library.repository.FigureRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
 import com.ipmugo.library.repository.SubjectRepo;
@@ -106,9 +104,6 @@ public class ScheduledTask {
 
     @Autowired
     private SubjectRepo subjectRepo;
-
-    @Autowired
-    private FigureRepo figureRepo;
 
     @Autowired
     private ArticleElasticRepo elasticRepo;
@@ -832,35 +827,11 @@ public class ScheduledTask {
                                             continue;
                                         }
 
-                                        Figure figure = new Figure();
                                         UriComponents uriComponents = UriComponentsBuilder.newInstance()
                                                 .path("/api/upload/figure/" + article.getTitle()
                                                         .replaceAll(" ", "-")
                                                         + counter + ".png")
                                                 .build();
-
-                                        figure.setUrl(uriComponents.getPath());
-                                        figure.setFilename(article.getTitle()
-                                                .replaceAll(" ", "-")
-                                                + counter + ".png");
-                                        figure.setArticle(article);
-
-                                        Optional<Figure> checkFigure = figureRepo.findByFilename(
-                                                article.getTitle()
-                                                        .replaceAll(" ", "-")
-                                                        + counter + ".png");
-
-                                        if (!checkFigure.isPresent()) {
-                                            figureRepo.save(figure);
-                                        } else {
-                                            checkFigure.get().setFilename(article.getTitle()
-                                                    .replaceAll(" ", "-")
-                                                    + counter + ".png");
-                                            checkFigure.get().setUrl(uriComponents.getPath());
-                                            checkFigure.get().setArticle(article);
-
-                                            figureRepo.save(checkFigure.get());
-                                        }
 
                                         if (counter == 1) {
                                             article.setThumbnail(uriComponents.getPath());
@@ -868,7 +839,7 @@ public class ScheduledTask {
                                             articleRepo.save(article);
                                         }
                                         counter++;
-                                        System.out.println(figure);
+                                        System.out.println(article);
                                     }
                                 }
                             }

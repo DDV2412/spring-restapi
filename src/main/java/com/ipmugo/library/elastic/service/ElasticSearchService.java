@@ -1,7 +1,5 @@
 package com.ipmugo.library.elastic.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +7,7 @@ import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 @Service
 public class ElasticSearchService {
@@ -20,11 +19,11 @@ public class ElasticSearchService {
         return articleElasticRepo.save(article);
     }
 
-    public List<ArticleElastic> findAll(int size) {
-        return articleElasticRepo.findAll(size);
+    public SearchResponse<ArticleElastic> findAll(int size, int page) {
+        return articleElasticRepo.findAll(size, page);
     }
 
-    public List<ArticleElastic> findByDoi(String doi) {
+    public SearchResponse<ArticleElastic> findByDoi(String doi) {
         return articleElasticRepo.findByDoi(doi);
     }
 }

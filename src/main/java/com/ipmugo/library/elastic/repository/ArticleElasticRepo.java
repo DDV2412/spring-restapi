@@ -1,7 +1,6 @@
 package com.ipmugo.library.elastic.repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -9,10 +8,10 @@ import org.springframework.stereotype.Repository;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 
 @Repository
 public class ArticleElasticRepo {
@@ -34,25 +33,42 @@ public class ArticleElasticRepo {
         }
     }
 
-    public List<ArticleElastic> findAll(int size) {
+    public SearchResponse<ArticleElastic> findAll(int size, int page) {
         try {
-            SearchRequest searchRequest = SearchRequest.of(s -> s.index(indexName).size(size));
-            SearchResponse<ArticleElastic> searchResponse = client.search(searchRequest, ArticleElastic.class);
 
-            List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
+            SearchResponse<ArticleElastic> searchResponse = client.search(s -> s
+                    .index(indexName)
+                    .size(size)
+                    .from(page)
+                    .aggregations(new HashMap<>() {
+                        {
+                            put("journal_name", new Aggregation.Builder()
+                                    .terms(new TermsAggregation.Builder().field("journal.name").build())
+                                    .build());
+                        }
+                    }).aggregations(new HashMap<>() {
+                        {
+                            put("set_spec", new Aggregation.Builder()
+                                    .terms(new TermsAggregation.Builder().field("set_spec").build())
+                                    .build());
+                        }
+                    })
+                    .aggregations(new HashMap<>() {
+                        {
+                            put("year", new Aggregation.Builder()
+                                    .terms(new TermsAggregation.Builder().field("publish_year").build())
+                                    .build());
+                        }
+                    }),
+                    ArticleElastic.class);
 
-            List<ArticleElastic> articles = new ArrayList<>();
-            for (Hit<ArticleElastic> object : hits) {
-                articles.add((ArticleElastic) object.source());
-            }
-
-            return articles;
+            return searchResponse;
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage(), null);
         }
     }
 
-    public List<ArticleElastic> findByDoi(String doi) {
+    public SearchResponse<ArticleElastic> findByDoi(String doi) {
         try {
             SearchResponse<ArticleElastic> response = client.search(s -> s
                     .index(indexName)
@@ -62,14 +78,7 @@ public class ArticleElasticRepo {
                                     .query(doi))),
                     ArticleElastic.class);
 
-            List<ArticleElastic> articles = new ArrayList<>();
-
-            List<Hit<ArticleElastic>> hits = response.hits().hits();
-            for (Hit<ArticleElastic> hit : hits) {
-                articles.add((ArticleElastic) hit.source());
-            }
-
-            return articles;
+            return response;
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage(), null);
         }

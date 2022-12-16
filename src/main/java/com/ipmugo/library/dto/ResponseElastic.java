@@ -11,7 +11,7 @@ public class ResponseElastic<T> {
 
     public T payload;
 
-    public Map<String, Long> aggregations;
+    public List<Map<String, Long>> aggregations;
 
     public boolean isStatus() {
         return status;
@@ -37,11 +37,11 @@ public class ResponseElastic<T> {
         this.payload = payload;
     }
 
-    public Map<String, Long> getAggregations() {
+    public List<Map<String, Long>> getAggregations() {
         return aggregations;
     }
 
-    public void setAggregations(Map<String, Long> aggregations) {
+    public void setAggregations(List<Map<String, Long>> aggregations) {
         this.aggregations = aggregations;
     }
 

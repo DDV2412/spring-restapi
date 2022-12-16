@@ -36,7 +36,7 @@ public class ArticleElastic {
     @Field(type = FieldType.Nested, includeInParent = true)
     private List<Subject> subjects;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String title;
 
     @Field(type = FieldType.Keyword)

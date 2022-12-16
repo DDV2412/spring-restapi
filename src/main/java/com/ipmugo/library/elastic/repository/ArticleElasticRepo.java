@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
@@ -33,13 +35,52 @@ public class ArticleElasticRepo {
         }
     }
 
-    public SearchResponse<ArticleElastic> findAll(int size, int page) {
+    public SearchResponse<ArticleElastic> findAll(int size, int page, String sortByRelevance, String sortByTitle,
+            String sortByPublishAt, String sortByCited) {
         try {
+
+            SortOptions sortBy;
+
+            if (sortByTitle != null) {
+                if (sortByTitle == "DESC") {
+                    sortBy = new SortOptions.Builder().field(f -> f.field("title").order(SortOrder.Desc)).build();
+                } else {
+                    sortBy = new SortOptions.Builder().field(f -> f.field("title").order(SortOrder.Asc)).build();
+                }
+            } else if (sortByCited != null) {
+                if (sortByCited == "DESC") {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("sortByCited.references_count").order(SortOrder.Desc)).build();
+                } else {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("sortByCited.references_count").order(SortOrder.Asc)).build();
+                }
+            } else if (sortByPublishAt != null) {
+                if (sortByPublishAt == "DESC") {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("publish_date").order(SortOrder.Desc)).build();
+                } else {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("publish_date").order(SortOrder.Asc)).build();
+                }
+            } else if (sortByRelevance != null) {
+                if (sortByRelevance == "DESC") {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("_score").order(SortOrder.Desc)).build();
+                } else {
+                    sortBy = new SortOptions.Builder()
+                            .field(f -> f.field("_score").order(SortOrder.Asc)).build();
+                }
+            } else {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("_score").order(SortOrder.Desc)).build();
+            }
 
             SearchResponse<ArticleElastic> searchResponse = client.search(s -> s
                     .index(indexName)
                     .size(size)
                     .from(page)
+                    .sort(sortBy)
                     .aggregations(new HashMap<>() {
                         {
                             put("journal_name", new Aggregation.Builder()

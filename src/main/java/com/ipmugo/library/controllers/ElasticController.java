@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ipmugo.library.dto.ResponseData;
 import com.ipmugo.library.dto.ResponseElastic;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.service.ElasticSearchService;
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketBase;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -32,10 +32,16 @@ public class ElasticController {
 
     @GetMapping
     public ResponseEntity<ResponseElastic<List<ArticleElastic>>> findAll(@RequestParam(defaultValue = "15") int size,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(required = false) String sortByRelevance,
+            @RequestParam(required = false) String sortByTitle,
+            @RequestParam(required = false) String sortByPublishAt,
+            @RequestParam(required = false) String sortByCited) {
         ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
-        SearchResponse<ArticleElastic> searchResponse = elasticSearchService.findAll(size, page);
+        SearchResponse<ArticleElastic> searchResponse = elasticSearchService.findAll(size, page, sortByRelevance,
+                sortByTitle,
+                sortByPublishAt,
+                sortByCited);
 
         List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
 
@@ -44,24 +50,32 @@ public class ElasticController {
             articles.add((ArticleElastic) object.source());
         }
 
-        var list = searchResponse.aggregations().get("journal_name").sterms().buckets().array();
+        List<Map<String, Long>> aggrList = new ArrayList<>();
 
-        Map<FieldValue, Long> journalName = list.stream()
-                .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount));
+        var journal_name = searchResponse.aggregations().get("journal_name").sterms().buckets().array();
+        var set_spec = searchResponse.aggregations().get("set_spec").sterms().buckets().array();
+        var year = searchResponse.aggregations().get("year").sterms().buckets().array();
 
-        Map<String, Long> journalName2 = journalName.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue));
+        aggrList.add(journal_name.stream()
+                .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));
+        aggrList.add(set_spec.stream()
+                .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));
+        aggrList.add(year.stream()
+                .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));
 
         responseData.setStatus(true);
         responseData.setPayload(articles);
-        responseData.setAggregations(journalName2);
+        responseData.setAggregations(aggrList);
         return ResponseEntity.ok(responseData);
     }
 
     @GetMapping("/{unique}/{doi}")
-    public ResponseEntity<ResponseElastic<ArticleElastic>> findByDoi(@PathVariable("unique") String unique,
+    public ResponseEntity<ResponseData<ArticleElastic>> findByDoi(@PathVariable("unique") String unique,
             @PathVariable("doi") String doi) {
-        ResponseElastic<ArticleElastic> responseData = new ResponseElastic<>();
+        ResponseData<ArticleElastic> responseData = new ResponseData<>();
 
         SearchResponse<ArticleElastic> searchResponse = elasticSearchService.findByDoi(unique + "/" + doi);
 

@@ -19,8 +19,12 @@ public class ElasticSearchService {
         return articleElasticRepo.save(article);
     }
 
-    public SearchResponse<ArticleElastic> findAll(int size, int page) {
-        return articleElasticRepo.findAll(size, page);
+    public SearchResponse<ArticleElastic> findAll(int size, int page, String sortByRelevance, String sortByTitle,
+            String sortByPublishAt, String sortByCited) {
+        return articleElasticRepo.findAll(size, page, sortByRelevance,
+                sortByTitle,
+                sortByPublishAt,
+                sortByCited);
     }
 
     public SearchResponse<ArticleElastic> findByDoi(String doi) {

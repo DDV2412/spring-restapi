@@ -14,12 +14,16 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.io.RandomAccessRead;
+import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -495,6 +499,46 @@ public class ScheduledTask {
 
                 if (!article.isPresent()) {
 
+                    if (articleData.getArticle_pdf() != null
+                            && !articleData.getArticle_pdf().contains("downloadSuppFile")
+                            && !articleData.getArticle_pdf()
+                                    .contains("info")) {
+                        try {
+                            URL url = new URL(articleData.getArticle_pdf());
+
+                            PDFParser parser = new PDFParser((RandomAccessRead) url.openStream());
+                            parser.parse();
+
+                            COSDocument cos = parser.getDocument();
+
+                            PDFTextStripper stripper = new PDFTextStripper();
+                            PDDocument document = new PDDocument(cos);
+
+                            String text = stripper.getText(document);
+                            document.close();
+
+                            String[] lines = text.split("\n");
+                            String paragraph = "";
+                            String startElement = "1. INTRODUCTION";
+                            String endElement = "BIOGRAPHIES OF AUTHORS";
+                            boolean foundStart = false;
+                            boolean foundEnd = false;
+                            for (String line : lines) {
+                                if (line.contains(startElement)) {
+                                    foundStart = true;
+                                } else if (line.contains(endElement)) {
+                                    foundEnd = true;
+                                    break;
+                                } else if (foundStart && !foundEnd) {
+                                    paragraph += line + "\n";
+                                }
+                            }
+                            articleData.setFull_text(paragraph);
+                        } catch (Exception e) {
+                            continue;
+                        }
+                    }
+
                     articleData.setJournal(journal);
 
                     Article article2 = articleRepo.save(articleData);
@@ -533,6 +577,46 @@ public class ScheduledTask {
                 } else {
                     if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
 
+                        if (articleData.getArticle_pdf() != null
+                                && !articleData.getArticle_pdf().contains("downloadSuppFile")
+                                && !articleData.getArticle_pdf()
+                                        .contains("info")) {
+                            try {
+                                URL url = new URL(articleData.getArticle_pdf());
+
+                                PDFParser parser = new PDFParser((RandomAccessRead) url.openStream());
+                                parser.parse();
+
+                                COSDocument cos = parser.getDocument();
+
+                                PDFTextStripper stripper = new PDFTextStripper();
+                                PDDocument document = new PDDocument(cos);
+
+                                String text = stripper.getText(document);
+                                document.close();
+
+                                String[] lines = text.split("\n");
+                                String paragraph = "";
+                                String startElement = "1. INTRODUCTION";
+                                String endElement = "BIOGRAPHIES OF AUTHORS";
+                                boolean foundStart = false;
+                                boolean foundEnd = false;
+                                for (String line : lines) {
+                                    if (line.contains(startElement)) {
+                                        foundStart = true;
+                                    } else if (line.contains(endElement)) {
+                                        foundEnd = true;
+                                        break;
+                                    } else if (foundStart && !foundEnd) {
+                                        paragraph += line + "\n";
+                                    }
+                                }
+                                articleData.setFull_text(paragraph);
+                            } catch (Exception e) {
+                                continue;
+                            }
+                        }
+
                         article.get().setOjs_id(articleData.getOjs_id());
                         article.get().setLast_modifier(articleData.getLast_modifier());
                         article.get().setSet_spec(articleData.getSet_spec());
@@ -551,6 +635,7 @@ public class ScheduledTask {
                         article.get().setVolume(articleData.getVolume());
                         article.get().setPages(articleData.getPages());
                         article.get().setKeyword(articleData.getKeyword());
+                        article.get().setFull_text(articleData.getFull_text());
                         article.get().setJournal(journal);
 
                         Elements creator = dc.get(0).getElementsByTag("dc:creator");

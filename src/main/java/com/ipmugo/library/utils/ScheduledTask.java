@@ -47,7 +47,6 @@ import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Metric;
-import com.ipmugo.library.data.Subject;
 import com.ipmugo.library.dto.CiteScoreYearInfoList;
 import com.ipmugo.library.dto.EntryCrossRef;
 import com.ipmugo.library.dto.EntryJournalCitation;
@@ -72,7 +71,6 @@ import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
-import com.ipmugo.library.repository.SubjectRepo;
 
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 
@@ -100,9 +98,6 @@ public class ScheduledTask {
 
     @Autowired
     private CitationCrossRefRepo citationCrossRefRepo;
-
-    @Autowired
-    private SubjectRepo subjectRepo;
 
     @Autowired
     private ArticleElasticRepo elasticRepo;
@@ -248,7 +243,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             Pageable pageable = PageRequest.of(0, 15);
@@ -325,284 +320,208 @@ public class ScheduledTask {
 
     private void parseData(Journal journal, Document records) {
 
-        try {
-            Elements recordData = records.getElementsByTag("record");
+        Elements recordData = records.getElementsByTag("record");
 
-            for (int i = 0; i < recordData.size(); i++) {
-                if (recordData.get(i).getElementsByTag("header").attr("status") == "deleted") {
-                    continue;
-                }
+        for (int i = 0; i < recordData.size(); i++) {
+            if (recordData.get(i).getElementsByTag("header").attr("status") == "deleted") {
+                continue;
+            }
 
-                if (recordData.get(i).getElementsByTag("metadata").isEmpty()) {
-                    continue;
-                }
+            if (recordData.get(i).getElementsByTag("metadata").isEmpty()) {
+                continue;
+            }
 
-                Elements metadata = recordData.get(i).getElementsByTag("metadata");
+            Elements metadata = recordData.get(i).getElementsByTag("metadata");
 
-                if (metadata.get(0).getElementsByTag("oai_dc:dc").isEmpty()) {
-                    continue;
-                }
+            if (metadata.get(0).getElementsByTag("oai_dc:dc").isEmpty()) {
+                continue;
+            }
 
-                Article articleData = new Article();
+            Article articleData = new Article();
 
-                Elements header = recordData.get(i).getElementsByTag("header");
+            Elements header = recordData.get(i).getElementsByTag("header");
 
-                if (!header.get(0).getElementsByTag("identifier").isEmpty()
-                        && header.get(0).getElementsByTag("identifier").text() != null) {
-                    articleData.setOjs_id(
-                            Integer.parseInt(header.get(0).getElementsByTag("identifier").get(0).text().split("/")[1]));
-                }
+            if (!header.get(0).getElementsByTag("identifier").isEmpty()
+                    && header.get(0).getElementsByTag("identifier").text() != null) {
+                articleData.setOjs_id(
+                        Integer.parseInt(header.get(0).getElementsByTag("identifier").get(0).text().split("/")[1]));
+            }
 
-                if (!header.get(0).getElementsByTag("datestamp").isEmpty()
-                        && header.get(0).getElementsByTag("datestamp").get(0).text() != null) {
-                    articleData.setLast_modifier(header.get(0).getElementsByTag("datestamp").get(0).text());
-                }
+            if (!header.get(0).getElementsByTag("datestamp").isEmpty()
+                    && header.get(0).getElementsByTag("datestamp").get(0).text() != null) {
+                articleData.setLast_modifier(header.get(0).getElementsByTag("datestamp").get(0).text());
+            }
 
-                if (!header.get(0).getElementsByTag("setSpec").isEmpty()
-                        && header.get(0).getElementsByTag("setSpec").get(0).text() != null) {
-                    articleData.setSet_spec(header.get(0).getElementsByTag("setSpec").get(0).text().split(":")[1]);
-                }
+            if (!header.get(0).getElementsByTag("setSpec").isEmpty()
+                    && header.get(0).getElementsByTag("setSpec").get(0).text() != null) {
+                articleData.setSet_spec(header.get(0).getElementsByTag("setSpec").get(0).text().split(":")[1]);
+            }
 
-                Elements dc = recordData.get(i).getElementsByTag("metadata").get(0).getElementsByTag("oai_dc:dc");
+            Elements dc = recordData.get(i).getElementsByTag("metadata").get(0).getElementsByTag("oai_dc:dc");
 
-                if (!dc.get(0).getElementsByTag("dc:title").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:title").get(0).text() != null) {
-                    articleData.setTitle(dc.get(0).getElementsByTag("dc:title").get(0).text());
-                }
+            if (!dc.get(0).getElementsByTag("dc:title").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:title").get(0).text() != null) {
+                articleData.setTitle(dc.get(0).getElementsByTag("dc:title").get(0).text());
+            }
 
-                if (!dc.get(0).getElementsByTag("dc:publisher").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:publisher").get(0).text() != null) {
-                    articleData.setPublisher(dc.get(0).getElementsByTag("dc:publisher").get(0).text());
-                }
+            if (!dc.get(0).getElementsByTag("dc:publisher").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:publisher").get(0).text() != null) {
+                articleData.setPublisher(dc.get(0).getElementsByTag("dc:publisher").get(0).text());
+            }
 
-                if (!dc.get(0).getElementsByTag("dc:date").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:date").get(0).text() != null) {
-                    articleData.setPublish_date(dc.get(0).getElementsByTag("dc:date").get(0).text());
-
-                }
-
-                if (articleData.getPublish_date() != null) {
-                    articleData.setPublish_year(articleData.getPublish_date().split("-")[0]);
-                }
-
-                if (!dc.get(0).getElementsByTag("dc:type").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:type").get(0).text() != null) {
-                    articleData.setSource_type(dc.get(0).getElementsByTag("dc:type").get(0).text());
-
-                }
-
-                if (!dc.get(0).getElementsByTag("dc:language").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:language").get(0).text() != null) {
-                    articleData.setLanguange_publication(dc.get(0).getElementsByTag("dc:language").get(0).text());
-
-                }
-
-                Elements sources = dc.get(0).getElementsByTag("dc:source");
-
-                if (!sources.isEmpty()) {
-                    articleData.setIssn(sources.get(2).text());
-
-                    if (sources.get(0).text().split(";").length == 3) {
-                        articleData.setVolume(sources.get(0).text().split(";")[1].split(",")[0].split("Vol ")[1]);
-                        articleData
-                                .setIssue(sources.get(0).text().split(";")[1].split(",")[1].split(":")[0]
-                                        .split("No ")[1]);
-                        articleData.setPages(sources.get(0).text().split(";")[2]);
-                    }
-                }
-
-                if (!dc.get(0).getElementsByTag("dc:description").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:description").get(0).text() != null) {
-                    articleData.setAbstract_text(dc.get(0).getElementsByTag("dc:description").get(0).text());
-                }
-
-                if (!dc.get(0).getElementsByTag("dc:identifier").isEmpty()
-                        && dc.get(0).getElementsByTag("dc:identifier").size() == 2 && dc.get(0)
-                                .getElementsByTag("dc:identifier").get(1).text() != null) {
-                    articleData.setDoi(dc.get(0).getElementsByTag("dc:identifier").get(1).text());
-                }
-
-                if (articleData.getAbstract_text() != null && articleData.getAbstract_text().split("DOI:").length > 2) {
-                    articleData.setAbstract_text(articleData.getAbstract_text().split("DOI:")[0]);
-
-                    if (!articleData.getAbstract_text().split("DOI:")[1].isEmpty()
-                            && articleData.getAbstract_text().split("DOI:")[1] != null) {
-                        if (articleData.getAbstract_text().split("DOI:")[1].split("doi.org/").length > 2) {
-                            articleData.setDoi(articleData.getAbstract_text().split("DOI:")[1].split("doi.org/")[1]);
-                        } else {
-                            articleData.setDoi(articleData.getAbstract_text().split("DOI:")[1].split("doi.org/")[0]);
-                        }
-                    }
-                }
-
-                String keyword = null;
-
-                String subjectsData = null;
-
-                Elements subject = dc.get(0).getElementsByTag("dc:subject");
-
-                if (!subject.isEmpty() && subject.size() == 2) {
-                    if (!subject.isEmpty()) {
-                        subjectsData = subject.get(0).text();
-
-                        keyword = subject.get(1).text();
-                    }
-                } else {
-                    if (!subject.isEmpty()) {
-                        keyword = subject.get(0).text();
-                    }
-                }
-
-                if (keyword != null) {
-                    articleData.setKeyword(keyword);
-                }
-
-                if (!dc.get(0)
-                        .getElementsByTag("dc:relation").isEmpty()
-                        && dc.get(0)
-                                .getElementsByTag("dc:relation").size() > 0) {
-                    articleData.setArticle_pdf(dc.get(0)
-                            .getElementsByTag("dc:relation").get(0).text().replaceAll("/view/",
-                                    "/download/"));
-                }
-
-                if (!dc.get(0)
-                        .getElementsByTag("dc:rights").isEmpty()
-                        && dc.get(0)
-                                .getElementsByTag("dc:rights").size() == 2) {
-                    articleData.setCopyright(dc.get(0)
-                            .getElementsByTag("dc:rights").get(1).text());
-                }
-
-                Elements creator = dc.get(0).getElementsByTag("dc:creator");
-
-                if (subjectsData != null) {
-                    subjectsData = subjectsData.replaceAll("; ", ";");
-                    subjectsData = subjectsData.replaceAll(", ", ";");
-                    subjectsData = subjectsData.replaceAll(",", ";");
-
-                    for (int t = 0; t < subjectsData.split(";").length; t++) {
-                        if (subjectsData.split(";")[t].trim() != null && !subjectsData.split(";")[t].trim().isEmpty()) {
-                            Subject subjectRes = new Subject();
-                            subjectRes.setName(subjectsData.split(";")[t].trim());
-                            Optional<Subject> subjectOptional = subjectRepo.findByName(subjectRes.getName());
-
-                            if (!subjectOptional.isPresent()) {
-                                subjectRepo.save(subjectRes);
-                            } else {
-                                subjectOptional.get().setName(subjectRes.getName());
-                                subjectRepo.save(subjectOptional.get());
-                            }
-
-                        }
-                    }
-                } else {
-                    continue;
-                }
-
-                if (articleData.getDoi() != null) {
-                    Optional<Article> article = articleRepo.findByDoi(articleData.getDoi());
-
-                    if (!article.isPresent()) {
-                        articleData.setJournal(journal);
-
-                        Article article2 = articleRepo.save(articleData);
-
-                        for (int x = 0; x < creator.size(); x++) {
-                            Author author = new Author();
-                            author.setFirst_name(creator.get(x).text().split(", ")[1]);
-                            author.setLast_name(creator.get(x).text().split(", ")[0]);
-                            author.setArticle(article2);
-                            authorRepo.save(author);
-                        }
-
-                        if (subjectsData != null) {
-                            subjectsData = subjectsData.replaceAll("; ", ";");
-                            subjectsData = subjectsData.replaceAll(", ", ";");
-                            subjectsData = subjectsData.replaceAll(",", ";");
-
-                            for (int t = 0; t < subjectsData.split(";").length; t++) {
-                                if (subjectsData.split(";")[t].trim() != null
-                                        && !subjectsData.split(";")[t].trim().isEmpty()) {
-                                    Subject subjectRes = new Subject();
-                                    subjectRes.setName(subjectsData.split(";")[t].trim());
-                                    Optional<Subject> subjectOptional = subjectRepo.findByName(subjectRes.getName());
-
-                                    if (!subjectOptional.isPresent()) {
-                                        continue;
-                                    } else {
-                                        subjectOptional.get().getArticles().add(article2);
-
-                                        subjectRepo.save(subjectOptional.get());
-                                    }
-                                }
-                            }
-                        }
-
-                        System.out.println(article2);
-                    } else {
-                        article.get().setOjs_id(articleData.getOjs_id());
-                        article.get().setLast_modifier(articleData.getLast_modifier());
-                        article.get().setSet_spec(articleData.getSet_spec());
-                        article.get().setTitle(articleData.getTitle());
-                        article.get().setAbstract_text(articleData.getAbstract_text());
-                        article.get().setPublisher(articleData.getPublisher());
-                        article.get().setPublish_date(articleData.getPublish_date());
-                        article.get().setPublish_year(articleData.getPublish_year());
-                        article.get().setSource_type(articleData.getSource_type());
-                        article.get().setDoi(articleData.getDoi());
-                        article.get().setLanguange_publication(articleData.getLanguange_publication());
-                        article.get().setArticle_pdf(articleData.getArticle_pdf());
-                        article.get().setCopyright(articleData.getCopyright());
-                        article.get().setIssn(articleData.getIssn());
-                        article.get().setIssue(articleData.getIssue());
-                        article.get().setVolume(articleData.getVolume());
-                        article.get().setPages(articleData.getPages());
-                        article.get().setKeyword(articleData.getKeyword());
-                        article.get().setJournal(journal);
-
-                        for (int x = 0; x < creator.size(); x++) {
-                            Author author = new Author();
-                            author.setFirst_name(creator.get(x).text().split(", ")[1]);
-                            author.setLast_name(creator.get(x).text().split(", ")[0]);
-                            author.setArticle(article.get());
-                            authorRepo.save(author);
-                        }
-
-                        if (subjectsData != null) {
-                            subjectsData = subjectsData.replaceAll("; ", ";");
-                            subjectsData = subjectsData.replaceAll(", ", ";");
-                            subjectsData = subjectsData.replaceAll(",", ";");
-
-                            for (int t = 0; t < subjectsData.split(";").length; t++) {
-                                if (subjectsData.split(";")[t].trim() != null
-                                        && !subjectsData.split(";")[t].trim().isEmpty()) {
-                                    Subject subjectRes = new Subject();
-                                    subjectRes.setName(subjectsData.split(";")[t].trim());
-                                    Optional<Subject> subjectOptional = subjectRepo.findByName(subjectRes.getName());
-
-                                    if (!subjectOptional.isPresent()) {
-                                        continue;
-                                    } else {
-                                        subjectOptional.get().getArticles().add(article.get());
-
-                                        subjectRepo.save(subjectOptional.get());
-                                    }
-                                }
-                            }
-                        }
-
-                        articleRepo.save(article.get());
-
-                        System.out.println(article.get());
-                    }
-                } else {
-                    continue;
-                }
+            if (!dc.get(0).getElementsByTag("dc:date").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:date").get(0).text() != null) {
+                articleData.setPublish_date(dc.get(0).getElementsByTag("dc:date").get(0).text());
 
             }
-        } catch (Exception e) {
-            Logger.getLogger(ScheduledTask.class.getName()).log(Level.SEVERE, null, e);
+
+            if (articleData.getPublish_date() != null) {
+                articleData.setPublish_year(articleData.getPublish_date().split("-")[0]);
+            }
+
+            if (!dc.get(0).getElementsByTag("dc:type").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:type").get(0).text() != null) {
+                articleData.setSource_type(dc.get(0).getElementsByTag("dc:type").get(0).text());
+
+            }
+
+            if (!dc.get(0).getElementsByTag("dc:language").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:language").get(0).text() != null) {
+                articleData.setLanguange_publication(dc.get(0).getElementsByTag("dc:language").get(0).text());
+
+            }
+
+            Elements sources = dc.get(0).getElementsByTag("dc:source");
+
+            if (!sources.isEmpty()) {
+                articleData.setIssn(sources.get(2).text());
+
+                if (sources.get(0).text().split(";").length == 3) {
+                    articleData.setVolume(sources.get(0).text().split(";")[1].split(",")[0].split("Vol ")[1]);
+                    articleData
+                            .setIssue(sources.get(0).text().split(";")[1].split(",")[1].split(":")[0]
+                                    .split("No ")[1]);
+                    articleData.setPages(sources.get(0).text().split(";")[2]);
+                }
+            }
+
+            if (!dc.get(0).getElementsByTag("dc:description").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:description").get(0).text() != null) {
+                articleData.setAbstract_text(dc.get(0).getElementsByTag("dc:description").get(0).text());
+            }
+
+            if (!dc.get(0).getElementsByTag("dc:identifier").isEmpty()
+                    && dc.get(0).getElementsByTag("dc:identifier").size() == 2 && dc.get(0)
+                            .getElementsByTag("dc:identifier").get(1).text() != null) {
+                articleData.setDoi(dc.get(0).getElementsByTag("dc:identifier").get(1).text());
+            }
+
+            if (articleData.getAbstract_text() != null && articleData.getAbstract_text().split("DOI:").length > 2) {
+                articleData.setAbstract_text(articleData.getAbstract_text().split("DOI:")[0]);
+
+                if (!articleData.getAbstract_text().split("DOI:")[1].isEmpty()
+                        && articleData.getAbstract_text().split("DOI:")[1] != null) {
+                    if (articleData.getAbstract_text().split("DOI:")[1].split("doi.org/").length > 2) {
+                        articleData.setDoi(articleData.getAbstract_text().split("DOI:")[1].split("doi.org/")[1]);
+                    } else {
+                        articleData.setDoi(articleData.getAbstract_text().split("DOI:")[1].split("doi.org/")[0]);
+                    }
+                }
+            }
+
+            String keyword = null;
+
+            String subjectsData = null;
+
+            Elements subject = dc.get(0).getElementsByTag("dc:subject");
+
+            if (!subject.isEmpty() && subject.size() == 2) {
+                if (!subject.isEmpty()) {
+                    subjectsData = subject.get(0).text();
+
+                    keyword = subject.get(1).text();
+                }
+            } else {
+                if (!subject.isEmpty()) {
+                    keyword = subject.get(0).text();
+                }
+            }
+
+            if (keyword != null) {
+                articleData.setKeyword(keyword);
+            }
+
+            if (!dc.get(0)
+                    .getElementsByTag("dc:relation").isEmpty()
+                    && dc.get(0)
+                            .getElementsByTag("dc:relation").size() > 0) {
+                articleData.setArticle_pdf(dc.get(0)
+                        .getElementsByTag("dc:relation").get(0).text().replaceAll("/view/",
+                                "/download/"));
+            }
+
+            if (!dc.get(0)
+                    .getElementsByTag("dc:rights").isEmpty()
+                    && dc.get(0)
+                            .getElementsByTag("dc:rights").size() == 2) {
+                articleData.setCopyright(dc.get(0)
+                        .getElementsByTag("dc:rights").get(1).text());
+            }
+
+            Elements creator = dc.get(0).getElementsByTag("dc:creator");
+
+            if (articleData.getDoi() != null) {
+                Optional<Article> article = articleRepo.findByDoi(articleData.getDoi());
+
+                if (!article.isPresent()) {
+                    articleData.setJournal(journal);
+
+                    Article article2 = articleRepo.save(articleData);
+
+                    for (int x = 0; x < creator.size(); x++) {
+                        Author author = new Author();
+                        author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                        author.setLast_name(creator.get(x).text().split(", ")[0]);
+                        author.setArticle(article2);
+                        authorRepo.save(author);
+                    }
+
+                    System.out.println(article2);
+                } else {
+                    article.get().setOjs_id(articleData.getOjs_id());
+                    article.get().setLast_modifier(articleData.getLast_modifier());
+                    article.get().setSet_spec(articleData.getSet_spec());
+                    article.get().setTitle(articleData.getTitle());
+                    article.get().setAbstract_text(articleData.getAbstract_text());
+                    article.get().setPublisher(articleData.getPublisher());
+                    article.get().setPublish_date(articleData.getPublish_date());
+                    article.get().setPublish_year(articleData.getPublish_year());
+                    article.get().setSource_type(articleData.getSource_type());
+                    article.get().setDoi(articleData.getDoi());
+                    article.get().setLanguange_publication(articleData.getLanguange_publication());
+                    article.get().setArticle_pdf(articleData.getArticle_pdf());
+                    article.get().setCopyright(articleData.getCopyright());
+                    article.get().setIssn(articleData.getIssn());
+                    article.get().setIssue(articleData.getIssue());
+                    article.get().setVolume(articleData.getVolume());
+                    article.get().setPages(articleData.getPages());
+                    article.get().setKeyword(articleData.getKeyword());
+                    article.get().setJournal(journal);
+
+                    for (int x = 0; x < creator.size(); x++) {
+                        Author author = new Author();
+                        author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                        author.setLast_name(creator.get(x).text().split(", ")[0]);
+                        author.setArticle(article.get());
+                        authorRepo.save(author);
+                    }
+
+                    articleRepo.save(article.get());
+
+                    System.out.println(article.get());
+                }
+            }
+
         }
 
     }

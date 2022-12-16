@@ -526,8 +526,7 @@ public class ScheduledTask {
                             foundEnd = true;
                             break;
                         } else if (foundStart && !foundEnd) {
-                            paragraph += line + "\n";
-
+                            paragraph += "\n" + line;
                         }
                     }
 

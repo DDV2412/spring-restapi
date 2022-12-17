@@ -21,9 +21,11 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.fit.pdfdom.PDFDomTree;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -953,6 +955,62 @@ public class ScheduledTask {
 
                     IndexResponse articleElastic2 = elasticRepo.save(articleElastic);
                     System.out.println(articleElastic2);
+                }
+            }
+
+            pageable = articles.nextPageable();
+            articles = articleRepo.findAll(pageable);
+        }
+
+    }
+
+    @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
+    public void getFullText() {
+        Pageable pageable = PageRequest.of(0, 50);
+
+        Page<Article> articles = articleRepo.findAll(pageable);
+
+        for (int i = 0; i < articles.getTotalPages(); i++) {
+
+            if (articles.getContent().size() > 0) {
+                for (Article article : articles.getContent()) {
+                    if (article.getArticle_pdf() != null
+                            && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
+                                    .contains("info")) {
+
+                        try {
+                            URL url = new URL(article.getArticle_pdf());
+
+                            InputStream inputStream = url.openStream();
+
+                            PDDocument document = Loader.loadPDF(inputStream);
+
+                            PDFDomTree stripper = new PDFDomTree();
+                            String text = stripper.getText(document);
+
+                            Document html = Jsoup.parse(text);
+
+                            Element startElement = html.select("div:contains(INTRODUCTION)").first();
+                            Element endElement = html.select("div.p:contains(BIOGRAPHIES)").first();
+
+                            String data = "";
+
+                            if (startElement != null) {
+                                Element element = startElement.nextElementSibling();
+                                while (element != endElement) {
+                                    data += element.nextElementSibling().toString();
+                                    element = element.nextElementSibling();
+                                }
+                            }
+
+                            article.setFull_text(data);
+                            articleRepo.save(article);
+                            System.out.println(endElement);
+                        } catch (Exception e) {
+                            continue;
+                        }
+
+                    }
                 }
             }
 

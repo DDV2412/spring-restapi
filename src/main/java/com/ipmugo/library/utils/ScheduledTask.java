@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -755,7 +756,7 @@ public class ScheduledTask {
                             URL url = new URL(article.getArticle_pdf());
                             InputStream inputStream = url.openStream();
 
-                            PDDocument document = PDDocument.load(inputStream);
+                            PDDocument document = Loader.loadPDF(inputStream);
 
                             int counter = 0;
                             for (PDPage page : document.getPages()) {

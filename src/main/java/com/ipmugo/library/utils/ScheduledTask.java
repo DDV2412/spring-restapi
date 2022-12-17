@@ -823,7 +823,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
     public void getFilePDF() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 15);
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
@@ -966,7 +966,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
     public void getFullText() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 15);
 
         Page<Article> articles = articleRepo.findAll(pageable);
 

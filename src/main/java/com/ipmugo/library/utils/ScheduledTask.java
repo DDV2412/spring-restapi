@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.ipmugo.library.data.Article;
 import com.ipmugo.library.data.Author;
+import com.ipmugo.library.data.AuthorCitation;
+import com.ipmugo.library.data.AuthorStatistic;
+import com.ipmugo.library.data.COAuthor;
 import com.ipmugo.library.data.Category;
 import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
@@ -69,7 +73,10 @@ import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.data.JournalElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 import com.ipmugo.library.repository.ArticleRepo;
+import com.ipmugo.library.repository.AuthorCitationRepo;
 import com.ipmugo.library.repository.AuthorRepo;
+import com.ipmugo.library.repository.AuthorStatisticRepo;
+import com.ipmugo.library.repository.COAuthorRepo;
 import com.ipmugo.library.repository.CategoryRepo;
 import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
@@ -109,6 +116,15 @@ public class ScheduledTask {
 
     @Autowired
     private AuthorRepo authorRepo;
+
+    @Autowired
+    private AuthorCitationRepo authorCitationRepo;
+
+    @Autowired
+    private COAuthorRepo coAuthorRepo;
+
+    @Autowired
+    private AuthorStatisticRepo authorStatisticRepo;
 
     @Scheduled(cron = "0 0 0 10 * *", zone = "GMT+7")
     public <T> void journalMetric() {
@@ -1023,6 +1039,110 @@ public class ScheduledTask {
             articles = articleRepo.findAll(pageable);
         }
 
+    }
+
+    @Scheduled(cron = "0 0 0 5 * *", zone = "GMT+7")
+    public void authorProfile() {
+        Pageable pageable = PageRequest.of(0, 15);
+
+        Page<Author> authors = authorRepo.findAll(pageable);
+
+        for (int i = 0; i < authors.getTotalPages(); i++) {
+            if (authors.getContent().size() > 0) {
+                for (Author author : authors.getContent()) {
+                    if (author.getGoogle_scholar() != null) {
+                        try {
+                            Response response = Jsoup.connect(
+                                    "https://scholar.google.co.id/citations?user=haR50igAAAAJ&hl=id")
+                                    .timeout(0)
+                                    .execute();
+
+                            Document document = Jsoup.connect(
+                                    "https://scholar.google.co.id/citations?user=haR50igAAAAJ&hl=id")
+                                    .timeout(0)
+                                    .get();
+
+                            if (response.statusCode() == 200) {
+                                List<Element> citation = document.getElementsByClass("gsc_rsb_std");
+
+                                AuthorStatistic authorStatistic = new AuthorStatistic();
+
+                                authorStatistic.setCitation(citation.get(0).text());
+                                authorStatistic.setH_index(citation.get(2).text());
+                                authorStatistic.setIndex_i10(citation.get(4).text());
+                                authorStatistic.setAuthor(author);
+                                System.out.println(authorStatisticRepo.save(authorStatistic));
+
+                                Element statistic = document.getElementsByClass("gsc_md_hist_b").first();
+
+                                List<AuthorCitation> authorCitations = new ArrayList<>();
+
+                                if (statistic != null) {
+                                    Elements years = statistic.getElementsByClass("gsc_g_a");
+                                    Elements counts = statistic.getElementsByClass("gsc_g_t");
+
+                                    for (int x = 0; x < years.size(); x++) {
+                                        Element year = years.get(x);
+                                        Element count = counts.get(x);
+
+                                        AuthorCitation authorCitation = new AuthorCitation();
+                                        authorCitation.setYear(year.text());
+                                        authorCitation.setCount(count.text());
+
+                                        authorCitations.add(authorCitation);
+                                    }
+                                }
+
+                                if (authorCitations.size() > 0) {
+                                    System.out.println(authorCitationRepo.saveAll(authorCitations));
+                                }
+
+                                if (document != null) {
+                                    Element coAuthor = document.getElementById("gsc_cods_urls");
+
+                                    if (coAuthor != null) {
+                                        Response coResponse = Jsoup.connect(
+                                                "https://scholar.google.co.id" + coAuthor.attr("data-lc"))
+                                                .timeout(0)
+                                                .execute();
+
+                                        Document coDocument = Jsoup.connect(
+                                                "https://scholar.google.co.id" + coAuthor.attr("data-lc"))
+                                                .timeout(0)
+                                                .get();
+
+                                        if (coResponse.statusCode() == 200) {
+                                            List<Element> coData = coDocument.getElementsByClass("gsc_ucoar");
+
+                                            for (Element data : coData) {
+                                                COAuthor coInsert = new COAuthor();
+
+                                                coInsert.setName(
+                                                        data.getElementsByClass("gs_ai_name").get(0)
+                                                                .getElementsByTag("a")
+                                                                .text());
+                                                coInsert.setAffiliation(
+                                                        data.getElementsByClass("gs_ai_aff").get(0).text());
+                                                coInsert.setAuthor(author);
+                                                System.out.println(coAuthorRepo.save(coInsert));
+
+                                            }
+
+                                        }
+                                    }
+
+                                }
+
+                            }
+                        } catch (Exception e) {
+                            continue;
+                        }
+                    }
+                }
+            }
+            pageable = authors.nextPageable();
+            authors = authorRepo.findAll(pageable);
+        }
     }
 
 }

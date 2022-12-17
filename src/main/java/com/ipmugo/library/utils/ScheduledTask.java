@@ -997,15 +997,20 @@ public class ScheduledTask {
 
                             if (startElement != null) {
                                 Element element = startElement.nextElementSibling();
-                                while (element != endElement) {
-                                    data += element.nextElementSibling().toString();
-                                    element = element.nextElementSibling();
+                                if (element != null) {
+                                    while (element != endElement) {
+                                        if (element.nextElementSibling() != null) {
+                                            data += element.nextElementSibling();
+                                        }
+                                        element = element.nextElementSibling();
+                                    }
                                 }
                             }
 
                             article.setFull_text(data);
                             articleRepo.save(article);
-                            System.out.println(endElement);
+
+                            System.out.println(article);
                         } catch (Exception e) {
                             continue;
                         }

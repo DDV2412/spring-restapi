@@ -4,13 +4,16 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -42,16 +45,28 @@ public class Author {
     @Column(nullable = true, length = 255)
     private String affiliation;
 
+    @Column(nullable = true, length = 255)
+    private String photo_profile;
+
     @ManyToOne
     @JoinColumn(name = "article_id", nullable = false)
     @JsonBackReference
     private Article article;
 
+    @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private COAuthor co_author;
+
+    @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private AuthorCitation author_citation;
+
+    @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private AuthorStatistic author_statistic;
+
     public Author() {
     }
 
     public Author(UUID id, String first_name, String last_name, String email, String orcid, String scopus_id,
-            String google_scholar, String affiliation, Article article) {
+            String google_scholar, String affiliation, String photo_profile, Article article) {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -60,7 +75,40 @@ public class Author {
         this.scopus_id = scopus_id;
         this.google_scholar = google_scholar;
         this.affiliation = affiliation;
+        this.photo_profile = photo_profile;
         this.article = article;
+    }
+
+    public COAuthor getCo_author() {
+        return co_author;
+    }
+
+    public void setCo_author(COAuthor co_author) {
+        this.co_author = co_author;
+    }
+
+    public AuthorCitation getAuthor_citation() {
+        return author_citation;
+    }
+
+    public void setAuthor_citation(AuthorCitation author_citation) {
+        this.author_citation = author_citation;
+    }
+
+    public AuthorStatistic getAuthor_statistic() {
+        return author_statistic;
+    }
+
+    public void setAuthor_statistic(AuthorStatistic author_statistic) {
+        this.author_statistic = author_statistic;
+    }
+
+    public String getPhoto_profile() {
+        return photo_profile;
+    }
+
+    public void setPhoto_profile(String photo_profile) {
+        this.photo_profile = photo_profile;
     }
 
     public UUID getId() {

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,43 +91,7 @@ public class CustomerController {
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
-            responseData.getMessages().add("Categoty name " + customer.getFirst_name() + " not available");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<Customer>> update(@PathVariable("id") UUID id,
-            @Valid @RequestBody Customer customer, Errors errors) {
-        ResponseData<Customer> responseData = new ResponseData<>();
-
-        if (errors.hasErrors()) {
-            for (ObjectError error : errors.getAllErrors()) {
-                responseData.getMessages().add(error.getDefaultMessage());
-            }
-            responseData.setStatus(false);
-            responseData.setPayload(null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
-        }
-        try {
-            Customer customer2 = customerService.findOne(id);
-
-            if (customer2 != null) {
-                customer2.setFirst_name(customer.getFirst_name());
-                customer2.setLast_name(customer.getLast_name());
-                customer2.setEmail(customer.getEmail());
-                customer2.setMessage(customer.getMessage());
-                customer2.setCountry(customer.getCountry());
-                customer2.setPhone_number(customer.getPhone_number());
-                customer2.setCompany_name(customer.getCompany_name());
-            }
-
-            responseData.setStatus(true);
-            responseData.setPayload(customerService.save(customer2));
-            return ResponseEntity.ok(responseData);
-        } catch (Exception e) {
-            responseData.setStatus(false);
-            responseData.getMessages().add("Categoty name " + customer.getFirst_name() + " not available");
+            responseData.getMessages().add("Customer name " + customer.getFirst_name() + " not available");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
     }

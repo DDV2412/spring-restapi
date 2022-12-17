@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ipmugo.library.data.Author;
@@ -19,8 +21,8 @@ public class AuthorService {
     @Autowired
     private AuthorRepo authorRepo;
 
-    public List<Author> findAll() {
-        return authorRepo.findAll();
+    public Page<Author> findAll(Pageable pageable) {
+        return authorRepo.findAll(pageable);
     }
 
     public List<Author> findByArticleId(UUID articleId) {

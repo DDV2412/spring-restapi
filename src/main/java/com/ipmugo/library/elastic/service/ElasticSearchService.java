@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 
@@ -19,12 +20,8 @@ public class ElasticSearchService {
         return articleElasticRepo.save(article);
     }
 
-    public SearchResponse<ArticleElastic> findAll(int size, int page, String sortByRelevance, String sortByTitle,
-            String sortByPublishAt, String sortByCited) {
-        return articleElasticRepo.findAll(size, page, sortByRelevance,
-                sortByTitle,
-                sortByPublishAt,
-                sortByCited);
+    public SearchResponse<ArticleElastic> findAll(int size, int page, SortOptions sortBy) {
+        return articleElasticRepo.findAll(size, page, sortBy);
     }
 
     public SearchResponse<ArticleElastic> findByDoi(String doi) {

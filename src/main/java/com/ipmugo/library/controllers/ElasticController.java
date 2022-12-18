@@ -18,6 +18,8 @@ import com.ipmugo.library.dto.ResponseElastic;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.service.ElasticSearchService;
 
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketBase;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -38,10 +40,44 @@ public class ElasticController {
             @RequestParam(required = false) String sortByCited) {
         ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
-        SearchResponse<ArticleElastic> searchResponse = elasticSearchService.findAll(size, page, sortByRelevance,
-                sortByTitle,
-                sortByPublishAt,
-                sortByCited);
+        SortOptions sortBy;
+
+        if (sortByTitle != null) {
+            if (sortByTitle.equals("desc")) {
+                sortBy = new SortOptions.Builder().field(f -> f.field("title.keyword").order(SortOrder.Desc)).build();
+            } else {
+                sortBy = new SortOptions.Builder().field(f -> f.field("title.keyword").order(SortOrder.Asc)).build();
+            }
+        } else if (sortByCited != null) {
+            if (sortByCited.equals("desc")) {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("sortByCited.references_count").order(SortOrder.Desc)).build();
+            } else {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("sortByCited.references_count").order(SortOrder.Asc)).build();
+            }
+        } else if (sortByPublishAt != null) {
+            if (sortByPublishAt.equals("desc")) {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("publish_date").order(SortOrder.Desc)).build();
+            } else {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("publish_date").order(SortOrder.Asc)).build();
+            }
+        } else if (sortByRelevance != null) {
+            if (sortByRelevance.equals("desc")) {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("_score").order(SortOrder.Desc)).build();
+            } else {
+                sortBy = new SortOptions.Builder()
+                        .field(f -> f.field("_score").order(SortOrder.Asc)).build();
+            }
+        } else {
+            sortBy = new SortOptions.Builder()
+                    .field(f -> f.field("publish_date").order(SortOrder.Desc)).build();
+        }
+
+        SearchResponse<ArticleElastic> searchResponse = elasticSearchService.findAll(size, page, sortBy);
 
         List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
 

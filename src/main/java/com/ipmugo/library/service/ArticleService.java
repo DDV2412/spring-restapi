@@ -192,4 +192,8 @@ public class ArticleService {
         }
     }
 
+    public Iterable<Article> findById(List<UUID> id) {
+        return articleRepo.findAllById(id);
+    }
+
 }

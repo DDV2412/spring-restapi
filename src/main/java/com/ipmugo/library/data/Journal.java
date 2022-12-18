@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.ipmugo.library.utils.Frequency;
 
 import jakarta.persistence.CascadeType;
@@ -19,7 +18,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -109,10 +107,6 @@ public class Journal {
 
     @OneToOne(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Metric metric;
-
-    @OneToMany(mappedBy = "journal", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JsonBackReference
-    private Set<Article> articles;
 
     public Journal() {
     }
@@ -363,14 +357,6 @@ public class Journal {
 
     public void setMetric(Metric metric) {
         this.metric = metric;
-    }
-
-    public Set<Article> getArticles() {
-        return articles;
-    }
-
-    public void setArticles(Set<Article> articles) {
-        this.articles = articles;
     }
 
 }

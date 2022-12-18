@@ -1,11 +1,14 @@
 package com.ipmugo.library.controllers;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.BibTeXEntry;
+import org.jbibtex.BibTeXFormatter;
+import org.jbibtex.Key;
 import org.jbibtex.StringValue;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,44 +258,47 @@ public class ArticleController {
     }
 
     @PostMapping("/export/citation")
-    public ResponseEntity<ResponseData<List<BibTeXDatabase>>> exportMultiple(@RequestBody List<UUID> id) {
-        ResponseData<List<BibTeXDatabase>> responseData = new ResponseData<>();
+    public ResponseEntity<ResponseData<List<String>>> exportMultiple(@RequestBody List<UUID> id) {
+        ResponseData<List<String>> responseData = new ResponseData<>();
 
         try {
 
             Iterable<Article> articles = articleService.findById(id);
 
-            List<BibTeXDatabase> exportBib = new ArrayList<>();
+            List<String> exportBib = new ArrayList<>();
 
             for (Article article : articles) {
                 BibTeXDatabase database = new BibTeXDatabase();
-                BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE, BibTeXEntry.KEY_KEY);
+                BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE,
+                        new Key(article.getAuthors().get(0).getFirst_name() + "@" + article.getPublish_year()));
                 entry.addField(BibTeXEntry.KEY_TITLE, new StringValue(article.getTitle(), StringValue.Style.BRACED));
                 entry.addField(BibTeXEntry.KEY_JOURNAL,
                         new StringValue(article.getJournal().getName(), StringValue.Style.BRACED));
                 entry.addField(BibTeXEntry.KEY_YEAR,
                         new StringValue(article.getPublish_year(), StringValue.Style.BRACED));
-                entry.addField(BibTeXEntry.KEY_VOLUME,
-                        new StringValue(article.getVolume(), StringValue.Style.BRACED));
-                entry.addField(BibTeXEntry.KEY_DOI,
-                        new StringValue(article.getDoi(), StringValue.Style.BRACED));
-                entry.addField(BibTeXEntry.KEY_PAGES,
-                        new StringValue(article.getPages(), StringValue.Style.BRACED));
+                entry.addField(BibTeXEntry.KEY_VOLUME, new StringValue(article.getVolume(), StringValue.Style.BRACED));
+                entry.addField(BibTeXEntry.KEY_DOI, new StringValue(article.getDoi(), StringValue.Style.BRACED));
+                entry.addField(BibTeXEntry.KEY_PAGES, new StringValue(article.getPages(), StringValue.Style.BRACED));
 
-                String keyAuthor = "";
+                StringBuilder keyAuthorBuilder = new StringBuilder();
                 for (int i = 0; i < article.getAuthors().size(); i++) {
                     Author author = article.getAuthors().get(i);
-                    keyAuthor += author.getFirst_name() + " " + author.getLast_name();
+                    keyAuthorBuilder.append(author.getFirst_name()).append(" ").append(author.getLast_name());
                     if (i < article.getAuthors().size() - 1) {
-                        keyAuthor += " and ";
+                        keyAuthorBuilder.append(" and ");
                     }
                 }
 
-                entry.addField(BibTeXEntry.KEY_AUTHOR, new StringValue(keyAuthor, StringValue.Style.BRACED));
-
+                entry.addField(BibTeXEntry.KEY_AUTHOR,
+                        new StringValue(keyAuthorBuilder.toString(), StringValue.Style.BRACED));
                 database.addObject(entry);
 
-                exportBib.add(database);
+                BibTeXFormatter formatter = new BibTeXFormatter();
+                StringWriter stringWriter = new StringWriter();
+                formatter.format(database, stringWriter);
+                String bibtexString = stringWriter.toString();
+
+                exportBib.add(bibtexString);
             }
 
             responseData.setStatus(true);
@@ -305,43 +311,45 @@ public class ArticleController {
         }
     }
 
-    @PostMapping("/export/citation/{id}")
-    public ResponseEntity<ResponseData<BibTeXDatabase>> exportSingle(@PathVariable("id") UUID id) {
-        ResponseData<BibTeXDatabase> responseData = new ResponseData<>();
+    @GetMapping("/export/citation/{id}")
+    public ResponseEntity<ResponseData<String>> exportSingle(@PathVariable("id") UUID id) {
+        ResponseData<String> responseData = new ResponseData<>();
 
         try {
 
             Article article = articleService.findOne(id);
 
             BibTeXDatabase database = new BibTeXDatabase();
-            BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE, BibTeXEntry.KEY_KEY);
+            BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE,
+                    new Key(article.getAuthors().get(0).getFirst_name() + "@" + article.getPublish_year()));
             entry.addField(BibTeXEntry.KEY_TITLE, new StringValue(article.getTitle(), StringValue.Style.BRACED));
             entry.addField(BibTeXEntry.KEY_JOURNAL,
                     new StringValue(article.getJournal().getName(), StringValue.Style.BRACED));
-            entry.addField(BibTeXEntry.KEY_YEAR,
-                    new StringValue(article.getPublish_year(), StringValue.Style.BRACED));
-            entry.addField(BibTeXEntry.KEY_VOLUME,
-                    new StringValue(article.getVolume(), StringValue.Style.BRACED));
-            entry.addField(BibTeXEntry.KEY_DOI,
-                    new StringValue(article.getDoi(), StringValue.Style.BRACED));
-            entry.addField(BibTeXEntry.KEY_PAGES,
-                    new StringValue(article.getPages(), StringValue.Style.BRACED));
+            entry.addField(BibTeXEntry.KEY_YEAR, new StringValue(article.getPublish_year(), StringValue.Style.BRACED));
+            entry.addField(BibTeXEntry.KEY_VOLUME, new StringValue(article.getVolume(), StringValue.Style.BRACED));
+            entry.addField(BibTeXEntry.KEY_DOI, new StringValue(article.getDoi(), StringValue.Style.BRACED));
+            entry.addField(BibTeXEntry.KEY_PAGES, new StringValue(article.getPages(), StringValue.Style.BRACED));
 
-            String keyAuthor = "";
+            StringBuilder keyAuthorBuilder = new StringBuilder();
             for (int i = 0; i < article.getAuthors().size(); i++) {
                 Author author = article.getAuthors().get(i);
-                keyAuthor += author.getFirst_name() + " " + author.getLast_name();
+                keyAuthorBuilder.append(author.getFirst_name()).append(" ").append(author.getLast_name());
                 if (i < article.getAuthors().size() - 1) {
-                    keyAuthor += " and ";
+                    keyAuthorBuilder.append(" and ");
                 }
             }
 
-            entry.addField(BibTeXEntry.KEY_AUTHOR, new StringValue(keyAuthor, StringValue.Style.BRACED));
-
+            entry.addField(BibTeXEntry.KEY_AUTHOR,
+                    new StringValue(keyAuthorBuilder.toString(), StringValue.Style.BRACED));
             database.addObject(entry);
 
+            BibTeXFormatter formatter = new BibTeXFormatter();
+            StringWriter stringWriter = new StringWriter();
+            formatter.format(database, stringWriter);
+            String bibtexString = stringWriter.toString();
+
             responseData.setStatus(true);
-            responseData.setPayload(database);
+            responseData.setPayload(bibtexString);
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);

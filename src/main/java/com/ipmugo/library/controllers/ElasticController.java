@@ -74,7 +74,7 @@ public class ElasticController {
                 } else {
                         query = "{\"from\":\"" + page + "\",\"size\": \"" + size
                                         + "\",\"query\": {\"match_all\": {}},\"sort\": " + sortBy
-                                        + "},    \"aggs\": {\"journal_name\": {\"terms\": {\"field\": \"journal.name.keyword\"}        },        \"year\": {\"terms\": {\"field\": \"publish_year.keyword\"}},\"set_spec\": {\"terms\": {\"field\": \"set_spec.keyword\"}}}}";
+                                        + "},    \"aggs\": {\"journal_name\": {\"terms\": {\"field\": \"journal.name.keyword\"}},\"set_spec\": {\"terms\": {\"field\": \"set_spec.keyword\"}}}}";
                 }
 
                 SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
@@ -90,17 +90,12 @@ public class ElasticController {
 
                 var journal_name = searchResponse.aggregations().get("journal_name").sterms().buckets().array();
                 var set_spec = searchResponse.aggregations().get("set_spec").sterms().buckets().array();
-                var year = searchResponse.aggregations().get("year").sterms().buckets().array();
 
                 aggrList.add(journal_name.stream()
                                 .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet()
                                 .stream()
                                 .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));
                 aggrList.add(set_spec.stream()
-                                .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet()
-                                .stream()
-                                .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));
-                aggrList.add(year.stream()
                                 .collect(Collectors.toMap(StringTermsBucket::key, MultiBucketBase::docCount)).entrySet()
                                 .stream()
                                 .collect(Collectors.toMap(entry -> entry.getKey().stringValue(), Map.Entry::getValue)));

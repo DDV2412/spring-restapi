@@ -13,6 +13,8 @@ public class ResponseElastic<T> {
 
     public List<Map<String, Long>> aggregations;
 
+    public Long totalValue;
+
     public boolean isStatus() {
         return status;
     }
@@ -43,6 +45,14 @@ public class ResponseElastic<T> {
 
     public void setAggregations(List<Map<String, Long>> aggregations) {
         this.aggregations = aggregations;
+    }
+
+    public Long getTotalValue() {
+        return totalValue;
+    }
+
+    public void setTotalValue(Long totalValue) {
+        this.totalValue = totalValue;
     }
 
 }

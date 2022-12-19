@@ -21,6 +21,7 @@ import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketBase;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch.core.SearchTemplateResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.TotalHits;
 
 @RestController
 @RequestMapping("/api/search")
@@ -80,6 +81,12 @@ public class ElasticController {
                 SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
 
                 List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
+
+                TotalHits total = searchResponse.hits().total();
+
+                if (total != null) {
+                        responseData.setTotalValue(total.value());
+                }
 
                 List<ArticleElastic> articles = new ArrayList<>();
                 for (Hit<ArticleElastic> object : hits) {

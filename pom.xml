@@ -97,11 +97,6 @@
 			<version>1.0.20</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>8.4.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>

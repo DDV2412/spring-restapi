@@ -5,11 +5,8 @@ import org.springframework.stereotype.Repository;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.SearchTemplateResponse;
 
 @Repository
 public class ArticleElasticRepo {
@@ -31,42 +28,21 @@ public class ArticleElasticRepo {
         }
     }
 
-    public SearchResponse<ArticleElastic> findAll(int size, int page, SortOptions sortBy) {
+    public SearchTemplateResponse<ArticleElastic> search(String query) {
         try {
-            SearchResponse<ArticleElastic> searchResponse = client.search(s -> s
+            client.putScript(r -> r
+                    .id("query-script")
+                    .script(s -> s
+                            .lang("mustache")
+                            .source(query)));
+
+            SearchTemplateResponse<ArticleElastic> searchResponse = client.searchTemplate(r -> r
                     .index(indexName)
-                    .size(size)
-                    .from(page)
-                    .sort(sortBy)
-                    .aggregations("journal_name", new Aggregation.Builder()
-                            .terms(new TermsAggregation.Builder().field("journal.name.keyword").build())
-                            .build())
-                    .aggregations("set_spec", new Aggregation.Builder()
-                            .terms(new TermsAggregation.Builder().field("set_spec.keyword").build())
-                            .build())
-                    .aggregations("year", new Aggregation.Builder()
-                            .terms(new TermsAggregation.Builder().field("publish_year.keyword").build())
-                            .build()),
+                    .id("query-script"),
                     ArticleElastic.class);
 
             return searchResponse;
 
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage(), null);
-        }
-    }
-
-    public SearchResponse<ArticleElastic> findByDoi(String doi) {
-        try {
-            SearchResponse<ArticleElastic> response = client.search(s -> s
-                    .index(indexName)
-                    .query(q -> q
-                            .match(t -> t
-                                    .field("doi")
-                                    .query(doi))),
-                    ArticleElastic.class);
-
-            return response;
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage(), null);
         }

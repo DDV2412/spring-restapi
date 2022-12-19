@@ -94,6 +94,28 @@ public class ArticleController {
 
     }
 
+    @GetMapping("/doi/{doi}")
+    public ResponseEntity<ResponseData<Article>> findByDoi(@PathVariable("doi") String doi) {
+        ResponseData<Article> responseData = new ResponseData<>();
+
+        doi = doi.replace("+", "/");
+        Article article = articleService.findByDoi(doi);
+
+        if (article == null) {
+            responseData.setStatus(false);
+            responseData.getMessages().add("Article with " + doi + " not found");
+
+            return ResponseEntity.badRequest().body(responseData);
+        }
+
+        responseData.setPayload(article);
+        responseData.setStatus(true);
+        responseData.getMessages().add("Successfully get article by ID " + doi);
+
+        return ResponseEntity.ok(responseData);
+
+    }
+
     @PostMapping
     public ResponseEntity<ResponseData<Article>> create(@Valid @RequestBody ArticleData articleData, Errors errors) {
         ResponseData<Article> responseData = new ResponseData<>();

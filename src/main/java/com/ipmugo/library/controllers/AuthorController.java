@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -42,6 +43,21 @@ public class AuthorController {
         ResponseData<Iterable<Author>> responseData = new ResponseData<>();
 
         Pageable pageable = PageRequest.of(page, size);
+
+        Page<Author> author = authorService.findAll(pageable);
+
+        responseData.setStatus(true);
+        responseData.setPayload(author.getContent());
+        return ResponseEntity.ok(responseData);
+
+    }
+
+    @GetMapping("/featured")
+    public ResponseEntity<ResponseData<Iterable<Author>>> featured(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size) {
+        ResponseData<Iterable<Author>> responseData = new ResponseData<>();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("author_statistic.h_index").descending());
 
         Page<Author> author = authorService.findAll(pageable);
 

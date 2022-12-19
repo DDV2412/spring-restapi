@@ -84,8 +84,6 @@ import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
 import com.ipmugo.library.repository.SubjectRepo;
 
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-
 @Component
 @Async
 public class ScheduledTask {
@@ -968,9 +966,7 @@ public class ScheduledTask {
                     articleElastic.setCreatedAt(new Date(article.getcreatedAt().getTime()));
                     articleElastic.setCitation_by_scopus(article.getCitation_by_scopus());
                     articleElastic.setCitation_by_cross_ref(article.getCitation_by_cross_ref());
-
-                    IndexResponse articleElastic2 = elasticRepo.save(articleElastic);
-                    System.out.println(articleElastic2);
+                    System.out.println(elasticRepo.save(articleElastic));
                 }
             }
 

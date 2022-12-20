@@ -766,7 +766,8 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                    .contains("info")) {
+                                    .contains("info")
+                            && article.getThumbnail() != null) {
 
                         try {
                             URL url = new URL(article.getArticle_pdf());
@@ -988,7 +989,8 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                    .contains("info")) {
+                                    .contains("info")
+                            && article.getFull_text() != null) {
 
                         try {
                             URL url = new URL(article.getArticle_pdf());
@@ -1049,12 +1051,12 @@ public class ScheduledTask {
                     if (author.getGoogle_scholar() != null) {
                         try {
                             Response response = Jsoup.connect(
-                                    "https://scholar.google.co.id/citations?user=haR50igAAAAJ&hl=id")
+                                    author.getGoogle_scholar())
                                     .timeout(0)
                                     .execute();
 
                             Document document = Jsoup.connect(
-                                    "https://scholar.google.co.id/citations?user=haR50igAAAAJ&hl=id")
+                                    author.getGoogle_scholar())
                                     .timeout(0)
                                     .get();
 

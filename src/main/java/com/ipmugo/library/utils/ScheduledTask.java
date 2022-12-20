@@ -929,7 +929,7 @@ public class ScheduledTask {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
                                     .contains("info")
-                            && article.getThumbnail() != null) {
+                            && article.getThumbnail() == null) {
 
                         try {
                             URL url = new URL(article.getArticle_pdf());

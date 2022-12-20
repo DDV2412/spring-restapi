@@ -57,27 +57,23 @@ public class JournalController {
 
         Pageable paging = PageRequest.of(page, size, Sort.by("name").ascending());
 
-        if (latest != null) {
-            if (latest == "desc") {
-                paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
-            } else {
-                PageRequest.of(page, size, Sort.by("createdAt").ascending());
-            }
-        }
-
         if (popularity != null) {
-            if (popularity == "desc") {
+            if (popularity.equals("asc")) {
+                paging = PageRequest.of(page, size, Sort.by("metric.citeScoreCurrent").ascending());
+            } else {
                 paging = PageRequest.of(page, size, Sort.by("metric.citeScoreCurrent").descending());
-            } else {
-                PageRequest.of(page, size, Sort.by("metric.citeScoreCurrent").ascending());
             }
-        }
-
-        if (name != null) {
-            if (name == "desc") {
-                paging = PageRequest.of(page, size, Sort.by("name").descending());
+        } else if (name != null) {
+            if (name.equals("asc")) {
+                paging = PageRequest.of(page, size, Sort.by("name").ascending());
             } else {
-                PageRequest.of(page, size, Sort.by("name").ascending());
+                paging = PageRequest.of(page, size, Sort.by("name").descending());
+            }
+        } else if (latest != null) {
+            if (latest.equals("asc")) {
+                paging = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+            } else {
+                paging = PageRequest.of(page, size, Sort.by("createdAt").descending());
             }
         }
 

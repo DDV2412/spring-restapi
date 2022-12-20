@@ -106,25 +106,77 @@ public class ArticleService {
                     });
 
             if (result.getStatusCode().value() != 200) {
-                return null;
+                Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+                if (!citationScopus.isPresent()) {
+                    CitationScopus citationScopus2 = new CitationScopus();
+                    citationScopus2.setArticle(article);
+                    citationScopus2.setReferences_count(0);
+
+                    return citationScopusRepo.save(citationScopus2);
+                }
+
+                citationScopus.get().setArticle(article);
+                citationScopus.get().setReferences_count(0);
+
+                return citationScopusRepo.save(citationScopus.get());
             }
 
             ExampleCitationScopus data = result.getBody();
 
             if (data == null) {
-                return null;
+                Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+                if (!citationScopus.isPresent()) {
+                    CitationScopus citationScopus2 = new CitationScopus();
+                    citationScopus2.setArticle(article);
+                    citationScopus2.setReferences_count(0);
+
+                    return citationScopusRepo.save(citationScopus2);
+                }
+
+                citationScopus.get().setArticle(article);
+                citationScopus.get().setReferences_count(0);
+
+                return citationScopusRepo.save(citationScopus.get());
             }
 
             SearchResults searchResults = data.getSearchResults();
 
             if (searchResults.getEntry().isEmpty() && searchResults.getEntry().get(0).getCitedbyCount() == null) {
-                return null;
+                Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+                if (!citationScopus.isPresent()) {
+                    CitationScopus citationScopus2 = new CitationScopus();
+                    citationScopus2.setArticle(article);
+                    citationScopus2.setReferences_count(0);
+
+                    return citationScopusRepo.save(citationScopus2);
+                }
+
+                citationScopus.get().setArticle(article);
+                citationScopus.get().setReferences_count(0);
+
+                return citationScopusRepo.save(citationScopus.get());
             }
 
             List<EntryScopus> entryScopus = searchResults.getEntry();
 
             if (entryScopus.isEmpty()) {
-                return null;
+                Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
+
+                if (!citationScopus.isPresent()) {
+                    CitationScopus citationScopus2 = new CitationScopus();
+                    citationScopus2.setArticle(article);
+                    citationScopus2.setReferences_count(0);
+
+                    return citationScopusRepo.save(citationScopus2);
+                }
+
+                citationScopus.get().setArticle(article);
+                citationScopus.get().setReferences_count(0);
+
+                return citationScopusRepo.save(citationScopus.get());
             }
 
             Optional<CitationScopus> citationScopus = citationScopusRepo.findByArticleId(article.getId());
@@ -162,13 +214,39 @@ public class ArticleService {
                     ExampleCitationCrossRef.class);
 
             if (result.getStatusCode().value() != 200) {
-                return null;
+                Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo.findByArticleId(article.getId());
+
+                if (!citationCrossRef.isPresent()) {
+                    CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                    citationCrossRef2.setArticle(article);
+                    citationCrossRef2.setReferences_count(0);
+
+                    return citationCrossRefRepo.save(citationCrossRef2);
+                }
+
+                citationCrossRef.get().setArticle(article);
+                citationCrossRef.get().setReferences_count(0);
+
+                return citationCrossRefRepo.save(citationCrossRef.get());
             }
 
             ExampleCitationCrossRef body = result.getBody();
 
             if (body == null) {
-                return null;
+                Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo.findByArticleId(article.getId());
+
+                if (!citationCrossRef.isPresent()) {
+                    CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                    citationCrossRef2.setArticle(article);
+                    citationCrossRef2.setReferences_count(0);
+
+                    return citationCrossRefRepo.save(citationCrossRef2);
+                }
+
+                citationCrossRef.get().setArticle(article);
+                citationCrossRef.get().setReferences_count(0);
+
+                return citationCrossRefRepo.save(citationCrossRef.get());
             }
 
             EntryCrossRef entryCrossRef = body.getMessage();

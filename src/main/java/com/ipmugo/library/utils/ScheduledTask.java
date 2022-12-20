@@ -659,26 +659,135 @@ public class ScheduledTask {
 
                                                 citationScopusRepo.save(citationScopus2);
                                                 System.out.println(citationScopus2);
+                                            } else {
+                                                citationScopus.get().setArticle(article);
+                                                citationScopus.get()
+                                                        .setReferences_count(
+                                                                Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+
+                                                citationScopusRepo.save(citationScopus.get());
+
+                                                System.out.println(citationScopus.get());
                                             }
 
+                                        } else {
+                                            Optional<CitationScopus> citationScopus = citationScopusRepo
+                                                    .findByArticleId(article.getId());
+
+                                            if (!citationScopus.isPresent()) {
+                                                CitationScopus citationScopus2 = new CitationScopus();
+                                                citationScopus2.setArticle(article);
+                                                citationScopus2
+                                                        .setReferences_count(0);
+
+                                                citationScopusRepo.save(citationScopus2);
+                                                System.out.println(citationScopus2);
+                                            } else {
+                                                citationScopus.get().setArticle(article);
+                                                citationScopus.get()
+                                                        .setReferences_count(
+                                                                0);
+
+                                                citationScopusRepo.save(citationScopus.get());
+
+                                                System.out.println(citationScopus.get());
+                                            }
+                                        }
+
+                                    } else {
+                                        Optional<CitationScopus> citationScopus = citationScopusRepo
+                                                .findByArticleId(article.getId());
+
+                                        if (!citationScopus.isPresent()) {
+                                            CitationScopus citationScopus2 = new CitationScopus();
+                                            citationScopus2.setArticle(article);
+                                            citationScopus2
+                                                    .setReferences_count(0);
+
+                                            citationScopusRepo.save(citationScopus2);
+                                            System.out.println(citationScopus2);
+                                        } else {
                                             citationScopus.get().setArticle(article);
                                             citationScopus.get()
                                                     .setReferences_count(
-                                                            Integer.valueOf(entryScopus.get(0).getCitedbyCount()));
+                                                            0);
 
                                             citationScopusRepo.save(citationScopus.get());
 
                                             System.out.println(citationScopus.get());
                                         }
-
                                     }
 
+                                } else {
+                                    Optional<CitationScopus> citationScopus = citationScopusRepo
+                                            .findByArticleId(article.getId());
+
+                                    if (!citationScopus.isPresent()) {
+                                        CitationScopus citationScopus2 = new CitationScopus();
+                                        citationScopus2.setArticle(article);
+                                        citationScopus2
+                                                .setReferences_count(0);
+
+                                        citationScopusRepo.save(citationScopus2);
+                                        System.out.println(citationScopus2);
+                                    } else {
+                                        citationScopus.get().setArticle(article);
+                                        citationScopus.get()
+                                                .setReferences_count(
+                                                        0);
+
+                                        citationScopusRepo.save(citationScopus.get());
+
+                                        System.out.println(citationScopus.get());
+                                    }
                                 }
 
+                            } else {
+                                Optional<CitationScopus> citationScopus = citationScopusRepo
+                                        .findByArticleId(article.getId());
+
+                                if (!citationScopus.isPresent()) {
+                                    CitationScopus citationScopus2 = new CitationScopus();
+                                    citationScopus2.setArticle(article);
+                                    citationScopus2
+                                            .setReferences_count(0);
+
+                                    citationScopusRepo.save(citationScopus2);
+                                    System.out.println(citationScopus2);
+                                } else {
+                                    citationScopus.get().setArticle(article);
+                                    citationScopus.get()
+                                            .setReferences_count(
+                                                    0);
+
+                                    citationScopusRepo.save(citationScopus.get());
+
+                                    System.out.println(citationScopus.get());
+                                }
                             }
 
                         } catch (Exception e) {
-                            continue;
+                            Optional<CitationScopus> citationScopus = citationScopusRepo
+                                    .findByArticleId(article.getId());
+
+                            if (!citationScopus.isPresent()) {
+                                CitationScopus citationScopus2 = new CitationScopus();
+                                citationScopus2.setArticle(article);
+                                citationScopus2
+                                        .setReferences_count(0);
+
+                                citationScopusRepo.save(citationScopus2);
+                                System.out.println(citationScopus2);
+                            } else {
+                                citationScopus.get().setArticle(article);
+                                citationScopus.get()
+                                        .setReferences_count(
+                                                0);
+
+                                citationScopusRepo.save(citationScopus.get());
+
+                                System.out.println(citationScopus.get());
+                            }
                         }
 
                     }
@@ -728,19 +837,72 @@ public class ScheduledTask {
 
                                         citationCrossRefRepo.save(citationCrossRef2);
                                         System.out.println(citationCrossRef2);
+                                    } else {
+                                        citationCrossRef.get().setArticle(article);
+                                        citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
+
+                                        citationCrossRefRepo.save(citationCrossRef.get());
+                                        System.out.println(citationCrossRef.get());
                                     }
 
+                                } else {
+                                    Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                                            .findByArticleId(article.getId());
+
+                                    if (!citationCrossRef.isPresent()) {
+                                        CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                                        citationCrossRef2.setArticle(article);
+                                        citationCrossRef2.setReferences_count(0);
+
+                                        citationCrossRefRepo.save(citationCrossRef2);
+                                        System.out.println(citationCrossRef2);
+                                    } else {
+                                        citationCrossRef.get().setArticle(article);
+                                        citationCrossRef.get().setReferences_count(0);
+
+                                        citationCrossRefRepo.save(citationCrossRef.get());
+                                        System.out.println(citationCrossRef.get());
+                                    }
+                                }
+
+                            } else {
+                                Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                                        .findByArticleId(article.getId());
+
+                                if (!citationCrossRef.isPresent()) {
+                                    CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                                    citationCrossRef2.setArticle(article);
+                                    citationCrossRef2.setReferences_count(0);
+
+                                    citationCrossRefRepo.save(citationCrossRef2);
+                                    System.out.println(citationCrossRef2);
+                                } else {
                                     citationCrossRef.get().setArticle(article);
-                                    citationCrossRef.get().setReferences_count(entryCrossRef.getReferencesCount());
+                                    citationCrossRef.get().setReferences_count(0);
 
                                     citationCrossRefRepo.save(citationCrossRef.get());
                                     System.out.println(citationCrossRef.get());
                                 }
-
                             }
 
                         } catch (Exception e) {
-                            continue;
+                            Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                                    .findByArticleId(article.getId());
+
+                            if (!citationCrossRef.isPresent()) {
+                                CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                                citationCrossRef2.setArticle(article);
+                                citationCrossRef2.setReferences_count(0);
+
+                                citationCrossRefRepo.save(citationCrossRef2);
+                                System.out.println(citationCrossRef2);
+                            } else {
+                                citationCrossRef.get().setArticle(article);
+                                citationCrossRef.get().setReferences_count(0);
+
+                                citationCrossRefRepo.save(citationCrossRef.get());
+                                System.out.println(citationCrossRef.get());
+                            }
                         }
 
                     }

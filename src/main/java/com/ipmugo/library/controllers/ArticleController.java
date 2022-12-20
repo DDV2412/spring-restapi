@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.net.HttpHeaders;
 import com.ipmugo.library.data.Article;
 import com.ipmugo.library.data.Author;
 import com.ipmugo.library.data.CitationCrossRef;
@@ -280,8 +282,7 @@ public class ArticleController {
     }
 
     @PostMapping("/export/citation")
-    public ResponseEntity<ResponseData<List<String>>> exportMultiple(@RequestBody List<UUID> id) {
-        ResponseData<List<String>> responseData = new ResponseData<>();
+    public ResponseEntity<byte[]> exportMultiple(@RequestBody List<UUID> id) {
 
         try {
 
@@ -301,6 +302,7 @@ public class ArticleController {
                 entry.addField(BibTeXEntry.KEY_VOLUME, new StringValue(article.getVolume(), StringValue.Style.BRACED));
                 entry.addField(BibTeXEntry.KEY_DOI, new StringValue(article.getDoi(), StringValue.Style.BRACED));
                 entry.addField(BibTeXEntry.KEY_PAGES, new StringValue(article.getPages(), StringValue.Style.BRACED));
+                entry.addField(BibTeXEntry.KEY_NUMBER, new StringValue(article.getIssue(), StringValue.Style.BRACED));
 
                 StringBuilder keyAuthorBuilder = new StringBuilder();
                 for (int i = 0; i < article.getAuthors().size(); i++) {
@@ -323,20 +325,19 @@ public class ArticleController {
                 exportBib.add(bibtexString);
             }
 
-            responseData.setStatus(true);
-            responseData.setPayload(exportBib);
-            return ResponseEntity.ok(responseData);
+            return ResponseEntity.ok().contentType(MediaType.valueOf("application/x-bibtex"))
+                    .contentLength(String.join("\n",
+                            exportBib).length())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"citation.bib")
+                    .body(String.join("\n",
+                            exportBib).getBytes());
         } catch (Exception e) {
-            responseData.setStatus(false);
-            responseData.getMessages().add(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     @GetMapping("/export/citation/{id}")
-    public ResponseEntity<ResponseData<String>> exportSingle(@PathVariable("id") UUID id) {
-        ResponseData<String> responseData = new ResponseData<>();
-
+    public ResponseEntity<byte[]> exportSingle(@PathVariable("id") UUID id) {
         try {
 
             Article article = articleService.findOne(id);
@@ -351,7 +352,7 @@ public class ArticleController {
             entry.addField(BibTeXEntry.KEY_VOLUME, new StringValue(article.getVolume(), StringValue.Style.BRACED));
             entry.addField(BibTeXEntry.KEY_DOI, new StringValue(article.getDoi(), StringValue.Style.BRACED));
             entry.addField(BibTeXEntry.KEY_PAGES, new StringValue(article.getPages(), StringValue.Style.BRACED));
-
+            entry.addField(BibTeXEntry.KEY_NUMBER, new StringValue(article.getIssue(), StringValue.Style.BRACED));
             StringBuilder keyAuthorBuilder = new StringBuilder();
             for (int i = 0; i < article.getAuthors().size(); i++) {
                 Author author = article.getAuthors().get(i);
@@ -370,13 +371,12 @@ public class ArticleController {
             formatter.format(database, stringWriter);
             String bibtexString = stringWriter.toString();
 
-            responseData.setStatus(true);
-            responseData.setPayload(bibtexString);
-            return ResponseEntity.ok(responseData);
+            return ResponseEntity.ok().contentType(MediaType.valueOf("application/x-bibtex"))
+                    .contentLength(bibtexString.length())
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"citation.bib")
+                    .body(bibtexString.getBytes());
         } catch (Exception e) {
-            responseData.setStatus(false);
-            responseData.getMessages().add(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

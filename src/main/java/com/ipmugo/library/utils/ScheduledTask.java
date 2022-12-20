@@ -928,64 +928,65 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                    .contains("info")
-                            && article.getThumbnail() == null) {
+                                    .contains("info")) {
 
-                        try {
-                            URL url = new URL(article.getArticle_pdf());
-                            InputStream inputStream = url.openStream();
+                        if (article.getThumbnail() == null) {
+                            try {
+                                URL url = new URL(article.getArticle_pdf());
+                                InputStream inputStream = url.openStream();
 
-                            PDDocument document = Loader.loadPDF(inputStream);
+                                PDDocument document = Loader.loadPDF(inputStream);
 
-                            int counter = 0;
-                            for (PDPage page : document.getPages()) {
-                                PDResources resources = page.getResources();
-                                for (COSName name : resources.getXObjectNames()) {
-                                    PDXObject xobject = resources.getXObject(name);
-                                    if (xobject instanceof PDImageXObject) {
-                                        PDImageXObject image = (PDImageXObject) xobject;
-                                        BufferedImage bImage = image.getImage();
+                                int counter = 0;
+                                for (PDPage page : document.getPages()) {
+                                    PDResources resources = page.getResources();
+                                    for (COSName name : resources.getXObjectNames()) {
+                                        PDXObject xobject = resources.getXObject(name);
+                                        if (xobject instanceof PDImageXObject) {
+                                            PDImageXObject image = (PDImageXObject) xobject;
+                                            BufferedImage bImage = image.getImage();
 
-                                        ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-                                        ImageIO.write(bImage, "png", dataStream);
-                                        dataStream.flush();
+                                            ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
+                                            ImageIO.write(bImage, "png", dataStream);
+                                            dataStream.flush();
 
-                                        byte[] imageInByteArray = dataStream.toByteArray();
+                                            byte[] imageInByteArray = dataStream.toByteArray();
 
-                                        try {
-                                            UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                                                    .scheme("http")
-                                                    .host("localhost:8080")
-                                                    .path("/api/upload/figure/" + article.getTitle()
-                                                            .replaceAll(" ", "-")
-                                                            + counter + ".png")
-                                                    .build();
-
-                                            if (counter == 1) {
-                                                FileOutputStream fos = new FileOutputStream("upload/figure/"
-                                                        + article.getTitle()
+                                            try {
+                                                UriComponents uriComponents = UriComponentsBuilder.newInstance()
+                                                        .scheme("http")
+                                                        .host("localhost:8080")
+                                                        .path("/api/upload/figure/" + article.getTitle()
                                                                 .replaceAll(" ", "-")
-                                                        + counter + ".png");
-                                                fos.write(imageInByteArray);
-                                                fos.close();
-                                                article.setThumbnail(uriComponents.toString());
+                                                                + counter + ".png")
+                                                        .build();
 
-                                                articleRepo.save(article);
-                                                System.out.println(article);
+                                                if (counter == 1) {
+                                                    FileOutputStream fos = new FileOutputStream("upload/figure/"
+                                                            + article.getTitle()
+                                                                    .replaceAll(" ", "-")
+                                                            + counter + ".png");
+                                                    fos.write(imageInByteArray);
+                                                    fos.close();
+                                                    article.setThumbnail(uriComponents.toString());
+
+                                                    articleRepo.save(article);
+                                                    System.out.println(article);
+                                                }
+                                                counter++;
+
+                                            } catch (Exception e) {
+                                                continue;
                                             }
-                                            counter++;
 
-                                        } catch (Exception e) {
-                                            continue;
                                         }
-
                                     }
                                 }
-                            }
 
-                            document.close();
-                        } catch (Exception e) {
-                            continue;
+                                document.close();
+                            } catch (Exception e) {
+                                continue;
+                            }
                         }
 
                     }
@@ -1151,46 +1152,46 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
-                                    .contains("info")
-                            && article.getFull_text() != null) {
+                                    .contains("info")) {
+                        if (article.getFull_text() == null) {
+                            try {
+                                URL url = new URL(article.getArticle_pdf());
 
-                        try {
-                            URL url = new URL(article.getArticle_pdf());
+                                InputStream inputStream = url.openStream();
 
-                            InputStream inputStream = url.openStream();
+                                PDDocument document = Loader.loadPDF(inputStream);
 
-                            PDDocument document = Loader.loadPDF(inputStream);
+                                PDFDomTree stripper = new PDFDomTree();
+                                String text = stripper.getText(document);
 
-                            PDFDomTree stripper = new PDFDomTree();
-                            String text = stripper.getText(document);
+                                Document html = Jsoup.parse(text);
 
-                            Document html = Jsoup.parse(text);
+                                Element startElement = html.select("div:contains(INTRODUCTION)")
+                                        .first();
+                                Element endElement = html.select("div.p:contains(BIOGRAPHIES)").first();
 
-                            Element startElement = html.select("div:contains(INTRODUCTION)").first();
-                            Element endElement = html.select("div.p:contains(BIOGRAPHIES)").first();
+                                String data = "";
 
-                            String data = "";
-
-                            if (startElement != null) {
-                                Element element = startElement.nextElementSibling();
-                                if (element != null) {
-                                    while (element != endElement) {
-                                        if (element.nextElementSibling() != null) {
-                                            data += element.nextElementSibling();
+                                if (startElement != null) {
+                                    Element element = startElement.nextElementSibling();
+                                    if (element != null) {
+                                        while (element != endElement) {
+                                            if (element.nextElementSibling() != null) {
+                                                data += element.nextElementSibling();
+                                            }
+                                            element = element.nextElementSibling();
                                         }
-                                        element = element.nextElementSibling();
                                     }
                                 }
+
+                                article.setFull_text(data);
+                                articleRepo.save(article);
+
+                                System.out.println(article);
+                            } catch (Exception e) {
+                                continue;
                             }
-
-                            article.setFull_text(data);
-                            articleRepo.save(article);
-
-                            System.out.println(article);
-                        } catch (Exception e) {
-                            continue;
                         }
-
                     }
                 }
             }

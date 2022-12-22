@@ -490,6 +490,23 @@ public class ScheduledTask {
                 articleData.setKeyword(keyword);
             }
 
+            if (subjectsData != null && !subjectsData.isBlank()) {
+                String[] sub = subjectsData.split(";");
+
+                for (int t = 0; t < sub.length; t++) {
+                    if (sub[t].trim() != null && !sub[t].trim().isBlank()) {
+                        Optional<Subject> subjectOptional = subjectRepo.findByName(
+                                sub[t].trim());
+
+                        if (!subjectOptional.isPresent()) {
+                            Subject newSubject = new Subject();
+                            newSubject.setName(sub[t].trim());
+                            subjectRepo.save(newSubject);
+                        }
+                    }
+                }
+            }
+
             if (!dc.get(0)
                     .getElementsByTag("dc:relation").isEmpty()
                     && dc.get(0)
@@ -540,13 +557,6 @@ public class ScheduledTask {
                                 if (subjectOptional.isPresent()) {
                                     subjectOptional.get().getArticles().add(article2);
                                     subjectRepo.save(subjectOptional.get());
-                                } else {
-                                    Subject newSubject = new Subject();
-                                    newSubject.setName(sub[t].trim());
-                                    Subject sunSubject = subjectRepo.save(newSubject);
-                                    sunSubject.getArticles().add(article2);
-
-                                    subjectRepo.save(sunSubject);
                                 }
                             }
                         }
@@ -601,13 +611,6 @@ public class ScheduledTask {
                                     if (subjectOptional.isPresent()) {
                                         subjectOptional.get().getArticles().add(article.get());
                                         subjectRepo.save(subjectOptional.get());
-                                    } else {
-                                        Subject newSubject = new Subject();
-                                        newSubject.setName(sub[t].trim());
-                                        Subject sunSubject = subjectRepo.save(newSubject);
-                                        sunSubject.getArticles().add(article.get());
-
-                                        subjectRepo.save(sunSubject);
                                     }
                                 }
                             }

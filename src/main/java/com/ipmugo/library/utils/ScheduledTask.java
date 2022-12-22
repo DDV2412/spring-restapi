@@ -486,7 +486,7 @@ public class ScheduledTask {
                 }
             }
 
-            if (keyword != null) {
+            if (keyword != null && !keyword.isBlank() && keyword != " ") {
                 articleData.setKeyword(keyword);
             }
 
@@ -527,26 +527,30 @@ public class ScheduledTask {
 
                             authorRepo.save(author);
                         }
+                    }
 
-                        if (subjectsData != null) {
-                            for (int t = 0; t < subjectsData.split(";").length; t++) {
-                                if (subjectsData.split(";")[t].trim() != null
-                                        && !subjectsData.split(";")[t].trim().isEmpty()) {
-                                    Subject subjectRes = new Subject();
-                                    subjectRes.setName(subjectsData.split(";")[t].trim());
+                    if (subjectsData != null) {
+                        String[] sub = subjectsData.split(";");
 
-                                    Optional<Subject> subjectOptional = subjectRepo.findByName(subjectRes.getName());
+                        for (int t = 0; t < sub.length; t++) {
+                            if (!sub[t].trim().isEmpty() && !sub[t].trim().isBlank() && sub[t].trim() != " ") {
+                                Optional<Subject> subjectOptional = subjectRepo.findByName(
+                                        sub[t].trim());
 
-                                    if (subjectOptional.isPresent()) {
-                                        subjectOptional.get().getArticles().add(article2);
-                                        subjectRepo.save(subjectOptional.get());
-                                    }
+                                if (subjectOptional.isPresent()) {
+                                    subjectOptional.get().getArticles().add(article2);
+                                    subjectRepo.save(subjectOptional.get());
+                                } else {
+                                    Subject newSubject = new Subject();
+                                    newSubject.getArticles().add(article2);
+                                    newSubject.setName(sub[t].trim());
+                                    subjectRepo.save(newSubject);
                                 }
                             }
                         }
-
-                        System.out.println(article2);
                     }
+
+                    System.out.println(article2);
                 } else {
                     if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
 
@@ -582,26 +586,30 @@ public class ScheduledTask {
                                 authorRepo.save(author);
                             }
 
-                            if (subjectsData != null) {
-                                for (int t = 0; t < subjectsData.split(";").length; t++) {
-                                    if (subjectsData.split(";")[t].trim() != null
-                                            && !subjectsData.split(";")[t].trim().isEmpty()) {
-                                        Subject subjectRes = new Subject();
-                                        subjectRes.setName(subjectsData.split(";")[t].trim());
+                        }
 
-                                        Optional<Subject> subjectOptional = subjectRepo
-                                                .findByName(subjectRes.getName());
+                        if (subjectsData != null) {
+                            String[] sub = subjectsData.split(";");
 
-                                        if (subjectOptional.isPresent()) {
-                                            subjectOptional.get().getArticles().add(article.get());
-                                            subjectRepo.save(subjectOptional.get());
-                                        }
+                            for (int t = 0; t < sub.length; t++) {
+                                if (!sub[t].trim().isEmpty() && !sub[t].trim().isBlank() && sub[t].trim() != " ") {
+                                    Optional<Subject> subjectOptional = subjectRepo.findByName(
+                                            sub[t].trim());
+
+                                    if (subjectOptional.isPresent()) {
+                                        subjectOptional.get().getArticles().add(article.get());
+                                        subjectRepo.save(subjectOptional.get());
+                                    } else {
+                                        Subject newSubject = new Subject();
+                                        newSubject.getArticles().add(article.get());
+                                        newSubject.setName(sub[t].trim());
+                                        subjectRepo.save(newSubject);
                                     }
                                 }
                             }
-
-                            System.out.println(article.get());
                         }
+
+                        System.out.println(article.get());
 
                     }
                 }

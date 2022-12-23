@@ -132,8 +132,8 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (int i = 0; i < journals.getTotalPages(); i++) {
-            if (journals.getContent().size() > 0) {
+        if (journals.getContent().size() > 0) {
+            do {
                 for (Journal journal : journals.getContent()) {
                     try {
                         HttpHeaders headers = new HttpHeaders();
@@ -261,7 +261,7 @@ public class ScheduledTask {
                         continue;
                     }
                 }
-            }
+            } while (journals.hasNext());
         }
     }
 
@@ -272,8 +272,8 @@ public class ScheduledTask {
 
             Page<Journal> journals = journalRepo.findAll(pageable);
 
-            for (int i = 0; i < journals.getTotalPages(); i++) {
-                if (journals.getContent().size() > 0) {
+            if (journals.getContent().size() > 0) {
+                do {
                     for (Journal journal : journals.getContent()) {
                         Response response = Jsoup.connect(
                                 journal.getJournal_site() +
@@ -301,7 +301,7 @@ public class ScheduledTask {
                         }
 
                     }
-                }
+                } while (journals.hasNext());
             }
 
         } catch (Exception ex) {
@@ -546,6 +546,25 @@ public class ScheduledTask {
                         }
                     }
 
+                    if (subjectsData != null && !subjectsData.isBlank()) {
+                        String[] sub = subjectsData.split(";");
+
+                        if (sub.length > 0) {
+                            for (int x = 0; x < sub.length; x++) {
+                                if (sub[x].trim() != null && !sub[x].trim().isBlank()) {
+                                    Optional<Subject> subjectOptional = subjectRepo.findByName(
+                                            sub[x].trim());
+
+                                    if (subjectOptional.isPresent()) {
+                                        subjectOptional.get().getArticles().add(article2);
+                                        System.out.println(subjectRepo.save(subjectOptional.get()));
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
                     System.out.println(article2);
                 } else {
                     if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
@@ -584,31 +603,30 @@ public class ScheduledTask {
 
                         }
 
+                        if (subjectsData != null && !subjectsData.isBlank()) {
+                            String[] sub = subjectsData.split(";");
+
+                            if (sub.length > 0) {
+                                for (int x = 0; x < sub.length; x++) {
+                                    if (sub[x].trim() != null && !sub[x].trim().isBlank()) {
+                                        Optional<Subject> subjectOptional = subjectRepo.findByName(
+                                                sub[x].trim());
+
+                                        if (subjectOptional.isPresent()) {
+                                            subjectOptional.get().getArticles().add(article.get());
+                                            System.out.println(subjectRepo.save(subjectOptional.get()));
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
                         System.out.println(article.get());
 
                     }
                 }
 
-                if (subjectsData != null && !subjectsData.isBlank()) {
-                    String[] sub = subjectsData.split(";");
-
-                    Optional<Article> getArticle = articleRepo.findByDoi(articleData.getDoi());
-
-                    if (getArticle.isPresent()) {
-                        for (int x = 0; x < sub.length; x++) {
-                            if (sub[x].trim() != null && !sub[x].trim().isBlank()) {
-                                Optional<Subject> subjectOptional = subjectRepo.findByName(
-                                        sub[x].trim());
-
-                                if (subjectOptional.isPresent()) {
-                                    subjectOptional.get().getArticles().add(getArticle.get());
-                                    System.out.println(subjectRepo.save(subjectOptional.get()));
-                                }
-                            }
-                        }
-                    }
-
-                }
             }
         }
 
@@ -622,8 +640,8 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
-            if (articles.getContent().size() > 0) {
+        if (articles.getContent().size() > 0) {
+            do {
                 for (Article article : articles.getContent()) {
                     if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
                         try {
@@ -797,9 +815,7 @@ public class ScheduledTask {
                     }
 
                 }
-            }
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
@@ -812,9 +828,8 @@ public class ScheduledTask {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
-
-            if (articles.getContent().size() > 0) {
+        if (articles.getContent().size() > 0) {
+            do {
                 for (Article article : articles.getContent()) {
                     if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
                         try {
@@ -912,10 +927,7 @@ public class ScheduledTask {
                     }
 
                 }
-            }
-
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
@@ -926,9 +938,8 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
-
-            if (articles.getContent().size() > 0) {
+        if (articles.getContent().size() > 0) {
+            do {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -995,10 +1006,7 @@ public class ScheduledTask {
 
                     }
                 }
-            }
-
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
@@ -1009,9 +1017,8 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
-
-            if (articles.getContent().size() > 0) {
+        if (articles.getContent().size() > 0) {
+            do {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -1059,23 +1066,19 @@ public class ScheduledTask {
 
                     }
                 }
-            }
-
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
 
-    @Scheduled(cron = "0 0 0 4 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 8 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 50);
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
-
-            if (articles.getContent().size() > 0) {
+        if (articles.getContent().size() > 0) {
+            do {
                 for (Article article : articles.getContent()) {
                     ArticleElastic articleElastic = new ArticleElastic();
 
@@ -1136,10 +1139,9 @@ public class ScheduledTask {
                     articleElastic.setCitation_by_cross_ref(article.getCitation_by_cross_ref());
                     System.out.println(elasticRepo.save(articleElastic));
                 }
-            }
-
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+                pageable = articles.nextPageable();
+                articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
@@ -1150,9 +1152,9 @@ public class ScheduledTask {
 
         Page<Article> articles = articleRepo.findAll(pageable);
 
-        for (int i = 0; i < articles.getTotalPages(); i++) {
+        if (articles.getContent().size() > 0) {
+            do {
 
-            if (articles.getContent().size() > 0) {
                 for (Article article : articles.getContent()) {
                     if (article.getArticle_pdf() != null
                             && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -1198,10 +1200,7 @@ public class ScheduledTask {
                         }
                     }
                 }
-            }
-
-            pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
+            } while (articles.hasNext());
         }
 
     }
@@ -1212,8 +1211,8 @@ public class ScheduledTask {
 
         Page<Author> authors = authorRepo.findAll(pageable);
 
-        for (int i = 0; i < authors.getTotalPages(); i++) {
-            if (authors.getContent().size() > 0) {
+        if (authors.getContent().size() > 0) {
+            do {
                 for (Author author : authors.getContent()) {
                     if (author.getGoogle_scholar() != null) {
                         try {
@@ -1304,9 +1303,7 @@ public class ScheduledTask {
                         }
                     }
                 }
-            }
-            pageable = authors.nextPageable();
-            authors = authorRepo.findAll(pageable);
+            } while (authors.hasNext());
         }
     }
 

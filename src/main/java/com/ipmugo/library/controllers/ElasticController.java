@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ipmugo.library.dto.ResponseElastic;
@@ -19,7 +19,7 @@ import com.ipmugo.library.elastic.service.ElasticSearchService;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MultiBucketBase;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.SearchTemplateResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 
@@ -31,11 +31,11 @@ public class ElasticController {
         private ElasticSearchService elasticSearchService;
 
         @GetMapping
-        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> search(@RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "15") int size) {
+        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> search(
+                        @RequestBody String query) {
                 ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
-                SearchResponse<ArticleElastic> searchResponse = elasticSearchService.search(page, size);
+                SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
 
                 List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
 

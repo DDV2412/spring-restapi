@@ -7,7 +7,8 @@ import com.ipmugo.library.elastic.data.ArticleElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.SearchTemplateResponse;
+
 
 @Service
 public class ElasticSearchService {
@@ -19,8 +20,8 @@ public class ElasticSearchService {
         return articleElasticRepo.save(article);
     }
 
-    public SearchResponse<ArticleElastic> search(int page, int size) {
-        return articleElasticRepo.search(page, size);
+    public SearchTemplateResponse<ArticleElastic> search(String query) {
+        return articleElasticRepo.search(query);
     }
 
 }

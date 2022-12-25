@@ -6,11 +6,8 @@ import org.springframework.stereotype.Repository;
 import com.ipmugo.library.elastic.data.ArticleElastic;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch._types.aggregations.NestedAggregation;
-import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.SearchTemplateResponse;
 
 @Repository
 public class ArticleElasticRepo {
@@ -32,39 +29,18 @@ public class ArticleElasticRepo {
                 }
         }
 
-        public SearchResponse<ArticleElastic> search(int page, int size) {
+        public SearchTemplateResponse<ArticleElastic> search(String query) {
                 try {
 
-                        SearchResponse<ArticleElastic> searchResponse = client.search(r -> r
+                        client.putScript(r -> r
+                                        .id("query-script")
+                                        .script(s -> s
+                                                        .lang("mustache")
+                                                        .source(query)));
+
+                        SearchTemplateResponse<ArticleElastic> searchResponse = client.searchTemplate(r -> r
                                         .index(indexName)
-                                        .from(page)
-                                        .size(size)
-                                        .aggregations("journal_name", new Aggregation.Builder()
-                                                        .terms(new TermsAggregation.Builder()
-                                                                        .field("journal.name.keyword").build())
-                                                        .build())
-                                        .aggregations("set_spec", new Aggregation.Builder()
-                                                        .terms(new TermsAggregation.Builder().field("set_spec.keyword")
-                                                                        .build())
-                                                        .build())
-                                        .aggregations("year", new Aggregation.Builder()
-                                                        .terms(new TermsAggregation.Builder()
-                                                                        .field("publish_year.keyword").build())
-                                                        .build())
-                                        .aggregations("publisher", new Aggregation.Builder()
-                                                        .terms(new TermsAggregation.Builder().field("publisher.keyword")
-                                                                        .build())
-                                                        .build())
-                                        .aggregations("subjects", new Aggregation.Builder()
-                                                        .nested(new NestedAggregation.Builder().path("subjects")
-                                                                        .build())
-                                                        .aggregations("subject_name", new Aggregation.Builder()
-                                                                        .terms(new TermsAggregation.Builder()
-                                                                                        .field("subject.name.keyword")
-                                                                                        .missing("N/A")
-                                                                                        .build())
-                                                                        .build())
-                                                        .build()),
+                                        .id("query-script"),
                                         ArticleElastic.class);
 
                         return searchResponse;

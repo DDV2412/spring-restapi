@@ -263,6 +263,8 @@ public class ScheduledTask {
                 }
             } while (journals.hasNext());
         }
+
+        System.out.println("Successfully get all citation journal by scopus");
     }
 
     @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
@@ -304,9 +306,12 @@ public class ScheduledTask {
                 } while (journals.hasNext());
             }
 
+            System.out.println("Successfully get all articles by journals");
+
         } catch (Exception ex) {
             Logger.getLogger(ScheduledTask.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     private void resumptionToken(Journal journal, String resumptionToken) {
@@ -818,6 +823,8 @@ public class ScheduledTask {
             } while (articles.hasNext());
         }
 
+        System.out.println("Successfully get all citation article by scopus");
+
     }
 
     @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
@@ -930,6 +937,8 @@ public class ScheduledTask {
             } while (articles.hasNext());
         }
 
+        System.out.println("Successfully get all citation journal by crossref");
+
     }
 
     @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
@@ -1009,6 +1018,7 @@ public class ScheduledTask {
             } while (articles.hasNext());
         }
 
+        System.out.println("Successfully get figure");
     }
 
     @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
@@ -1068,6 +1078,8 @@ public class ScheduledTask {
                 }
             } while (articles.hasNext());
         }
+
+        System.out.println("Successfully PDF");
 
     }
 
@@ -1144,6 +1156,7 @@ public class ScheduledTask {
             } while (articles.hasNext());
         }
 
+        System.out.println("Successfully sync with elasticsearch");
     }
 
     @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
@@ -1203,6 +1216,7 @@ public class ScheduledTask {
             } while (articles.hasNext());
         }
 
+        System.out.println("Successfully convert pdf to html");
     }
 
     @Scheduled(cron = "0 0 0 5 * *", zone = "GMT+7")
@@ -1305,6 +1319,8 @@ public class ScheduledTask {
                 }
             } while (authors.hasNext());
         }
+
+        System.out.println("Successfully get profile author by google scholar");
     }
 
 }

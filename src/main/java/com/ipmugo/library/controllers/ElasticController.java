@@ -35,6 +35,8 @@ public class ElasticController {
                         @RequestBody String query) {
                 ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
+                query = query.replaceAll("\r\n", "");
+
                 SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
 
                 List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();

@@ -24,13 +24,16 @@ jobs:
           java-version: '19'
           distribution: 'temurin'
           cache: maven
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          port: 22
-          script: |
-            cd ~/library
-            git pull origin master
-            git status
-            mvn -B package --file pom.xml
-            mvn spring-boot:run
+      - name: Build and deploy
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: |
+          cd ~/home/UK_Project/library
+          git pull origin master
+          mvn clean package
+      - name: Copy WAR package to Tomcat webapps directory
+        run: scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
+      - name: Restart Tomcat server
+        run: ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"

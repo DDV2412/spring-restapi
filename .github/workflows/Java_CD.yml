@@ -34,6 +34,6 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~/library_server
+            cd ~/library
             git pull origin master
             mvn spring-boot:run

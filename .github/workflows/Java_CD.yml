@@ -30,7 +30,5 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          cd /home/UK_Project/library
-          git pull origin master
-      - name: Build and generate WAR package
-        run: mvn clean package
+          cd /home/UK_Project/library_server
+          git init

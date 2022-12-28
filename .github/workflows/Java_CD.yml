@@ -24,9 +24,7 @@ jobs:
           java-version: '19'
           distribution: 'temurin'
           cache: maven
-      - name: Build and generate WAR package
-        run: mvn clean package
-      - name: Deploy using ssh
+      - name: Deploy using SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -36,4 +34,4 @@ jobs:
           script: |
             cd ~/library
             git pull origin master
-            mvn spring-boot:run
+            git status

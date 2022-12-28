@@ -36,3 +36,4 @@ jobs:
           script: |
             cd ~/library_server
             git pull origin master
+            mvn spring-boot:run

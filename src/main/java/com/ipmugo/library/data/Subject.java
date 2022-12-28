@@ -29,7 +29,7 @@ public class Subject {
     private String name;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "subject_article", joinColumns = @JoinColumn(name = "article_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
+    @JoinTable(name = "subject_article", joinColumns = @JoinColumn(name = "subject_id"), inverseJoinColumns = @JoinColumn(name = "article_id"))
     @JsonBackReference
     private Set<Article> articles;
 

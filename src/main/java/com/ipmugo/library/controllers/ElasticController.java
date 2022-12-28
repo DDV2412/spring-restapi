@@ -53,7 +53,9 @@ public class ElasticController {
 
                 for (Map.Entry<String, Aggregate> entry : aggrs.entrySet()) {
                         if (!entry.getKey().equals("subjects")) {
-                                aggrList.add(aggrs.get(entry.getKey()).sterms().buckets().array().stream()
+                                aggrList.add(aggrs.get(entry.getKey()).global().aggregations()
+                                                .get(entry.getKey() + "_terms")
+                                                .sterms().buckets().array().stream()
                                                 .collect(Collectors.toMap(StringTermsBucket::key,
                                                                 MultiBucketBase::docCount))
                                                 .entrySet()
@@ -61,7 +63,8 @@ public class ElasticController {
                                                 .collect(Collectors.toMap(e -> e.getKey().stringValue(),
                                                                 Map.Entry::getValue)));
                         } else {
-                                aggrList.add(aggrs.get(entry.getKey()).nested().aggregations().get("subject_name")
+                                aggrList.add(aggrs.get(entry.getKey()).global().aggregations().get(
+                                                entry.getKey() + "_terms").nested().aggregations().get("subject_name")
                                                 .sterms().buckets()
                                                 .array().stream()
                                                 .collect(Collectors.toMap(StringTermsBucket::key,

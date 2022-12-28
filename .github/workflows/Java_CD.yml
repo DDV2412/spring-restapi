@@ -30,10 +30,11 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
+          if [ ! -d /home/${{ secrets.USERNAME }}/library ]; then
+          mkdir /home/${{ secrets.USERNAME }}/library
+          fi
           cd /home/${{ secrets.USERNAME }}/library
           git pull origin master
           mvn clean package
-      - name: Copy WAR package to Tomcat webapps directory
-        run: scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
-      - name: Restart Tomcat server
-        run: ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"
+          scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
+          ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"

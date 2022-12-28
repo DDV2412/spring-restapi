@@ -30,14 +30,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          sudo mkdir -p /home/UK_Project/library
           cd /home/UK_Project/library
-          git init
-          git remote add origin https://github.com/DDV2412/spring-restapi.git
           git pull origin master
       - name: Build and generate WAR package
         run: mvn clean package
-      - name: Copy WAR package to Tomcat webapps directory
-        run: scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
-      - name: Restart Tomcat server
-        run: ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"

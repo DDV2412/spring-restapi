@@ -26,9 +26,7 @@ jobs:
           cache: maven
       - name: Build and deploy
         env:
-          HOST: ${{ secrets.HOST }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        run: |
-          cd /home/UK_Project/library_server
-          git init
+          HOST: ${{secrets.HOST}}
+          USERNAME: ${{secrets.USERNAME}}
+          PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
+        run: echo "Hello World"

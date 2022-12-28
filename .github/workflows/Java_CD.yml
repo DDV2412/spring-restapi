@@ -29,4 +29,6 @@ jobs:
           HOST: ${{secrets.HOST}}
           USERNAME: ${{secrets.USERNAME}}
           PRIVATE_KEY: ${{secrets.PRIVATE_KEY}}
-        run: echo "Hello World"
+        run: |
+          echo "Hello World"
+          ls

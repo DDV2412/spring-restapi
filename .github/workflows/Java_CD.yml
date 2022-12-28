@@ -25,10 +25,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Move to local stored
-        uses: appleboy/scp-action@v3
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
       - name: Build and Deploy
         run: ls

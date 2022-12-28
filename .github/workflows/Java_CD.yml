@@ -24,12 +24,12 @@ jobs:
           java-version: '19'
           distribution: 'temurin'
           cache: maven
-      - name: Move to local stored
-        uses: appleboy/scp-action@v1
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-      - name: Build and Deploy
-        run: ls
+          run: |
+            ls

@@ -33,6 +33,7 @@ jobs:
           sudo mkdir -p /home/${{ secrets.USERNAME }}/library
           cd /home/${{ secrets.USERNAME }}/library
           git init
+          git remote add origin https://github.com/DDV2412/spring-restapi.git
           git pull origin master
       - name: Build and generate WAR package
         run: mvn clean package

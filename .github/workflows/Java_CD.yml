@@ -30,10 +30,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          sudo su
-          if [ ! -d /home/${{ secrets.USERNAME }}/library ]; then
-          mkdir -p /home/${{ secrets.USERNAME }}/library
-          fi
+          sudo mkdir -p /home/${{ secrets.USERNAME }}/library
           cd /home/${{ secrets.USERNAME }}/library
           git pull origin master
           mvn clean package

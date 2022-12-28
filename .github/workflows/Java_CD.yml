@@ -33,3 +33,4 @@ jobs:
             git pull origin master
             git status
             mvn -B package --file pom.xml
+            mvn spring-boot:run

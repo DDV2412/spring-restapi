@@ -30,8 +30,9 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
+          sudo su
           if [ ! -d /home/${{ secrets.USERNAME }}/library ]; then
-          mkdir /home/${{ secrets.USERNAME }}/library
+          mkdir -p /home/${{ secrets.USERNAME }}/library
           fi
           cd /home/${{ secrets.USERNAME }}/library
           git pull origin master

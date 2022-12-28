@@ -32,7 +32,11 @@ jobs:
         run: |
           sudo mkdir -p /home/${{ secrets.USERNAME }}/library
           cd /home/${{ secrets.USERNAME }}/library
+          git init
           git pull origin master
-          mvn clean package
-          scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
-          ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"
+      - name: Build and generate WAR package
+        run: mvn clean package
+      - name: Copy WAR package to Tomcat webapps directory
+        run: scp target/*.war ${{ secrets.USERNAME }}@{{ secrets.HOST }}:/usr/local/tomcat/webapps
+      - name: Restart Tomcat server
+        run: ssh ${{ secrets.USERNAME }}@{{ secrets.HOST }} "sudo systemctl restart tomcat"

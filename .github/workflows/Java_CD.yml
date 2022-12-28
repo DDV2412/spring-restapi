@@ -30,7 +30,7 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
         run: |
-          cd ~/library
+          cd /home/${{ secrets.USERNAME }}/library
           git pull origin master
           mvn clean package
       - name: Copy WAR package to Tomcat webapps directory

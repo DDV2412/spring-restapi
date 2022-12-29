@@ -29,7 +29,7 @@ public class Category {
     private String name;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "journal_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JoinTable(name = "journal_category", joinColumns = @JoinColumn(name = "category_id"), inverseJoinColumns = @JoinColumn(name = "journal_id"))
     @JsonBackReference
     private Set<Journal> journals;
 

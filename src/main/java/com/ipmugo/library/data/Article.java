@@ -2,7 +2,7 @@ package com.ipmugo.library.data;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -46,8 +46,8 @@ public class Article {
     @Column(nullable = false, length = 100)
     private String set_spec;
 
-    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Subject> subjects;
+    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
+    private Set<Subject> subjects;
 
     @Column(length = 255, nullable = false)
     private String title;
@@ -107,7 +107,7 @@ public class Article {
     private Timestamp createdAt;
 
     @OneToMany(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Author> authors;
+    private Set<Author> authors;
 
     @OneToOne(mappedBy = "article", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private CitationScopus citation_by_scopus;
@@ -119,12 +119,12 @@ public class Article {
     }
 
     public Article(UUID id, Journal journal, String thumbnail, Integer ojs_id, String set_spec,
-            List<Subject> subjects,
+            Set<Subject> subjects,
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
             String keyword, Timestamp updatedAt, Timestamp createdAt,
-            List<Author> authors,
+            Set<Author> authors,
             CitationScopus citation_by_scopus, CitationCrossRef citation_by_cross_ref) {
         this.id = id;
         this.journal = journal;
@@ -196,11 +196,11 @@ public class Article {
         this.set_spec = set_spec;
     }
 
-    public List<Subject> getSubjects() {
+    public Set<Subject> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(List<Subject> subjects) {
+    public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
 
@@ -356,11 +356,11 @@ public class Article {
         this.createdAt = createdAt;
     }
 
-    public List<Author> getAuthors() {
+    public Set<Author> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(List<Author> authors) {
+    public void setAuthors(Set<Author> authors) {
         this.authors = authors;
     }
 

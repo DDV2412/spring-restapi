@@ -1,7 +1,7 @@
 package com.ipmugo.library.elastic.data;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -34,7 +34,7 @@ public class ArticleElastic {
     private String set_spec;
 
     @Field(type = FieldType.Nested, includeInParent = true)
-    private List<Subject> subjects;
+    private Set<Subject> subjects;
 
     @Field(type = FieldType.Keyword)
     private String title;
@@ -94,7 +94,7 @@ public class ArticleElastic {
     private Date createdAt;
 
     @Field(type = FieldType.Nested, includeInParent = true)
-    private List<Author> authors;
+    private Set<Author> authors;
 
     @Field(type = FieldType.Object, includeInParent = true)
     private CitationScopus citation_by_scopus;
@@ -142,11 +142,11 @@ public class ArticleElastic {
         this.set_spec = set_spec;
     }
 
-    public List<Subject> getSubjects() {
+    public Set<Subject> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(List<Subject> subjects) {
+    public void setSubjects(Set<Subject> subjects) {
         this.subjects = subjects;
     }
 
@@ -302,11 +302,11 @@ public class ArticleElastic {
         this.createdAt = createdAt;
     }
 
-    public List<Author> getAuthors() {
+    public Set<Author> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(List<Author> authors) {
+    public void setAuthors(Set<Author> authors) {
         this.authors = authors;
     }
 

@@ -1,5 +1,6 @@
 package com.ipmugo.library.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,4 +11,7 @@ import com.ipmugo.library.data.Subject;
 public interface SubjectRepo extends JpaRepository<Subject, UUID> {
 
     Optional<Subject> findByName(String name);
+
+    List<Subject> findByNameIn(String[] names);
+
 }

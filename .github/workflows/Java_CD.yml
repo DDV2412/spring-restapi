@@ -34,4 +34,15 @@ jobs:
           script: |
             cd ~/library
             git pull origin master
-            git status
+      - name: Clear Install
+        uses: actions/maven@v3
+        with:
+          args: 'clean install'
+      - name: Build with Maven
+        run: mvn package
+      - name: Deploy to Tomcat
+        run: |
+          cd target
+          sudo cp *.jar /opt/tomcat/webapps
+          sudo systemctl restart tomcat
+          sudo systemctl status tomcat

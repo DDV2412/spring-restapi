@@ -34,10 +34,6 @@ jobs:
           script: |
             cd ~/library
             git pull origin master
-      - name: Clear Install
-        uses: actions/maven@v3
-        with:
-          args: 'clean install'
       - name: Build with Maven
         run: mvn package
       - name: Deploy to Tomcat

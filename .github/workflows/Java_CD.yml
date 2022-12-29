@@ -36,9 +36,7 @@ jobs:
             git pull origin master
       - name: Build with Maven
         run: mvn clean package
-      - name: Deploy to Tomcat
+      - name: Restart server
         run: |
-          cd target
-          sudo cp *.war /opt/tomcat/webapps
-          sudo systemctl restart tomcat
-          sudo systemctl status tomcat
+          sudo systemctl restart library
+          sudo systemctl status library

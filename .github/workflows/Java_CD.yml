@@ -39,6 +39,8 @@ jobs:
       - name: Deploy to Tomcat
         run: |
           cd target
-          sudo cp *.jar /opt/tomcat/webapps
-          sudo systemctl restart tomcat
-          sudo systemctl status tomcat
+          sudo su
+          cp *.jar /opt/tomcat/webapps
+          systemctl restart tomcat
+          systemctl status tomcat
+          exit

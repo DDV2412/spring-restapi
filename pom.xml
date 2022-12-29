@@ -12,7 +12,7 @@
 	<groupId>com.ipmugo</groupId>
 	<artifactId>library</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<name>library</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -105,7 +105,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>ipmugo_library_server</finalName>
+		<finalName>ipmugo</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

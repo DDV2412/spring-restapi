@@ -34,9 +34,6 @@ jobs:
           script: |
             cd ~/library
             git pull origin master
-      - name: Build with Maven
-        run: mvn clean package
-      - name: Restart server
-        run: |
-          sudo systemctl restart library
-          sudo systemctl status library
+            mvn clean package
+            sudo systemctl restart library
+            sudo systemctl status library

@@ -1,5 +1,6 @@
 package com.ipmugo.library.data;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -13,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -53,11 +55,11 @@ public class Author {
     @JsonBackReference
     private Article article;
 
-    @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private COAuthor co_author;
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<COAuthor> co_author;
 
-    @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private AuthorCitation author_citation;
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<AuthorCitation> author_citation;
 
     @OneToOne(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private AuthorStatistic author_statistic;
@@ -79,19 +81,19 @@ public class Author {
         this.article = article;
     }
 
-    public COAuthor getCo_author() {
+    public List<COAuthor> getCo_author() {
         return co_author;
     }
 
-    public void setCo_author(COAuthor co_author) {
+    public void setCo_author(List<COAuthor> co_author) {
         this.co_author = co_author;
     }
 
-    public AuthorCitation getAuthor_citation() {
+    public List<AuthorCitation> getAuthor_citation() {
         return author_citation;
     }
 
-    public void setAuthor_citation(AuthorCitation author_citation) {
+    public void setAuthor_citation(List<AuthorCitation> author_citation) {
         this.author_citation = author_citation;
     }
 

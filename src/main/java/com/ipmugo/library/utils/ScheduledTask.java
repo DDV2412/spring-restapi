@@ -8,11 +8,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -71,7 +73,12 @@ import com.ipmugo.library.dto.Sjr;
 import com.ipmugo.library.dto.Snip;
 import com.ipmugo.library.dto.SubjectArea;
 import com.ipmugo.library.elastic.data.ArticleElastic;
+import com.ipmugo.library.elastic.data.AuthorElastic;
+import com.ipmugo.library.elastic.data.AuthorStatisticElastic;
+import com.ipmugo.library.elastic.data.CitationCrossRefElastic;
+import com.ipmugo.library.elastic.data.CitationScopusElastic;
 import com.ipmugo.library.elastic.data.JournalElastic;
+import com.ipmugo.library.elastic.data.SubjectElastic;
 import com.ipmugo.library.elastic.repository.ArticleElasticRepo;
 import com.ipmugo.library.repository.ArticleRepo;
 import com.ipmugo.library.repository.AuthorCitationRepo;
@@ -1080,6 +1087,17 @@ public class ScheduledTask {
                 for (Article article : articles.getContent()) {
                     ArticleElastic articleElastic = new ArticleElastic();
 
+                    CitationCrossRefElastic citationCrossRefElastic = new CitationCrossRefElastic();
+                    CitationScopusElastic citationScopusElastic = new CitationScopusElastic();
+
+                    citationCrossRefElastic.setId(article.getCitation_by_cross_ref().getId());
+                    citationCrossRefElastic
+                            .setReferences_count(article.getCitation_by_cross_ref().getReferences_count());
+
+                    citationScopusElastic.setId(article.getCitation_by_scopus().getId());
+                    citationScopusElastic
+                            .setReferences_count(article.getCitation_by_scopus().getReferences_count());
+
                     JournalElastic journalElastic = new JournalElastic();
                     journalElastic.setId(article.getJournal().getId().toString());
                     journalElastic.setName(article.getJournal().getName());
@@ -1112,7 +1130,7 @@ public class ScheduledTask {
                     articleElastic.setThumbnail(article.getThumbnail());
                     articleElastic.setOjs_id(article.getOjs_id());
                     articleElastic.setSet_spec(article.getSet_spec());
-                    articleElastic.setSubjects(article.getSubjects());
+
                     articleElastic.setTitle(article.getTitle());
                     articleElastic.setPages(article.getPages());
                     articleElastic.setPublisher(article.getPublisher());
@@ -1133,8 +1151,53 @@ public class ScheduledTask {
                     articleElastic.setUpdatedAt(
                             new Date(article.getupdatedAt().getTime()));
                     articleElastic.setCreatedAt(new Date(article.getcreatedAt().getTime()));
-                    articleElastic.setCitation_by_scopus(article.getCitation_by_scopus());
-                    articleElastic.setCitation_by_cross_ref(article.getCitation_by_cross_ref());
+                    articleElastic.setCitation_by_scopus(citationScopusElastic);
+                    articleElastic.setCitation_by_cross_ref(citationCrossRefElastic);
+
+                    Set<SubjectElastic> subjectElastics = new HashSet<>();
+                    if (article.getSubjects().size() > 0) {
+                        subjectElastics.addAll(article.getSubjects().stream()
+                                .map(s -> {
+                                    SubjectElastic subjectElastic = new SubjectElastic();
+                                    subjectElastic.setId(s.getId());
+                                    subjectElastic.setName(s.getName());
+                                    return subjectElastic;
+                                })
+                                .collect(Collectors.toList()));
+                    }
+
+                    Set<AuthorElastic> authorElastics = new HashSet<>();
+                    if (article.getAuthors().size() > 0) {
+                        authorElastics.addAll(article.getAuthors().stream()
+                                .map(s -> {
+                                    AuthorElastic authorElastic = new AuthorElastic();
+                                    authorElastic.setId(s.getId());
+                                    authorElastic.setFirst_name(s.getFirst_name());
+                                    authorElastic.setLast_name(s.getLast_name());
+                                    authorElastic.setEmail(s.getEmail());
+                                    authorElastic.setOrcid(s.getOrcid());
+                                    authorElastic.setScopus_id(s.getScopus_id());
+                                    authorElastic.setGoogle_scholar(s.getGoogle_scholar());
+                                    authorElastic.setAffiliation(s.getAffiliation());
+                                    authorElastic.setPhoto_profile(s.getPhoto_profile());
+
+                                    AuthorStatisticElastic authorStatisticElastic = new AuthorStatisticElastic();
+
+                                    authorStatisticElastic.setId(s.getAuthor_statistic().getId());
+                                    authorStatisticElastic.setCitation(s.getAuthor_statistic().getCitation());
+                                    authorStatisticElastic.setH_index(s.getAuthor_statistic().getH_index());
+                                    authorStatisticElastic.setIndex_i10(s.getAuthor_statistic().getIndex_i10());
+
+                                    authorElastic.setAuthor_statistic(authorStatisticElastic);
+                                    return authorElastic;
+                                })
+                                .collect(Collectors.toList()));
+                    }
+
+                    articleElastic.setSubjects(subjectElastics);
+
+                    articleElastic.setAuthors(authorElastics);
+
                     System.out.println(elasticRepo.save(articleElastic));
                 }
                 pageable = articles.nextPageable();

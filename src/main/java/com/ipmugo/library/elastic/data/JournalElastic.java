@@ -3,6 +3,7 @@ package com.ipmugo.library.elastic.data;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.MultiField;
@@ -13,6 +14,7 @@ import com.ipmugo.library.utils.Frequency;
 
 import jakarta.persistence.Id;
 
+@Document(indexName = "articles")
 public class JournalElastic {
 
     @Id

@@ -9,11 +9,6 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.MultiField;
 
-import com.ipmugo.library.data.Author;
-import com.ipmugo.library.data.CitationCrossRef;
-import com.ipmugo.library.data.CitationScopus;
-import com.ipmugo.library.data.Subject;
-
 @Document(indexName = "articles")
 public class ArticleElastic {
 
@@ -34,7 +29,7 @@ public class ArticleElastic {
     private String set_spec;
 
     @Field(type = FieldType.Nested, includeInParent = true)
-    private Set<Subject> subjects;
+    private Set<SubjectElastic> subjects;
 
     @Field(type = FieldType.Keyword)
     private String title;
@@ -94,13 +89,13 @@ public class ArticleElastic {
     private Date createdAt;
 
     @Field(type = FieldType.Nested, includeInParent = true)
-    private Set<Author> authors;
+    private Set<AuthorElastic> authors;
 
     @Field(type = FieldType.Object, includeInParent = true)
-    private CitationScopus citation_by_scopus;
+    private CitationScopusElastic citation_by_scopus;
 
     @Field(type = FieldType.Object, includeInParent = true)
-    private CitationCrossRef citation_by_cross_ref;
+    private CitationCrossRefElastic citation_by_cross_ref;
 
     public String getId() {
         return id;
@@ -142,11 +137,11 @@ public class ArticleElastic {
         this.set_spec = set_spec;
     }
 
-    public Set<Subject> getSubjects() {
+    public Set<SubjectElastic> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(Set<Subject> subjects) {
+    public void setSubjects(Set<SubjectElastic> subjects) {
         this.subjects = subjects;
     }
 
@@ -302,27 +297,27 @@ public class ArticleElastic {
         this.createdAt = createdAt;
     }
 
-    public Set<Author> getAuthors() {
+    public Set<AuthorElastic> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(Set<Author> authors) {
+    public void setAuthors(Set<AuthorElastic> authors) {
         this.authors = authors;
     }
 
-    public CitationScopus getCitation_by_scopus() {
+    public CitationScopusElastic getCitation_by_scopus() {
         return citation_by_scopus;
     }
 
-    public void setCitation_by_scopus(CitationScopus citation_by_scopus) {
+    public void setCitation_by_scopus(CitationScopusElastic citation_by_scopus) {
         this.citation_by_scopus = citation_by_scopus;
     }
 
-    public CitationCrossRef getCitation_by_cross_ref() {
+    public CitationCrossRefElastic getCitation_by_cross_ref() {
         return citation_by_cross_ref;
     }
 
-    public void setCitation_by_cross_ref(CitationCrossRef citation_by_cross_ref) {
+    public void setCitation_by_cross_ref(CitationCrossRefElastic citation_by_cross_ref) {
         this.citation_by_cross_ref = citation_by_cross_ref;
     }
 

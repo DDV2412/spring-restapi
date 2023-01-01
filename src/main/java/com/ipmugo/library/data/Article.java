@@ -18,7 +18,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -46,8 +45,8 @@ public class Article {
     @Column(nullable = false, length = 100)
     private String set_spec;
 
-    @ManyToMany(mappedBy = "articles", fetch = FetchType.EAGER)
-    private Set<Subject> subjects;
+    @Column(columnDefinition = "TEXT")
+    private String subjects;
 
     @Column(length = 255, nullable = false)
     private String title;
@@ -119,7 +118,7 @@ public class Article {
     }
 
     public Article(UUID id, Journal journal, String thumbnail, Integer ojs_id, String set_spec,
-            Set<Subject> subjects,
+            String subjects,
             String title, String pages, String publisher, String publish_year, String last_modifier,
             String publish_date, String issn, String source_type, String languange_publication, String doi,
             String volume, String issue, String copyright, String abstract_text, String full_text, String article_pdf,
@@ -196,11 +195,11 @@ public class Article {
         this.set_spec = set_spec;
     }
 
-    public Set<Subject> getSubjects() {
+    public String getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(Set<Subject> subjects) {
+    public void setSubjects(String subjects) {
         this.subjects = subjects;
     }
 

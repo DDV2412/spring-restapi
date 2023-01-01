@@ -57,7 +57,6 @@ import com.ipmugo.library.data.CitationCrossRef;
 import com.ipmugo.library.data.CitationScopus;
 import com.ipmugo.library.data.Journal;
 import com.ipmugo.library.data.Metric;
-import com.ipmugo.library.data.Subject;
 import com.ipmugo.library.dto.CiteScoreYearInfoList;
 import com.ipmugo.library.dto.EntryCrossRef;
 import com.ipmugo.library.dto.EntryJournalCitation;
@@ -90,7 +89,6 @@ import com.ipmugo.library.repository.CitationCrossRefRepo;
 import com.ipmugo.library.repository.CitationScopusRepo;
 import com.ipmugo.library.repository.JournalRepo;
 import com.ipmugo.library.repository.MetricRepo;
-import com.ipmugo.library.repository.SubjectRepo;
 
 @Component
 @Async
@@ -116,9 +114,6 @@ public class ScheduledTask {
 
     @Autowired
     private ArticleElasticRepo elasticRepo;
-
-    @Autowired
-    private SubjectRepo subjectRepo;
 
     @Autowired
     private AuthorRepo authorRepo;
@@ -503,6 +498,10 @@ public class ScheduledTask {
                 articleData.setKeyword(keyword);
             }
 
+            if (subjectsData != null && !subjectsData.isBlank()) {
+                articleData.setSubjects(subjectsData);
+            }
+
             if (!dc.get(0)
                     .getElementsByTag("dc:relation").isEmpty()
                     && dc.get(0)
@@ -518,22 +517,6 @@ public class ScheduledTask {
                             .getElementsByTag("dc:rights").size() == 2) {
                 articleData.setCopyright(dc.get(0)
                         .getElementsByTag("dc:rights").get(1).text());
-            }
-
-            if (subjectsData != null && !subjectsData.isBlank()) {
-                String[] names = subjectsData.split(";");
-
-                for (String name : names) {
-                    if (name != null && !name.isBlank()) {
-                        Optional<Subject> subjectName = subjectRepo.findByName(name);
-
-                        if (!subjectName.isPresent()) {
-                            Subject subjectNew = new Subject();
-                            subjectNew.setName(name);
-                            subjectRepo.save(subjectNew);
-                        }
-                    }
-                }
             }
 
             if (articleData.getArticle_pdf() != null && articleData.getDoi() != null) {
@@ -558,18 +541,6 @@ public class ScheduledTask {
                         }
                     }
 
-                    if (subjectsData != null && !subjectsData.isBlank()) {
-                        String[] names = subjectsData.split(";");
-
-                        List<Subject> sList = subjectRepo.findByNameIn(names);
-                        for (Subject s : sList) {
-                            Set<Article> articles = s.getArticles();
-                            articles.add(article2);
-                            s.setArticles(articles);
-                        }
-                        subjectRepo.saveAll(sList);
-                    }
-
                     System.out.println(article2);
                 } else {
                     if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
@@ -592,6 +563,7 @@ public class ScheduledTask {
                         article.get().setVolume(articleData.getVolume());
                         article.get().setPages(articleData.getPages());
                         article.get().setKeyword(articleData.getKeyword());
+                        article.get().setSubjects(articleData.getSubjects());
                         article.get().setJournal(journal);
 
                         Elements creator = dc.get(0).getElementsByTag("dc:creator");
@@ -606,18 +578,6 @@ public class ScheduledTask {
                                 authorRepo.save(author);
                             }
 
-                        }
-
-                        if (subjectsData != null && !subjectsData.isBlank()) {
-                            String[] names = subjectsData.split(";");
-
-                            List<Subject> sList = subjectRepo.findByNameIn(names);
-                            for (Subject s : sList) {
-                                Set<Article> articles = s.getArticles();
-                                articles.add(article.get());
-                                s.setArticles(articles);
-                            }
-                            subjectRepo.saveAll(sList);
                         }
 
                         System.out.println(article.get());
@@ -1155,15 +1115,16 @@ public class ScheduledTask {
                     articleElastic.setCitation_by_cross_ref(citationCrossRefElastic);
 
                     Set<SubjectElastic> subjectElastics = new HashSet<>();
-                    if (article.getSubjects().size() > 0) {
-                        subjectElastics.addAll(article.getSubjects().stream()
-                                .map(s -> {
-                                    SubjectElastic subjectElastic = new SubjectElastic();
-                                    subjectElastic.setId(s.getId());
-                                    subjectElastic.setName(s.getName());
-                                    return subjectElastic;
-                                })
-                                .collect(Collectors.toList()));
+                    if (article.getSubjects() != null) {
+                        String[] subjects = article.getSubjects().split(";");
+
+                        if (subjects.length > 0) {
+                            for (String s : subjects) {
+                                SubjectElastic subjectElastic = new SubjectElastic();
+                                subjectElastic.setName(s);
+                                subjectElastics.add(subjectElastic);
+                            }
+                        }
                     }
 
                     Set<AuthorElastic> authorElastics = new HashSet<>();
@@ -1208,7 +1169,7 @@ public class ScheduledTask {
         System.out.println("Successfully sync with elasticsearch");
     }
 
-    @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 

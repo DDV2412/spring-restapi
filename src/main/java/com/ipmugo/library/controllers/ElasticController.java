@@ -52,28 +52,15 @@ public class ElasticController {
                 List<Map<String, Long>> aggrList = new ArrayList<>();
 
                 for (Map.Entry<String, Aggregate> entry : aggrs.entrySet()) {
-                        if (!entry.getKey().equals("subjects")) {
-                                aggrList.add(aggrs.get(entry.getKey()).global().aggregations()
-                                                .get(entry.getKey() + "_terms")
-                                                .sterms().buckets().array().stream()
-                                                .collect(Collectors.toMap(StringTermsBucket::key,
-                                                                MultiBucketBase::docCount))
-                                                .entrySet()
-                                                .stream()
-                                                .collect(Collectors.toMap(e -> e.getKey().stringValue(),
-                                                                Map.Entry::getValue)));
-                        } else {
-                                aggrList.add(aggrs.get(entry.getKey()).global().aggregations().get(
-                                                entry.getKey() + "_terms").nested().aggregations().get("subject_name")
-                                                .sterms().buckets()
-                                                .array().stream()
-                                                .collect(Collectors.toMap(StringTermsBucket::key,
-                                                                MultiBucketBase::docCount))
-                                                .entrySet()
-                                                .stream()
-                                                .collect(Collectors.toMap(e -> e.getKey().stringValue(),
-                                                                Map.Entry::getValue)));
-                        }
+                        aggrList.add(aggrs.get(entry.getKey()).global().aggregations()
+                                        .get(entry.getKey() + "_terms")
+                                        .sterms().buckets().array().stream()
+                                        .collect(Collectors.toMap(StringTermsBucket::key,
+                                                        MultiBucketBase::docCount))
+                                        .entrySet()
+                                        .stream()
+                                        .collect(Collectors.toMap(e -> e.getKey().stringValue(),
+                                                        Map.Entry::getValue)));
                 }
 
                 List<ArticleElastic> articles = new ArrayList<>();

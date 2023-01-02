@@ -131,11 +131,15 @@ public class ScheduledTask {
     public <T> void journalMetric() {
         Pageable pageable = PageRequest.of(0, 15);
 
-        Page<Journal> journals = journalRepo.findAll(pageable);
-
         RestTemplate restTemplate = new RestTemplate();
 
-        while (journals.getContent().size() > 0) {
+        do {
+            Page<Journal> journals = journalRepo.findAll(pageable);
+
+            if (journals.getContent().size() == 0) {
+                break;
+            }
+
             for (Journal journal : journals.getContent()) {
                 try {
                     HttpHeaders headers = new HttpHeaders();
@@ -265,8 +269,7 @@ public class ScheduledTask {
             }
 
             pageable = pageable.next();
-            journals = journalRepo.findAll(pageable);
-        }
+        } while (true);
 
         System.out.println("Successfully get all citation journal by scopus");
     }
@@ -276,9 +279,14 @@ public class ScheduledTask {
         try {
             Pageable pageable = PageRequest.of(0, 15);
 
-            Page<Journal> journals = journalRepo.findAll(pageable);
+            do {
 
-            while (journals.getContent().size() > 0) {
+                Page<Journal> journals = journalRepo.findAll(pageable);
+
+                if (journals.getContent().size() == 0) {
+                    break;
+                }
+
                 for (Journal journal : journals.getContent()) {
                     Response response = Jsoup.connect(
                             journal.getJournal_site() +
@@ -306,10 +314,8 @@ public class ScheduledTask {
                     }
 
                 }
-
                 pageable = pageable.next();
-                journals = journalRepo.findAll(pageable);
-            }
+            } while (true);
 
             System.out.println("Successfully get all articles by journals");
 
@@ -596,13 +602,19 @@ public class ScheduledTask {
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 50);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
-
         RestTemplate restTemplate = new RestTemplate();
 
-        while (articles.getContent().size() > 0) {
+        do {
+
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
-                if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
+                if (article.getDoi() != null && article.getDoi().split("http").length != 2
+                        && article.getJournal().getMetric() != null) {
 
                     try {
                         HttpHeaders headers = new HttpHeaders();
@@ -744,13 +756,32 @@ public class ScheduledTask {
                         }
                     }
 
+                } else {
+                    Optional<CitationScopus> citationScopus = citationScopusRepo
+                            .findByArticleId(article.getId());
+
+                    if (!citationScopus.isPresent()) {
+                        CitationScopus citationScopus2 = new CitationScopus();
+                        citationScopus2.setArticle(article);
+                        citationScopus2
+                                .setReferences_count(
+                                        0);
+
+                        System.out.println(citationScopusRepo.save(citationScopus2));
+                    } else {
+                        citationScopus.get().setArticle(article);
+                        citationScopus.get()
+                                .setReferences_count(
+                                        0);
+
+                        System.out.println(citationScopusRepo.save(citationScopus.get()));
+                    }
                 }
 
             }
 
             pageable = pageable.next();
-            articles = articleRepo.findAll(pageable);
-        }
+        } while (true);
 
         System.out.println("Successfully get all citation article by scopus");
 
@@ -760,11 +791,16 @@ public class ScheduledTask {
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 50);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
-
         RestTemplate restTemplate = new RestTemplate();
 
-        while (articles.getContent().size() > 0) {
+        do {
+
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
                 if (article.getDoi() != null && article.getDoi().split("http").length != 2) {
                     try {
@@ -851,13 +887,28 @@ public class ScheduledTask {
                         }
                     }
 
+                } else {
+                    Optional<CitationCrossRef> citationCrossRef = citationCrossRefRepo
+                            .findByArticleId(article.getId());
+
+                    if (!citationCrossRef.isPresent()) {
+                        CitationCrossRef citationCrossRef2 = new CitationCrossRef();
+                        citationCrossRef2.setArticle(article);
+                        citationCrossRef2.setReferences_count(0);
+
+                        System.out.println(citationCrossRefRepo.save(citationCrossRef2));
+                    } else {
+                        citationCrossRef.get().setArticle(article);
+                        citationCrossRef.get().setReferences_count(0);
+
+                        System.out.println(citationCrossRefRepo.save(citationCrossRef.get()));
+                    }
                 }
 
             }
 
             pageable = pageable.next();
-            articles = articleRepo.findAll(pageable);
-        }
+        } while (true);
 
         System.out.println("Successfully get all citation journal by crossref");
 
@@ -867,9 +918,14 @@ public class ScheduledTask {
     public void getFigures() {
         Pageable pageable = PageRequest.of(0, 50);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
+        do {
 
-        while (articles.getContent().size() > 0) {
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
                 if (article.getArticle_pdf() != null
                         && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -938,8 +994,8 @@ public class ScheduledTask {
             }
 
             pageable = pageable.next();
-            articles = articleRepo.findAll(pageable);
-        }
+
+        } while (true);
 
         System.out.println("Successfully get figure");
     }
@@ -948,9 +1004,14 @@ public class ScheduledTask {
     public void getFilePDF() {
         Pageable pageable = PageRequest.of(0, 15);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
+        do {
 
-        while (articles.getContent().size() > 0) {
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
                 if (article.getArticle_pdf() != null
                         && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -1000,8 +1061,8 @@ public class ScheduledTask {
             }
 
             pageable = pageable.next();
-            articles = articleRepo.findAll(pageable);
-        }
+
+        } while (true);
 
         System.out.println("Successfully PDF");
 
@@ -1011,9 +1072,14 @@ public class ScheduledTask {
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 50);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
+        do {
 
-        while (articles.getContent().size() > 0) {
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
                 ArticleElastic articleElastic = new ArticleElastic();
 
@@ -1141,8 +1207,8 @@ public class ScheduledTask {
                 System.out.println(elasticRepo.save(articleElastic));
             }
             pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
-        }
+
+        } while (true);
 
         System.out.println("Successfully sync with elasticsearch");
     }
@@ -1151,9 +1217,14 @@ public class ScheduledTask {
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 
-        Page<Article> articles = articleRepo.findAll(pageable);
+        do {
 
-        while (articles.getContent().size() > 0) {
+            Page<Article> articles = articleRepo.findAll(pageable);
+
+            if (articles.getContent().size() == 0) {
+                break;
+            }
+
             for (Article article : articles.getContent()) {
                 if (article.getArticle_pdf() != null
                         && !article.getArticle_pdf().contains("downloadSuppFile") && !article.getArticle_pdf()
@@ -1201,8 +1272,7 @@ public class ScheduledTask {
             }
 
             pageable = articles.nextPageable();
-            articles = articleRepo.findAll(pageable);
-        }
+        } while (true);
 
         System.out.println("Successfully convert pdf to html");
     }
@@ -1211,9 +1281,14 @@ public class ScheduledTask {
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 
-        Page<Author> authors = authorRepo.findAll(pageable);
+        do {
 
-        while (authors.getContent().size() > 0) {
+            Page<Author> authors = authorRepo.findAll(pageable);
+
+            if (authors.getContent().size() == 0) {
+                break;
+            }
+
             for (Author author : authors.getContent()) {
                 if (author.getGoogle_scholar() != null) {
                     try {
@@ -1318,8 +1393,7 @@ public class ScheduledTask {
             }
 
             pageable = authors.nextPageable();
-            authors = authorRepo.findAll(pageable);
-        }
+        } while (true);
 
         System.out.println("Successfully get profile author by google scholar");
     }

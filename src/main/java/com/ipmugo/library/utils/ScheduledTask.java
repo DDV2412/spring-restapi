@@ -609,7 +609,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 100);
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -798,7 +798,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 100);
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -925,7 +925,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
     public void getFigures() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 100);
 
         do {
 
@@ -1079,7 +1079,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 8 * *", zone = "GMT+7")
     public void pushData() {
-        Pageable pageable = PageRequest.of(0, 50);
+        Pageable pageable = PageRequest.of(0, 100);
 
         do {
 
@@ -1224,7 +1224,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
     public void getFullText() {
-        Pageable pageable = PageRequest.of(0, 15);
+        Pageable pageable = PageRequest.of(0, 100);
 
         do {
 
@@ -1288,7 +1288,7 @@ public class ScheduledTask {
 
     @Scheduled(cron = "0 0 0 5 * *", zone = "GMT+7")
     public void authorProfile() {
-        Pageable pageable = PageRequest.of(0, 15);
+        Pageable pageable = PageRequest.of(0, 100);
 
         do {
 

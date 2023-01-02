@@ -541,7 +541,12 @@ public class ScheduledTask {
                     if (!creator.isEmpty()) {
                         for (int x = 0; x < creator.size(); x++) {
                             Author author = new Author();
-                            author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                            if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
+                                author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
+                                author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
+                            } else {
+                                author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                            }
                             author.setLast_name(creator.get(x).text().split(", ")[0]);
                             author.setArticle(article2);
 
@@ -579,13 +584,17 @@ public class ScheduledTask {
                         if (!creator.isEmpty()) {
                             for (int x = 0; x < creator.size(); x++) {
                                 Author author = new Author();
-                                author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
+                                    author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
+                                    author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
+                                } else {
+                                    author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                }
                                 author.setLast_name(creator.get(x).text().split(", ")[0]);
                                 author.setArticle(article.get());
 
                                 authorRepo.save(author);
                             }
-
                         }
 
                         System.out.println(article.get());

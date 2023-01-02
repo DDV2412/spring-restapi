@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +72,58 @@ public class ElasticController {
                 responseData.setStatus(true);
                 responseData.setPayload(articles);
                 responseData.setAggregations(aggrList);
+
+                return ResponseEntity.ok(responseData);
+        }
+
+        @GetMapping("/feature_article")
+        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> articleFeatures() {
+                ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
+
+                String query = "{\"from\": \"0\",\"size\":\"3\",\"query\":{\"bool\": {\"should\" : [{ \"match_all\" : { } }],\"filter\": []}},\"sort\": [{\"citation_by_scopus.references_count\": \"desc\"}]}";
+                SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
+
+                List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
+
+                TotalHits total = searchResponse.hits().total();
+
+                if (total != null) {
+                        responseData.setTotalValue(total.value());
+                }
+
+                List<ArticleElastic> articles = new ArrayList<>();
+                for (Hit<ArticleElastic> object : hits) {
+                        articles.add((ArticleElastic) object.source());
+                }
+
+                responseData.setStatus(true);
+                responseData.setPayload(articles);
+
+                return ResponseEntity.ok(responseData);
+        }
+
+        @GetMapping("/feature_author")
+        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> authorFeatures() {
+                ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
+
+                String query = "{    \"from\": \"0\",\"size\": \"15\",\"query\":{\"bool\": {\"should\" : [{ \"match_all\" : { } }],\"filter\": []}},\"sort\": [{\"citation_by_scopus.references_count\": \"desc\"},{\"authors.author_statistic.h_index\": \"desc\"}]}";
+                SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
+
+                List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();
+
+                TotalHits total = searchResponse.hits().total();
+
+                if (total != null) {
+                        responseData.setTotalValue(total.value());
+                }
+
+                List<ArticleElastic> articles = new ArrayList<>();
+                for (Hit<ArticleElastic> object : hits) {
+                        articles.add((ArticleElastic) object.source());
+                }
+
+                responseData.setStatus(true);
+                responseData.setPayload(articles);
 
                 return ResponseEntity.ok(responseData);
         }

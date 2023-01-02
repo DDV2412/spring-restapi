@@ -1017,17 +1017,6 @@ public class ScheduledTask {
             for (Article article : articles.getContent()) {
                 ArticleElastic articleElastic = new ArticleElastic();
 
-                CitationCrossRefElastic citationCrossRefElastic = new CitationCrossRefElastic();
-                CitationScopusElastic citationScopusElastic = new CitationScopusElastic();
-
-                citationCrossRefElastic.setId(article.getCitation_by_cross_ref().getId());
-                citationCrossRefElastic
-                        .setReferences_count(article.getCitation_by_cross_ref().getReferences_count());
-
-                citationScopusElastic.setId(article.getCitation_by_scopus().getId());
-                citationScopusElastic
-                        .setReferences_count(article.getCitation_by_scopus().getReferences_count());
-
                 JournalElastic journalElastic = new JournalElastic();
                 journalElastic.setId(article.getJournal().getId().toString());
                 journalElastic.setName(article.getJournal().getName());
@@ -1081,8 +1070,25 @@ public class ScheduledTask {
                 articleElastic.setUpdatedAt(
                         new Date(article.getupdatedAt().getTime()));
                 articleElastic.setCreatedAt(new Date(article.getcreatedAt().getTime()));
-                articleElastic.setCitation_by_scopus(citationScopusElastic);
-                articleElastic.setCitation_by_cross_ref(citationCrossRefElastic);
+
+                if (article.getCitation_by_cross_ref() != null) {
+                    CitationCrossRefElastic citationCrossRefElastic = new CitationCrossRefElastic();
+                    citationCrossRefElastic.setId(article.getCitation_by_cross_ref().getId());
+                    citationCrossRefElastic
+                            .setReferences_count(article.getCitation_by_cross_ref().getReferences_count());
+
+                    articleElastic.setCitation_by_cross_ref(citationCrossRefElastic);
+                }
+
+                if (article.getCitation_by_scopus() != null) {
+                    CitationScopusElastic citationScopusElastic = new CitationScopusElastic();
+
+                    citationScopusElastic.setId(article.getCitation_by_scopus().getId());
+                    citationScopusElastic
+                            .setReferences_count(article.getCitation_by_scopus().getReferences_count());
+
+                    articleElastic.setCitation_by_scopus(citationScopusElastic);
+                }
 
                 Set<SubjectElastic> subjectElastics = new HashSet<>();
                 if (article.getSubjects() != null) {
@@ -1112,14 +1118,17 @@ public class ScheduledTask {
                                 authorElastic.setAffiliation(s.getAffiliation());
                                 authorElastic.setPhoto_profile(s.getPhoto_profile());
 
-                                AuthorStatisticElastic authorStatisticElastic = new AuthorStatisticElastic();
+                                if (s.getAuthor_statistic() != null) {
+                                    AuthorStatisticElastic authorStatisticElastic = new AuthorStatisticElastic();
 
-                                authorStatisticElastic.setId(s.getAuthor_statistic().getId());
-                                authorStatisticElastic.setCitation(s.getAuthor_statistic().getCitation());
-                                authorStatisticElastic.setH_index(s.getAuthor_statistic().getH_index());
-                                authorStatisticElastic.setIndex_i10(s.getAuthor_statistic().getIndex_i10());
+                                    authorStatisticElastic.setId(s.getAuthor_statistic().getId());
+                                    authorStatisticElastic.setCitation(s.getAuthor_statistic().getCitation());
+                                    authorStatisticElastic.setH_index(s.getAuthor_statistic().getH_index());
+                                    authorStatisticElastic.setIndex_i10(s.getAuthor_statistic().getIndex_i10());
 
-                                authorElastic.setAuthor_statistic(authorStatisticElastic);
+                                    authorElastic.setAuthor_statistic(authorStatisticElastic);
+                                }
+
                                 return authorElastic;
                             })
                             .collect(Collectors.toList()));

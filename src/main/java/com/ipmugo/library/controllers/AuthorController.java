@@ -52,6 +52,22 @@ public class AuthorController {
 
     }
 
+    @GetMapping("/{first_name}/{last_name}")
+    public ResponseEntity<ResponseData<Iterable<Author>>> findAllByQuery(@PathVariable("first_name") String first_name,
+            @PathVariable("last_name") String last_name, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        ResponseData<Iterable<Author>> responseData = new ResponseData<>();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Author> author = authorService.findByQuery(pageable, first_name, last_name);
+
+        responseData.setStatus(true);
+        responseData.setPayload(author.getContent());
+        return ResponseEntity.ok(responseData);
+
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<Author>> findOne(@PathVariable("id") UUID id) {
         ResponseData<Author> responseData = new ResponseData<>();

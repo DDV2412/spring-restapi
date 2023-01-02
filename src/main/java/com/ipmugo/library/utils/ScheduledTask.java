@@ -139,7 +139,7 @@ public class ScheduledTask {
             for (Journal journal : journals.getContent()) {
                 try {
                     HttpHeaders headers = new HttpHeaders();
-                    headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+                    headers.set("X-ELS-APIKey", "c3e2204edf8085aaf3487d0caed62253");
 
                     HttpEntity<T> request = new HttpEntity<>(headers);
 
@@ -606,7 +606,7 @@ public class ScheduledTask {
 
                     try {
                         HttpHeaders headers = new HttpHeaders();
-                        headers.set("X-ELS-APIKey", "bb0f9584e36074a974a78c90396f08f5");
+                        headers.set("X-ELS-APIKey", "c3e2204edf8085aaf3487d0caed62253");
 
                         HttpEntity<T> request = new HttpEntity<>(headers);
 

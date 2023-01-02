@@ -14,4 +14,5 @@ public interface AuthorRepo extends JpaRepository<Author, UUID> {
     List<Author> findByArticleId(UUID article_id);
 
     Page<Author> findAll(Pageable pageable);
+
 }

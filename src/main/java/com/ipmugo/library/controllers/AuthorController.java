@@ -1,5 +1,6 @@
 package com.ipmugo.library.controllers;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -73,7 +74,7 @@ public class AuthorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseData<Author>> create(@PathVariable("id") UUID id, @Valid @RequestBody Author author,
+    public ResponseEntity<ResponseData<Author>> update(@PathVariable("id") UUID id, @Valid @RequestBody Author author,
             Errors errors) {
         ResponseData<Author> responseData = new ResponseData<>();
 
@@ -132,5 +133,29 @@ public class AuthorController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
 
+    }
+
+    @PutMapping()
+    public ResponseEntity<ResponseData<Iterable<Author>>> updateAll(@Valid @RequestBody List<Author> authors,
+            Errors errors) {
+        ResponseData<Iterable<Author>> responseData = new ResponseData<>();
+
+        if (errors.hasErrors()) {
+            for (ObjectError error : errors.getAllErrors()) {
+                responseData.getMessages().add(error.getDefaultMessage());
+            }
+            responseData.setStatus(false);
+            responseData.setPayload(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+        }
+        try {
+            responseData.setStatus(true);
+            responseData.setPayload(authorService.saveAll(authors));
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            responseData.setStatus(false);
+            responseData.getMessages().add(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
+        }
     }
 }

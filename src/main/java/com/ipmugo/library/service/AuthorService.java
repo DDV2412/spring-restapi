@@ -43,6 +43,10 @@ public class AuthorService {
         return authorRepo.save(author);
     }
 
+    public Iterable<Author> saveAll(List<Author> authors) {
+        return authorRepo.saveAll(authors);
+    }
+
     public void deleteById(UUID id) {
         authorRepo.deleteById(id);
     }

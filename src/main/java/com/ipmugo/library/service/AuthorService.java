@@ -26,7 +26,7 @@ public class AuthorService {
     }
 
     public Page<Author> findByQuery(Pageable pageable, String first_name, String last_name) {
-        return authorRepo.findAllByQuery(pageable, first_name, last_name);
+        return authorRepo.findAllByPage(pageable, first_name, last_name);
     }
 
     public List<Author> findByArticleId(UUID articleId) {

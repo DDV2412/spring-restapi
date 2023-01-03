@@ -103,10 +103,9 @@ public class ElasticController {
         }
 
         @GetMapping("/feature_author")
-        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> authorFeatures() {
+        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> authorFeatures(@RequestBody String query) {
                 ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
-                String query = "{    \"from\": \"0\",\"size\": \"15\",\"query\":{\"bool\": {\"should\" : [{ \"match_all\" : { } }],\"filter\": []}},\"sort\": [{\"citation_by_scopus.references_count\": \"desc\"},{\"authors.author_statistic.h_index\": \"desc\"}]}";
                 SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
 
                 List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();

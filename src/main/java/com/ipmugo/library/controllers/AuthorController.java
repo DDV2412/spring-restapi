@@ -165,8 +165,23 @@ public class AuthorController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
         }
         try {
+
+            for (Author author : authors) {
+                Author author2 = authorService.findOne(author.getId());
+
+                author2.setFirst_name(author.getFirst_name());
+                author2.setLast_name(author.getLast_name());
+                author2.setEmail(author.getEmail());
+                author2.setOrcid(author.getOrcid());
+                author2.setScopus_id(author.getScopus_id());
+                author2.setGoogle_scholar(author.getGoogle_scholar());
+                author2.setAffiliation(author.getAffiliation());
+                author2.setPhoto_profile(author.getPhoto_profile());
+
+                authorService.save(author2);
+            }
             responseData.setStatus(true);
-            responseData.setPayload(authorService.saveAll(authors));
+            responseData.setPayload(authors);
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);

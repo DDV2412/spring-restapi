@@ -607,7 +607,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 20 11 4 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 15);
 

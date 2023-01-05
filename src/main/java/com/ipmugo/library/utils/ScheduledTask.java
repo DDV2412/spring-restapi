@@ -1,5 +1,6 @@
 package com.ipmugo.library.utils;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -796,7 +797,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 5 20 5 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 40 19 5 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -955,9 +956,14 @@ public class ScheduledTask {
                                     if (xobject instanceof PDImageXObject) {
                                         PDImageXObject image = (PDImageXObject) xobject;
                                         BufferedImage bImage = image.getImage();
+                                        BufferedImage resizedImage = new BufferedImage(300, 225,
+                                                BufferedImage.TYPE_INT_ARGB);
+                                        Graphics2D g2d = resizedImage.createGraphics();
+                                        g2d.drawImage(bImage, 0, 0, 300, 225, null);
+                                        g2d.dispose();
 
                                         ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
-                                        ImageIO.write(bImage, "png", dataStream);
+                                        ImageIO.write(resizedImage, "png", dataStream);
                                         dataStream.flush();
 
                                         byte[] imageInByteArray = dataStream.toByteArray();
@@ -965,7 +971,7 @@ public class ScheduledTask {
                                         try {
                                             UriComponents uriComponents = UriComponentsBuilder.newInstance()
                                                     .scheme("http")
-                                                    .host("localhost:8080")
+                                                    .host("103.102.152.252:8080")
                                                     .path("/api/upload/figure/" + article.getTitle()
                                                             .replaceAll(" ", "-")
                                                             + counter + ".png")
@@ -1053,7 +1059,7 @@ public class ScheduledTask {
 
                         UriComponents uriComponents = UriComponentsBuilder.newInstance()
                                 .scheme("http")
-                                .host("localhost:8080")
+                                .host("103.102.152.252:8080")
                                 .path("/api/upload/document/" + article.getTitle().replaceAll(" ",
                                         "-")
                                         + ".pdf")

@@ -25,7 +25,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.fit.pdfdom.PDFDomTree;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -127,7 +127,7 @@ public class ScheduledTask {
     @Autowired
     private AuthorStatisticRepo authorStatisticRepo;
 
-    @Scheduled(cron = "0 0 0 10 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 59 13 5 * *", zone = "GMT+7")
     public <T> void journalMetric() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -274,7 +274,7 @@ public class ScheduledTask {
         System.out.println("Successfully get all citation journal by scopus");
     }
 
-    @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 1 14 5 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             Pageable pageable = PageRequest.of(0, 15);
@@ -607,7 +607,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 21 5 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -796,7 +796,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 12 6 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -923,7 +923,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 25 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 12 7 * *", zone = "GMT+7")
     public void getFigures() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1009,7 +1009,7 @@ public class ScheduledTask {
         System.out.println("Successfully get figure");
     }
 
-    @Scheduled(cron = "0 0 0 28 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 10 9 * *", zone = "GMT+7")
     public void getFilePDF() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1077,7 +1077,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 8 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 11 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1222,7 +1222,7 @@ public class ScheduledTask {
         System.out.println("Successfully sync with elasticsearch");
     }
 
-    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 8 * *", zone = "GMT+7")
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1246,30 +1246,28 @@ public class ScheduledTask {
 
                             PDDocument document = Loader.loadPDF(inputStream);
 
-                            PDFDomTree stripper = new PDFDomTree();
+                            PDFTextStripper stripper = new PDFTextStripper();
                             String text = stripper.getText(document);
+                            document.close();
 
-                            Document html = Jsoup.parse(text);
+                            String[] lines = text.split("\n");
+                            String paragraph = "";
+                            String startElement = "1. INTRODUCTION";
+                            String endElement = "BIOGRAPHIES OF AUTHORS";
+                            boolean foundStart = false;
+                            boolean foundEnd = false;
 
-                            Element startElement = html.select("div:contains(INTRODUCTION)")
-                                    .first();
-                            Element endElement = html.select("div.p:contains(BIOGRAPHIES)").first();
-
-                            String data = "";
-
-                            if (startElement != null) {
-                                Element element = startElement.nextElementSibling();
-                                if (element != null) {
-                                    while (element != endElement) {
-                                        if (element.nextElementSibling() != null) {
-                                            data += element.nextElementSibling();
-                                        }
-                                        element = element.nextElementSibling();
-                                    }
+                            for (String line : lines) {
+                                if (line.contains(startElement)) {
+                                    foundStart = true;
+                                } else if (line.contains(endElement)) {
+                                    foundEnd = true;
+                                    break;
+                                } else if (foundStart && !foundEnd) {
+                                    paragraph += line + "\n";
                                 }
                             }
-
-                            article.setFull_text(data);
+                            article.setFull_text(paragraph);
                             articleRepo.save(article);
 
                             System.out.println(article);
@@ -1286,7 +1284,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 0 0 5 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 12 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 

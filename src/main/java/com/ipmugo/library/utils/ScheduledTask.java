@@ -797,7 +797,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 58 10 6 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1234,7 +1234,7 @@ public class ScheduledTask {
         System.out.println("Successfully sync with elasticsearch");
     }
 
-    @Scheduled(cron = "0 0 0 27 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 35 16 6 * *", zone = "GMT+7")
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 

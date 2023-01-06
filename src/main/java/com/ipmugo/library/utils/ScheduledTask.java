@@ -608,7 +608,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 8 6 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -628,7 +628,7 @@ public class ScheduledTask {
 
                     try {
                         HttpHeaders headers = new HttpHeaders();
-                        headers.set("X-ELS-APIKey", "c3e2204edf8085aaf3487d0caed62253");
+                        headers.set("X-ELS-APIKey", "02a4a78850cc45d360801a7b302af021");
 
                         HttpEntity<T> request = new HttpEntity<>(headers);
 

@@ -608,7 +608,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 8 6 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -797,7 +797,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 40 19 7 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 58 10 6 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -868,6 +868,12 @@ public class ScheduledTask {
                                     citationCrossRef2.setArticle(article);
                                     citationCrossRef2.setReferences_count(entryCrossRef.getReferencesCount());
 
+                                    if (entryCrossRef.getSubject().size() > 0) {
+                                        article.setSubjects(String.join(";", entryCrossRef.getSubject()));
+
+                                        articleRepo.save(article);
+                                    }
+
                                     System.out.println(citationCrossRefRepo.save(citationCrossRef2));
                                 } else {
                                     citationCrossRef.get().setArticle(article);
@@ -924,7 +930,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 40 19 5 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
     public void getFigures() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1015,7 +1021,7 @@ public class ScheduledTask {
         System.out.println("Successfully get figure");
     }
 
-    @Scheduled(cron = "0 0 10 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 1 * *", zone = "GMT+7")
     public void getFilePDF() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1083,7 +1089,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 11 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 6 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1228,7 +1234,7 @@ public class ScheduledTask {
         System.out.println("Successfully sync with elasticsearch");
     }
 
-    @Scheduled(cron = "0 0 0 8 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 27 * *", zone = "GMT+7")
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1290,7 +1296,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 0 0 12 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 

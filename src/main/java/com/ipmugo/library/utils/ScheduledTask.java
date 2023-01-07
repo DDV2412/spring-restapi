@@ -930,7 +930,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 12 8 * *", zone = "GMT+7")
     public void getFigures() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1111,7 +1111,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 12 8 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 9 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 

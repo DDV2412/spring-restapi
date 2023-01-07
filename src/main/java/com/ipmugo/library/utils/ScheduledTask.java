@@ -1318,7 +1318,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 10 18 7 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 19 7 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 

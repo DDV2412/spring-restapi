@@ -962,10 +962,32 @@ public class ScheduledTask {
                                     if (xobject instanceof PDImageXObject) {
                                         PDImageXObject image = (PDImageXObject) xobject;
                                         BufferedImage bImage = image.getImage();
-                                        BufferedImage resizedImage = new BufferedImage(300, 225,
+
+                                        // Tentukan ukuran yang diinginkan
+                                        int width = 400;
+                                        int height = 500;
+
+                                        // Hitung ulang ukuran sesuai dengan perbandingan aspect ratio yang diinginkan
+                                        BufferedImage resizedImage = new BufferedImage(width, height,
                                                 BufferedImage.TYPE_INT_ARGB);
                                         Graphics2D g2d = resizedImage.createGraphics();
-                                        g2d.drawImage(bImage, 0, 0, 300, 225, null);
+
+                                        int originalWidth = bImage.getWidth();
+                                        int originalHeight = bImage.getHeight();
+
+                                        if ((float) originalWidth / originalHeight == (float) width / height) {
+                                            // Perbandingan aspect ratio sama, tidak perlu melakukan perhitungan lagi
+                                            g2d.drawImage(bImage, 0, 0, width, height, null);
+                                        } else if ((float) originalWidth / originalHeight < (float) width / height) {
+                                            // Perbandingan aspect ratio gambar lebih lancip, hitung ulang tinggi
+                                            int newHeight = (int) ((float) originalHeight / originalWidth * width);
+                                            g2d.drawImage(bImage, 0, (height - newHeight) / 2, width, newHeight, null);
+                                        } else {
+                                            // Perbandingan aspect ratio gambar lebih lebar, hitung ulang lebar
+                                            int newWidth = (int) ((float) originalWidth / originalHeight * height);
+                                            g2d.drawImage(bImage, (width - newWidth) / 2, 0, newWidth, height, null);
+                                        }
+
                                         g2d.dispose();
 
                                         ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
@@ -1089,7 +1111,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 6 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 12 8 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1234,7 +1256,7 @@ public class ScheduledTask {
         System.out.println("Successfully sync with elasticsearch");
     }
 
-    @Scheduled(cron = "0 35 16 6 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 27 * *", zone = "GMT+7")
     public void getFullText() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1296,7 +1318,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 10 18 7 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 

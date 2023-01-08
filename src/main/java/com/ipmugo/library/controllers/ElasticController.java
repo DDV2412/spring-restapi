@@ -53,8 +53,7 @@ public class ElasticController {
                 List<Map<String, Long>> aggrList = new ArrayList<>();
 
                 for (Map.Entry<String, Aggregate> entry : aggrs.entrySet()) {
-                        aggrList.add(aggrs.get(entry.getKey()).global().aggregations()
-                                        .get(entry.getKey() + "_terms")
+                        aggrList.add(aggrs.get(entry.getKey())
                                         .sterms().buckets().array().stream()
                                         .collect(Collectors.toMap(StringTermsBucket::key,
                                                         MultiBucketBase::docCount))
@@ -77,10 +76,10 @@ public class ElasticController {
         }
 
         @GetMapping("/feature_article")
-        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> articleFeatures() {
+        public ResponseEntity<ResponseElastic<List<ArticleElastic>>> articleFeatures(@RequestBody String query) {
                 ResponseElastic<List<ArticleElastic>> responseData = new ResponseElastic<>();
 
-                String query = "{\"from\": \"0\",\"size\":\"3\",\"query\":{\"bool\": {\"should\" : [{ \"match_all\" : { } }],\"filter\": []}},\"sort\": [{\"citation_by_scopus.references_count\": \"desc\"}]}";
+                query = query.replaceAll("\r\n", "");
                 SearchTemplateResponse<ArticleElastic> searchResponse = elasticSearchService.search(query);
 
                 List<Hit<ArticleElastic>> hits = searchResponse.hits().hits();

@@ -999,7 +999,7 @@ public class ScheduledTask {
                                         try {
                                             UriComponents uriComponents = UriComponentsBuilder.newInstance()
                                                     .scheme("http")
-                                                    .host("103.102.152.252:8080")
+                                                    .host("localhost:8080")
                                                     .path("/api/upload/figure/" + article.getTitle()
                                                             .replaceAll(" ", "-")
                                                             + counter + ".png")
@@ -1087,7 +1087,7 @@ public class ScheduledTask {
 
                         UriComponents uriComponents = UriComponentsBuilder.newInstance()
                                 .scheme("http")
-                                .host("103.102.152.252:8080")
+                                .host("localhost:8080")
                                 .path("/api/upload/document/" + article.getTitle().replaceAll(" ",
                                         "-")
                                         + ".pdf")
@@ -1111,7 +1111,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 45 13 8 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 6 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 

@@ -73,9 +73,6 @@ public class ArticleElastic {
     @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
     private String abstract_text;
 
-    @MultiField(mainField = @Field(type = FieldType.Text, fielddata = true))
-    private String full_text;
-
     @Field(type = FieldType.Keyword)
     private String article_pdf;
 
@@ -255,14 +252,6 @@ public class ArticleElastic {
 
     public void setAbstract_text(String abstract_text) {
         this.abstract_text = abstract_text;
-    }
-
-    public String getFull_text() {
-        return full_text;
-    }
-
-    public void setFull_text(String full_text) {
-        this.full_text = full_text;
     }
 
     public String getArticle_pdf() {

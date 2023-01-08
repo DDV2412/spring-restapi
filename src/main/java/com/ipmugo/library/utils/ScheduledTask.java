@@ -1111,7 +1111,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 55 11 8 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 30 13 8 * *", zone = "GMT+7")
     public void pushData() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1143,7 +1143,6 @@ public class ScheduledTask {
                 journalElastic.setIssue_per_year(article.getJournal().getIssue_per_year());
                 journalElastic.setPrimary_languange(article.getJournal().getPrimary_languange());
                 journalElastic.setEditor_site(article.getJournal().getEditor_site());
-                journalElastic.setFull_text_format(article.getJournal().getFull_text_format());
                 journalElastic.setArticle_doi(article.getJournal().isArticle_doi());
                 journalElastic.setStatement(article.getJournal().getStatement());
                 journalElastic.setLicense(article.getJournal().getLicense());
@@ -1173,7 +1172,6 @@ public class ScheduledTask {
                 articleElastic.setIssue(article.getIssue());
                 articleElastic.setCopyright(article.getCopyright());
                 articleElastic.setAbstract_text(article.getAbstract_text());
-                articleElastic.setFull_text(article.getFull_text());
                 articleElastic.setArticle_pdf(article.getArticle_pdf());
                 articleElastic.setKeyword(article.getKeyword());
                 articleElastic.setUpdatedAt(

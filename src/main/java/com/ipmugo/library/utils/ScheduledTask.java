@@ -128,7 +128,7 @@ public class ScheduledTask {
     @Autowired
     private AuthorStatisticRepo authorStatisticRepo;
 
-    @Scheduled(cron = "0 45 13 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 10 * *", zone = "GMT+7")
     public <T> void journalMetric() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -275,7 +275,7 @@ public class ScheduledTask {
         System.out.println("Successfully get all citation journal by scopus");
     }
 
-    @Scheduled(cron = "0 50 13 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 15 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             Pageable pageable = PageRequest.of(0, 15);
@@ -1322,7 +1322,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 45 19 9 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 

@@ -293,7 +293,7 @@ public class ArticleController {
             for (Article article : articles) {
                 BibTeXDatabase database = new BibTeXDatabase();
                 BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE,
-                        new Key(article.getAuthors().iterator().next().getFirst_name() + "@"
+                        new Key(article.getAuthors().iterator().next().getFirstName() + "@"
                                 + article.getPublish_year()));
                 entry.addField(BibTeXEntry.KEY_TITLE, new StringValue(article.getTitle(), StringValue.Style.BRACED));
                 entry.addField(BibTeXEntry.KEY_JOURNAL,
@@ -308,7 +308,7 @@ public class ArticleController {
                 StringBuilder keyAuthorBuilder = new StringBuilder();
                 for (int i = 0; i < article.getAuthors().size(); i++) {
                     Author author = article.getAuthors().iterator().next();
-                    keyAuthorBuilder.append(author.getFirst_name()).append(" ").append(author.getLast_name());
+                    keyAuthorBuilder.append(author.getFirstName()).append(" ").append(author.getLastName());
                     if (i < article.getAuthors().size() - 1) {
                         keyAuthorBuilder.append(" and ");
                     }
@@ -345,7 +345,7 @@ public class ArticleController {
 
             BibTeXDatabase database = new BibTeXDatabase();
             BibTeXEntry entry = new BibTeXEntry(BibTeXEntry.TYPE_ARTICLE,
-                    new Key(article.getAuthors().iterator().next().getFirst_name() + "@" + article.getPublish_year()));
+                    new Key(article.getAuthors().iterator().next().getFirstName() + "@" + article.getPublish_year()));
             entry.addField(BibTeXEntry.KEY_TITLE, new StringValue(article.getTitle(), StringValue.Style.BRACED));
             entry.addField(BibTeXEntry.KEY_JOURNAL,
                     new StringValue(article.getJournal().getName(), StringValue.Style.BRACED));
@@ -357,7 +357,7 @@ public class ArticleController {
             StringBuilder keyAuthorBuilder = new StringBuilder();
             for (int i = 0; i < article.getAuthors().size(); i++) {
                 Author author = article.getAuthors().iterator().next();
-                keyAuthorBuilder.append(author.getFirst_name()).append(" ").append(author.getLast_name());
+                keyAuthorBuilder.append(author.getFirstName()).append(" ").append(author.getLastName());
                 if (i < article.getAuthors().size() - 1) {
                     keyAuthorBuilder.append(" and ");
                 }

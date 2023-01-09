@@ -27,10 +27,10 @@ public class Author {
     private UUID id;
 
     @Column(nullable = false, length = 255)
-    private String first_name;
+    private String firstName;
 
     @Column(nullable = false, length = 255)
-    private String last_name;
+    private String lastName;
 
     @Column(nullable = true, length = 64)
     private String email;
@@ -67,11 +67,11 @@ public class Author {
     public Author() {
     }
 
-    public Author(UUID id, String first_name, String last_name, String email, String orcid, String scopus_id,
+    public Author(UUID id, String firstName, String lastName, String email, String orcid, String scopus_id,
             String google_scholar, String affiliation, String photo_profile, Article article) {
         this.id = id;
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.orcid = orcid;
         this.scopus_id = scopus_id;
@@ -121,20 +121,20 @@ public class Author {
         this.id = id;
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getLast_name() {
-        return last_name;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {

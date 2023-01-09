@@ -114,8 +114,8 @@ public class AuthorController {
 
             Author authorMapper = modelMapper.map(author, Author.class);
 
-            author2.setFirst_name(authorMapper.getFirst_name());
-            author2.setLast_name(authorMapper.getLast_name());
+            author2.setFirstName(authorMapper.getFirstName());
+            author2.setLastName(authorMapper.getLastName());
             author2.setEmail(authorMapper.getEmail());
             author2.setOrcid(authorMapper.getOrcid());
             author2.setScopus_id(authorMapper.getScopus_id());
@@ -127,7 +127,7 @@ public class AuthorController {
             return ResponseEntity.ok(responseData);
         } catch (Exception e) {
             responseData.setStatus(false);
-            responseData.getMessages().add("Author name " + author.getFirst_name() + " not available");
+            responseData.getMessages().add("Author name " + author.getFirstName() + " not available");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseData);
         }
     }
@@ -169,8 +169,8 @@ public class AuthorController {
             for (Author author : authors) {
                 Author author2 = authorService.findOne(author.getId());
 
-                author2.setFirst_name(author.getFirst_name());
-                author2.setLast_name(author.getLast_name());
+                author2.setFirstName(author.getFirstName());
+                author2.setLastName(author.getLastName());
                 author2.setEmail(author.getEmail());
                 author2.setOrcid(author.getOrcid());
                 author2.setScopus_id(author.getScopus_id());

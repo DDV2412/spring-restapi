@@ -275,7 +275,7 @@ public class ScheduledTask {
         System.out.println("Successfully get all citation journal by scopus");
     }
 
-    @Scheduled(cron = "0 0 9 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 50 9 9 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             Pageable pageable = PageRequest.of(0, 15);
@@ -543,12 +543,12 @@ public class ScheduledTask {
                         for (int x = 0; x < creator.size(); x++) {
                             Author author = new Author();
                             if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
-                                author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
+                                author.setFirstName(creator.get(x).text().split(", ")[1].split("; ")[0]);
                                 author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
                             } else {
-                                author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                author.setFirstName(creator.get(x).text().split(", ")[1]);
                             }
-                            author.setLast_name(creator.get(x).text().split(", ")[0]);
+                            author.setLastName(creator.get(x).text().split(", ")[0]);
                             author.setArticle(article2);
 
                             authorRepo.save(author);
@@ -586,20 +586,21 @@ public class ScheduledTask {
                             for (int x = 0; x < creator.size(); x++) {
                                 Author author = new Author();
                                 if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
-                                    author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
+                                    author.setFirstName(creator.get(x).text().split(", ")[1].split("; ")[0]);
                                     author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
                                 } else {
-                                    author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                    author.setFirstName(creator.get(x).text().split(", ")[1]);
                                 }
-                                author.setLast_name(creator.get(x).text().split(", ")[0]);
+                                author.setLastName(creator.get(x).text().split(", ")[0]);
                                 author.setArticle(article.get());
 
-                                Author existingAuthor = authorRepo
-                                        .findByFirstNameAndLastNameAndArticleId(article.get().getId(),
-                                                author.getFirst_name(), author.getLast_name());
+                                Author existingAuthor = authorRepo.findByFirstNameAndLastNameAndArticleId(
+                                        author.getFirstName(), author.getLastName(), article.get().getId());
                                 if (existingAuthor == null) {
+                                    // Simpan data Author jika belum tersimpan di database
                                     authorRepo.save(author);
                                 }
+
                             }
                         }
 
@@ -1221,8 +1222,8 @@ public class ScheduledTask {
                             .map(s -> {
                                 AuthorElastic authorElastic = new AuthorElastic();
                                 authorElastic.setId(s.getId());
-                                authorElastic.setFirst_name(s.getFirst_name());
-                                authorElastic.setLast_name(s.getLast_name());
+                                authorElastic.setFirst_name(s.getFirstName());
+                                authorElastic.setLast_name(s.getLastName());
                                 authorElastic.setEmail(s.getEmail());
                                 authorElastic.setOrcid(s.getOrcid());
                                 authorElastic.setScopus_id(s.getScopus_id());

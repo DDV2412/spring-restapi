@@ -19,4 +19,6 @@ public interface AuthorRepo extends JpaRepository<Author, UUID> {
     @Query("SELECT a FROM Author a WHERE a.first_name = :first_name AND a.last_name = :last_name")
     Page<Author> findAllByPage(Pageable pageable, String first_name, String last_name);
 
+    Author findByFirstNameAndLastNameAndArticleId(UUID article_id, String first_name, String last_name);
+
 }

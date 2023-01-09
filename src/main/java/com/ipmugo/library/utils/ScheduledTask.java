@@ -275,7 +275,7 @@ public class ScheduledTask {
         System.out.println("Successfully get all citation journal by scopus");
     }
 
-    @Scheduled(cron = "0 55 7 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 9 9 * *", zone = "GMT+7")
     public void getHarvest() {
         try {
             Pageable pageable = PageRequest.of(0, 15);
@@ -557,46 +557,55 @@ public class ScheduledTask {
 
                     System.out.println(article2);
                 } else {
-                    article.get().setOjs_id(articleData.getOjs_id());
-                    article.get().setLast_modifier(articleData.getLast_modifier());
-                    article.get().setSet_spec(articleData.getSet_spec());
-                    article.get().setTitle(articleData.getTitle());
-                    article.get().setAbstract_text(articleData.getAbstract_text());
-                    article.get().setPublisher(articleData.getPublisher());
-                    article.get().setPublish_date(articleData.getPublish_date());
-                    article.get().setPublish_year(articleData.getPublish_year());
-                    article.get().setSource_type(articleData.getSource_type());
-                    article.get().setDoi(articleData.getDoi());
-                    article.get().setLanguange_publication(articleData.getLanguange_publication());
-                    article.get().setArticle_pdf(articleData.getArticle_pdf());
-                    article.get().setCopyright(articleData.getCopyright());
-                    article.get().setIssn(articleData.getIssn());
-                    article.get().setIssue(articleData.getIssue());
-                    article.get().setVolume(articleData.getVolume());
-                    article.get().setPages(articleData.getPages());
-                    article.get().setKeyword(articleData.getKeyword());
-                    article.get().setSubjects(articleData.getSubjects());
-                    article.get().setJournal(journal);
+                    if (article.get().getLast_modifier() != articleData.getLast_modifier()) {
 
-                    Elements creator = dc.get(0).getElementsByTag("dc:creator");
+                        article.get().setOjs_id(articleData.getOjs_id());
+                        article.get().setLast_modifier(articleData.getLast_modifier());
+                        article.get().setSet_spec(articleData.getSet_spec());
+                        article.get().setTitle(articleData.getTitle());
+                        article.get().setAbstract_text(articleData.getAbstract_text());
+                        article.get().setPublisher(articleData.getPublisher());
+                        article.get().setPublish_date(articleData.getPublish_date());
+                        article.get().setPublish_year(articleData.getPublish_year());
+                        article.get().setSource_type(articleData.getSource_type());
+                        article.get().setDoi(articleData.getDoi());
+                        article.get().setLanguange_publication(articleData.getLanguange_publication());
+                        article.get().setArticle_pdf(articleData.getArticle_pdf());
+                        article.get().setCopyright(articleData.getCopyright());
+                        article.get().setIssn(articleData.getIssn());
+                        article.get().setIssue(articleData.getIssue());
+                        article.get().setVolume(articleData.getVolume());
+                        article.get().setPages(articleData.getPages());
+                        article.get().setKeyword(articleData.getKeyword());
+                        article.get().setSubjects(articleData.getSubjects());
+                        article.get().setJournal(journal);
 
-                    if (!creator.isEmpty()) {
-                        for (int x = 0; x < creator.size(); x++) {
-                            Author author = new Author();
-                            if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
-                                author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
-                                author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
-                            } else {
-                                author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                        Elements creator = dc.get(0).getElementsByTag("dc:creator");
+
+                        if (!creator.isEmpty()) {
+                            for (int x = 0; x < creator.size(); x++) {
+                                Author author = new Author();
+                                if (creator.get(x).text().split(", ")[1].split("; ").length > 1) {
+                                    author.setFirst_name(creator.get(x).text().split(", ")[1].split("; ")[0]);
+                                    author.setAffiliation(creator.get(x).text().split(", ")[1].split("; ")[1]);
+                                } else {
+                                    author.setFirst_name(creator.get(x).text().split(", ")[1]);
+                                }
+                                author.setLast_name(creator.get(x).text().split(", ")[0]);
+                                author.setArticle(article.get());
+
+                                Author existingAuthor = authorRepo
+                                        .findByFirstNameAndLastNameAndArticleId(article.get().getId(),
+                                                author.getFirst_name(), author.getLast_name());
+                                if (existingAuthor == null) {
+                                    authorRepo.save(author);
+                                }
                             }
-                            author.setLast_name(creator.get(x).text().split(", ")[0]);
-                            author.setArticle(article.get());
-
-                            authorRepo.save(author);
                         }
-                    }
 
-                    System.out.println(article.get());
+                        System.out.println(article.get());
+
+                    }
                 }
 
             }
@@ -960,8 +969,8 @@ public class ScheduledTask {
                                         BufferedImage bImage = image.getImage();
 
                                         // Tentukan ukuran yang diinginkan
-                                        int width = 400;
-                                        int height = 500;
+                                        int width = 1800;
+                                        int height = 1700;
 
                                         // Hitung ulang ukuran sesuai dengan perbandingan aspect ratio yang diinginkan
                                         BufferedImage resizedImage = new BufferedImage(width, height,
@@ -1280,7 +1289,7 @@ public class ScheduledTask {
 
                             String[] lines = text.split("\n");
                             String paragraph = "";
-                            String startElement = "1. INTRODUCTION";
+                            String startElement = "INTRODUCTION";
                             String endElement = "BIOGRAPHIES OF AUTHORS";
                             boolean foundStart = false;
                             boolean foundEnd = false;

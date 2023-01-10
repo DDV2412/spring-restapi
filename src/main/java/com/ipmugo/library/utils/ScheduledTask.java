@@ -614,7 +614,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 18 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 13 10 * *", zone = "GMT+7")
     private <T> void articleCitationScopus() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -634,7 +634,7 @@ public class ScheduledTask {
 
                     try {
                         HttpHeaders headers = new HttpHeaders();
-                        headers.set("X-ELS-APIKey", "02a4a78850cc45d360801a7b302af021");
+                        headers.set("X-ELS-APIKey", "e8f2729d5e0457385b73011d98678b83");
 
                         HttpEntity<T> request = new HttpEntity<>(headers);
 
@@ -803,7 +803,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 21 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 19 10 * *", zone = "GMT+7")
     private <T> void articleCitationCrossRef() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -936,7 +936,7 @@ public class ScheduledTask {
 
     }
 
-    @Scheduled(cron = "0 0 0 24 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 7 11 * *", zone = "GMT+7")
     public void getFigures() {
         Pageable pageable = PageRequest.of(0, 15);
 
@@ -1322,7 +1322,7 @@ public class ScheduledTask {
         System.out.println("Successfully convert pdf to html");
     }
 
-    @Scheduled(cron = "0 45 19 9 * *", zone = "GMT+7")
+    @Scheduled(cron = "0 0 0 3 * *", zone = "GMT+7")
     public void authorProfile() {
         Pageable pageable = PageRequest.of(0, 15);
 
